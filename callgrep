@@ -1,0 +1,15 @@
+#!/bin/bash
+FUNC=$1
+NARGS=$2
+echo $NARGS
+if [ $NARGS = "0" ];
+then
+   RE="$FUNC\ *(\ *)"
+else
+   NARGS=$(($NARGS - 1))
+   RE="$FUNC\ *(\(\ *[[:alnum:]]\+\ *,\)\{$NARGS\}\ *[[:alnum:]]\+\ *)"
+fi
+
+echo "Regex = $RE"
+
+grep "$RE" $3 --color -n

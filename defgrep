@@ -1,0 +1,37 @@
+#!/bin/bash
+FUNC=$1
+NARGS=$2
+
+CHARS="[a-zA-Z_\-]"
+echo "CHARS : $CHARS"
+ARG_RE="\(\ *[[:alnum:]]\+\ *\)\{2,3\}"
+TYPE_RE="$CHARS\+"
+ARG_RE="\(\ *\(\ *$CHARS\+\ \)\?\ *$CHARS\+\**\ \+\**$CHARS\+\ *\)"
+
+PARAM_RE="\(\ *[a-zA-Z_\-\&]\+\ *\)"
+# ARG_RE="
+# \(\ *
+#    \(\ *$CHARS\+\ \)\?\ *
+#    $CHARS\+\**\ \+
+#    \**$CHARS\+
+# \ *\)"
+
+WORD_RE="\(\ *[[:alnum:]]\+\ *\)"
+
+echo $NARGS
+if [ $NARGS = "0" ];
+then
+   RE="$FUNC\ *(\ *)"
+else
+   NARGS=$(($NARGS - 1))
+   DEF_RE_N="$TYPE_RE\ \+$FUNC\ *(\($ARG_RE,\)\{$NARGS\}$ARG_RE)" # Known number of args
+   DEF_RE="$TYPE_RE\ \+$FUNC\ *(\($ARG_RE,\)*$ARG_RE\?)" # Unknown number of args
+   RE_N="$FUNC\ *(\($PARAM_RE,\)\{$NARGS\}$PARAM_RE)"
+   RE="$FUNC\ *(\($PARAM_RE,\)*$PARAM_RE\?)"
+fi
+
+grep "$RE" $3 --color -n
+grep "$DEF_RE" $3 --color -n
+
+
+

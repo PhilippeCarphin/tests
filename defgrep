@@ -2,6 +2,35 @@
 FUNC=$1
 NARGS=$2
 
+# Options : 
+# -l where to search     : Default "*.c"
+# -n Number of args      : Default "unknown"
+# -d Look for definition : Default look for calls
+
+# Arguments :
+# function name
+while getopts :l:n:d opt # A is followed by ":" to say that it requires an argument. Leading ":" to let me handle invalid options instead of having an automatic error message.
+do
+	case $opt in
+		l) 	SEARCH=$OPTARG
+            option_l=true
+			;;
+		n) 	NARGS=$OPTARG
+            option_n=true
+			;;
+	#	h)	showUsage
+	#		exit 1
+	#		;;
+		d)	   option_d=true
+         ;;
+	esac
+done
+shift $((OPTIND - 1))
+
+if [ $# -ne 1 ]; then
+   echo "Must supply function name as argument"
+fi
+
 CHARS="[a-zA-Z_\-]"
 echo "CHARS : $CHARS"
 ARG_RE="\(\ *[[:alnum:]]\+\ *\)\{2,3\}"

@@ -31,7 +31,7 @@ FUNC=$1
 # Regex pieces
 CHARS="[a-zA-Z_\-]"
 TYPE_RE="$CHARS\+"
-ARG_RE="\(\ *\(\ *$CHARS\+\ \)\?\ *$CHARS\+\**\ \+\**$CHARS\+\ *\)"
+ARG_RE="\(\ *\(\ *$CHARS\+\ \)\?\ *$CHARS\+\ *\**\ *$CHARS\+\ *\)"
 PARAM_RE="\(\ *[a-zA-Z_\-\&\"% ]\+\ *\)"
 
 # Various regexes

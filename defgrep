@@ -1,6 +1,4 @@
-#!/bin/bash
-FUNC=$1
-NARGS=$2
+#!/bin/sh
 
 # Options : 
 # -l where to search     : Default "*.c"
@@ -9,58 +7,56 @@ NARGS=$2
 
 # Arguments :
 # function name
-while getopts :l:n:d opt # A is followed by ":" to say that it requires an argument. Leading ":" to let me handle invalid options instead of having an automatic error message.
-do
-	case $opt in
-		l) 	SEARCH=$OPTARG
-            option_l=true
+LOCATION="*.c"
+option_l=false
+option_n=false
+option_d=false
+while getopts "l:n:d" opt; do
+	case "$opt" in
+		l) LOCATION=$OPTARG
+         option_l=true
 			;;
-		n) 	NARGS=$OPTARG
-            option_n=true
+		n) NARGS=$OPTARG
+         option_n=true
 			;;
-	#	h)	showUsage
-	#		exit 1
-	#		;;
-		d)	   option_d=true
+		d)	option_d=true
          ;;
 	esac
 done
 shift $((OPTIND - 1))
 
-if [ $# -ne 1 ]; then
-   echo "Must supply function name as argument"
-fi
+NARGS=$(($NARGS - 1))
+FUNC=$1
 
+# Regex pieces
 CHARS="[a-zA-Z_\-]"
-echo "CHARS : $CHARS"
-ARG_RE="\(\ *[[:alnum:]]\+\ *\)\{2,3\}"
 TYPE_RE="$CHARS\+"
 ARG_RE="\(\ *\(\ *$CHARS\+\ \)\?\ *$CHARS\+\**\ \+\**$CHARS\+\ *\)"
-
 PARAM_RE="\(\ *[a-zA-Z_\-\&]\+\ *\)"
-# ARG_RE="
-# \(\ *
-#    \(\ *$CHARS\+\ \)\?\ *
-#    $CHARS\+\**\ \+
-#    \**$CHARS\+
-# \ *\)"
 
-WORD_RE="\(\ *[[:alnum:]]\+\ *\)"
+# Various regexes
+DEF_RE_N="$TYPE_RE\ \+$FUNC\ *(\($ARG_RE,\)\{$NARGS\}$ARG_RE)" # Known number of args
+DEF_RE="$TYPE_RE\ \+$FUNC\ *(\($ARG_RE,\)*$ARG_RE\?)" # Unknown number of args
+CALL_RE_N="$FUNC\ *(\($PARAM_RE,\)\{$NARGS\}$PARAM_RE)"
+CALL_RE="$FUNC\ *(\($PARAM_RE,\)*$PARAM_RE\?)"
 
-echo $NARGS
-if [ $NARGS = "0" ];
-then
-   RE="$FUNC\ *(\ *)"
+# Echo back information
+echo "FUNCTION: $FUNC"
+
+if [[ $option_n = true ]];then
+   echo "NARGS   : $(($NARGS + 1))"
+   DEF_RE=$DEF_RE_N
+   CALL_RE=$CALL_RE_N
 else
-   NARGS=$(($NARGS - 1))
-   DEF_RE_N="$TYPE_RE\ \+$FUNC\ *(\($ARG_RE,\)\{$NARGS\}$ARG_RE)" # Known number of args
-   DEF_RE="$TYPE_RE\ \+$FUNC\ *(\($ARG_RE,\)*$ARG_RE\?)" # Unknown number of args
-   RE_N="$FUNC\ *(\($PARAM_RE,\)\{$NARGS\}$PARAM_RE)"
-   RE="$FUNC\ *(\($PARAM_RE,\)*$PARAM_RE\?)"
+   echo "NARGS   : Unkonwn"
 fi
 
-grep "$RE" $3 --color -n
-grep "$DEF_RE" $3 --color -n
+if [[ $option_d = true ]];then
+   echo "Looking for definition"
+   RE=$DEF_RE
+else
+   echo "Looking for calls"
+   RE=$CALL_RE
+fi
 
-
-
+grep "$RE" $LOCATION --color -n

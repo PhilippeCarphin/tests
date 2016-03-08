@@ -32,7 +32,7 @@ FUNC=$1
 CHARS="[a-zA-Z_\-]"
 TYPE_RE="$CHARS\+"
 ARG_RE="\(\ *\(\ *$CHARS\+\ \)\?\ *$CHARS\+\ *\**\ *$CHARS\+\ *\)"
-PARAM_RE="\(\ *[a-zA-Z_\-\&\"% ]\+\ *\)"
+PARAM_RE="\(\ *[a-zA-Z_\-\&\"%0-9]\+\ *\)"
 
 # Various regexes
 DEF_RE_N="$TYPE_RE\ \+$FUNC\ *(\($ARG_RE,\)\{$NARGS\}$ARG_RE)" # Known number of args
@@ -61,4 +61,5 @@ else
    RE=$CALL_RE
 fi
 
+echo "$RE"
 grep "$RE" $LOCATION --color -n

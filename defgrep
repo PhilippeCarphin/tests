@@ -32,13 +32,15 @@ FUNC=$1
 CHARS="[a-zA-Z_\-]"
 TYPE_RE="$CHARS\+"
 ARG_RE="\(\ *\(\ *$CHARS\+\ \)\?\ *$CHARS\+\**\ \+\**$CHARS\+\ *\)"
-PARAM_RE="\(\ *[a-zA-Z_\-\&]\+\ *\)"
+PARAM_RE="\(\ *[a-zA-Z_\-\&\"% ]\+\ *\)"
 
 # Various regexes
 DEF_RE_N="$TYPE_RE\ \+$FUNC\ *(\($ARG_RE,\)\{$NARGS\}$ARG_RE)" # Known number of args
 DEF_RE="$TYPE_RE\ \+$FUNC\ *(\($ARG_RE,\)*$ARG_RE\?)" # Unknown number of args
 CALL_RE_N="$FUNC\ *(\($PARAM_RE,\)\{$NARGS\}$PARAM_RE)"
 CALL_RE="$FUNC\ *(\($PARAM_RE,\)*$PARAM_RE\?)"
+VARARGS_DEF_REGEX="$TYPE_RE\ \+$FUNC\ *(\($ARG_RE,\)*\ *\.\.\.\ *)"
+grep "$VARARGS_DEF_REGEX" $LOCATION --color -n
 
 # Echo back information
 echo "FUNCTION: $FUNC"

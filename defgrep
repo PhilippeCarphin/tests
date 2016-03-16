@@ -32,7 +32,16 @@ FUNC=$1
 CHARS="[a-zA-Z_\-]"
 TYPE_RE="$CHARS\+"
 ARG_RE="\(\ *\(\ *$CHARS\+\ \)\?\ *$CHARS\+\ *\**\ *$CHARS\+\ *\)"
-PARAM_RE="\(\ *[a-zA-Z_\-\&\"%0-9]\+\ *\)"
+PARAM_RE="\(\ *[-a-zA-Z0-9_\&\"%>\.]\+\ *\)"
+# Doesnt work with string litterals because they can contain anything. 
+# Maybe add a regex for string litterals, and have an actual param be a
+# non-string litteral param or a string litteral.  But then there is still the
+# problem of functions getting passed expressions as parameters.
+
+# I think this script will end up being only usable reliably to find the
+# definition of a function and calls will just have to be grep functionName with
+# me sifting manually to distinguish what's a call and what's a trace message.
+# I could put two greps together but then I lose line numbers
 
 # Various regexes
 DEF_RE_N="$TYPE_RE\ \+$FUNC\ *(\($ARG_RE,\)\{$NARGS\}$ARG_RE)" # Known number of args

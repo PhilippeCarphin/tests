@@ -1,22 +1,18 @@
-#include <getopt.h>
+#include "getopt.h"
 #include <stdio.h>
 #include <stdlib.h>
 
 /* Flags whose address we put in option structs for our long_options[] array, if
  * they are given in the form below with initializer lists, must be super
  * constant.  Which means that we have to declare them here. */
-int   caca_flag = 0;
 
 int main ( int argc , char* argv[]){
    /* Or they can be static variables in the main function.  (Because either way,
     * they will be living in the DATA or BSS */
-   static int   bonjour_flag = 0;
+   static int   flagOpt2_flag = 0;
+   static int   flagOpt1_flag = 0;
 
    char* lol_arg = NULL;
-   char* bonjour_opt = NULL;
-   char* caca_opt = NULL;
-   char* c_opt = NULL;
-   char* b_opt = NULL;
    int   e_flag = 0;
    extern char* optarg;
    extern int   optind;
@@ -30,13 +26,13 @@ int main ( int argc , char* argv[]){
    static struct option long_options[] =
    {
       /* Option descriptions */
-      {"caca", /* char* name */
+      {"flagOpt1", /* char* name */
          no_argument, /* int has_arg (Setting required_argument, no_argument, optional_argument) */
-         &caca_flag, /* if not null, will receive the value in the following field*/
+         &flagOpt1_flag, /* if not null, will receive the value in the following field*/
          1 /* int val (value assigned to *flag if flag != NULL, othewise, identifier of the option returned by getopt_long()).*/
       },
-      {"bonjour", no_argument, &bonjour_flag, 1},
-      {"lol", required_argument, 0, 'l'},
+      {"flagOpt2", no_argument, &flagOpt2_flag, 1},
+      {"argopt", required_argument, 0, 'l'},
       {NULL,0,0,0} /* Necessary for getopt_long to know that it has reached the
                       end of the array, otherwise, invalid options would cause
                       segfaults in a weird way.  As long as you don't try to
@@ -74,6 +70,7 @@ int main ( int argc , char* argv[]){
          case '?':
             printf("optind : %d \n", optind);
             puts("Getopt_long printed an error message\n");
+            /* Program should abort here but doesn't for demonstration purposes */
             break;
          default:
             abort();
@@ -95,6 +92,7 @@ int main ( int argc , char* argv[]){
    while ( index < argc){
       printf("argv[%d] : %s \n", index++, argv[index]);
    }
+   puts("\nArguments of bad options are treated as positional arguments therefore the program should abort when a bad option is encountered.\n");
 
    return 0;
 }

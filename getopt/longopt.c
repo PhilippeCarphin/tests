@@ -44,9 +44,11 @@ int main ( int argc , char* argv[]){
    /* Original order of arguments */
    index = 0;
    puts("\nOrder of arguments before option parsing\n========================================");
-   while ( index < argc){
-      printf("argv[%d] : %s \n", index++, argv[index]);
+   printf("(argc = %d)\n",argc);
+   for ( index = 0; index < argc; ++index){
+      printf("argv[%d] : %s \n", index, argv[index]);
    }
+
    
    /* Option parsing part: getopt_long will return -1 when option parsing is
     * finished.  It will also rearrange the arguments of the program when it is
@@ -58,7 +60,7 @@ int main ( int argc , char* argv[]){
             printf("Encountered flag setting option: %s\n", long_options[index].name);
             break;
          case 'l':
-            printf("option lol with argument %s \n", optarg );
+            printf("option argopt with argument %s \n", optarg );
             break;
          case 'e':
             printf("Short option encountered with argument %s \n", optarg);
@@ -87,10 +89,9 @@ int main ( int argc , char* argv[]){
 
    /* Here we can notice that the arguments were moved around for the preceding
     * loop to go through the non-option arguments */
-   index = 0;
    puts("\nOrder of arguments after option parsing \n=======================================");
-   while ( index < argc){
-      printf("argv[%d] : %s \n", index++, argv[index]);
+   for ( index = 0; index < argc; ++index){
+      printf("argv[%d] : %s \n", index, argv[index]);
    }
    puts("\nArguments of bad options are treated as positional arguments therefore the program should abort when a bad option is encountered.\n");
 

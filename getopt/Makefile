@@ -19,4 +19,4 @@ opt_parser:$(OBJ)
 	$(CC) -c $<
 
 clean:
-	rm *.o *.exe
+	rm *.o 

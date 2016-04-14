@@ -1,0 +1,7 @@
+page 142 number 1: overall size of output is 8378
+page 142 number 2: new size is 8415
+page 142 number 3: new size is 12447 (Note that when initializing the array with
+   the value 0, the size stays the same.  This is because the compiler still
+   puts the array in BSS because it knows that at runtime the space allocated
+   for things from BSS will be zero-initialized.)
+   

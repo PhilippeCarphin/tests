@@ -12,7 +12,7 @@ openFile() {
 
 findFile() {
    cd ~/Desktop/Notes
-   files="$(find . -name $1 | tr '\n' ' ')"
+   files="$(find . -name *$1* | tr '\n' ' ')"
    echo files = $files
    if [ "$files" = "" ] ; then
       echo files empty, using grep

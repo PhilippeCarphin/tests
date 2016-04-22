@@ -1,0 +1,1 @@
+make -f t_makefile $1

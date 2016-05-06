@@ -5,7 +5,7 @@ openFile() {
    if [ "$1" != "" ] ; then
       suffix=$1.txt
    else
-      suffix=$(date +%m-%e).txt
+      suffix=$(date +%m-%d).txt
    fi
    vim $HOME/Desktop/Notes/Daily_Notes/Notes_$suffix
 }

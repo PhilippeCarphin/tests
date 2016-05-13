@@ -9,18 +9,21 @@
  * -123days,20hours,5seconds,10minutes.  There can be no spaces between the
  * number and the type specifier.
 ********************************************************************************/
+#define isDigit(a) ('0' <= a && a <= '9')
 #define MAX_DIGITS 9
 char* SeqDatesUtil_addTimeDelta(char * datestamp, char * timeDelta){
-   printf( "\n=================================== SeqDatesUtil_addTimeDelta ==============\n");
-   char * p = timeDelta, buffer[MAX_DIGITS], * dst = buffer, type;
-   int sign = (timeDelta[0] == '-' ? -1 : 1);
-   int days = 0, hours = 0, minutes = 0, seconds = 0, digitCounter = 0;
-   /* Skip non-numeric characters */
-   while(*p != '\0' && !('0' <= *p && *p <= '9')) p++;
+   printf ( " \n=============================================================================\n");
+   char * p = timeDelta, buffer[MAX_DIGITS], type;
+   int sign = ( *p == '-' ? -1 : 1);
+   int days = 0, hours = 0, minutes = 0, seconds = 0, digitCounter;
+//   SeqUtil_TRACE(TL_FULL_TRACE, "SeqDatesUtil_addTimeDelta(): Parsing timeDelta=%s\n", timeDelta);
+   /* Skip initial non-numeric characters */
+   while( *p != '\0' && !isDigit(*p)) p++;
 
+   /* Parse timeDelta */
    while( *p != '\0' ){
       /* Read number into buffer */
-      while( '0' <= *p && *p <= '9' && digitCounter < MAX_DIGITS )
+      while( isDigit(*p) && digitCounter < MAX_DIGITS )
          buffer[digitCounter++] = *p++;
       /* Read buffer into the right integer */
       type = *p++;
@@ -34,19 +37,21 @@ char* SeqDatesUtil_addTimeDelta(char * datestamp, char * timeDelta){
          case 's':
             seconds = sign*atoi(buffer); break;
          default:
-            printf("SeqDatesUtil_addTimeDelta(): Encountered unknown type specifier '%c' after number %s\n", type, buffer);
+            printf("default case \n");
+            // SeqUtil_TRACE(TL_ERROR,"SeqDatesUtil_addTimeDelta(): Encountered unknown type specifier '%c' after number %s\n", type, buffer);
       }
-      /* Skip non-numeric characters */
-      while(*p != '\0' && !('0' <= *p && *p <= '9')) p++;
+      /* Skip subsequent non-numeric characters */
+      while( *p != '\0' && !isDigit(*p) ) p++;
+      /* Reset buffer and dst pointer */
       memset(buffer, '\0', sizeof(buffer));
       digitCounter = 0;
    }
 
-   printf ( "TimeDelta=%s : Days=%d, hours=%d, minutes=%d, seconds=%d\n",timeDelta, days,hours,minutes,seconds);
+   printf("TimeDelta=%s : Days=%d, hours=%d, minutes=%d, seconds=%d\n",timeDelta, days,hours,minutes,seconds);
+   // return SeqDatesUtil_getPrintableDate( datestamp, days, hours, minutes, seconds );
    return NULL;
 }
 #undef MAX_DIGITS
-
 int main ( int argc , char ** argv ) {
    char* timeDelta= "+1d2h3m4s";
    char * timeDelta2 = "-123d480s";
@@ -62,6 +67,7 @@ int main ( int argc , char ** argv ) {
    char * this_one_wont_work = "After 123days, I saw a lady with 2doubleDs. she was hot";
    char * oversize_number = "oversize 1234123412341days";
    char * giant_numbers = "bigNumbers 12345678901123412341234123412341234123412341234123412341341234123412341234124312423days";
+   char * caused_segfault = "1d2h3m4s";
 
    SeqDatesUtil_addTimeDelta("bla", timeDelta);
    SeqDatesUtil_addTimeDelta("bla", timeDelta2);
@@ -78,6 +84,7 @@ int main ( int argc , char ** argv ) {
    SeqDatesUtil_addTimeDelta("bla", this_one_wont_work);
    SeqDatesUtil_addTimeDelta("bla", oversize_number);
    SeqDatesUtil_addTimeDelta("bla", giant_numbers);
+   SeqDatesUtil_addTimeDelta("bla", caused_segfault);
 
    return 0;
 }

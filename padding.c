@@ -63,5 +63,6 @@ int main ( int argc , char ** argv ) {
    char * datestamp = "20160101001122";
    char * timeDelta = "11223344";
    SeqDatesUtil_addTimeDelta(datestamp,timeDelta);
+   printf("HELLO\n");
    exit(0);
 }

@@ -12,11 +12,14 @@
 log_cmd="log --oneline --graph --decorate -15"
 
 git_fetch_branches(){
+   directory=$1
+   cd $directory
    for remote in $(git remote) ; do
       for branch in master develop ; do
          git fetch $remote $branch
       done
    done
+   cd ..
 }
 git_check(){
    directory=$1
@@ -26,6 +29,7 @@ git_check(){
    git $log_cmd
    cd ..
 }
+
 git_status_develop(){
    directory=$1
    printf "==================== $directory status ===================\n"
@@ -54,11 +58,8 @@ git_status_develop(){
       echo Local branch develop is up to date
    else
       echo $info
-      number=$(($number + 1))
-      echo number=$number--
-      git log --oneline --decorate --graph -$number
+      git log --oneline --decorate --graph -$(($number + 1))
    fi
-
 
    # Pop from stash and checkout previous branch
    if [ "$branch" != develop ] ; then
@@ -88,7 +89,12 @@ fi
 
 cd $repo_home
 
-git_fetch_branches >/dev/null 2>&1
+
+echo -n "Fetching remote branches ..."
+for repo in $repos ; do
+   git_fetch_branches $repo >/dev/null 2>&1
+done
+echo
 
 if [ "$1" = long ] ; then
    for repo in $repos ; do

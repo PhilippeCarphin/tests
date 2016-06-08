@@ -3,20 +3,20 @@ command=$(basename $0)
 
 openFile() {
    if [ "$1" != "" ] ; then
-      suffix=$1.txt
+      suffix=$1.md
    else
-      suffix=$(date +%m-%d).txt
+      suffix=$(date +%m-%d).md
    fi
    vim $HOME/Desktop/Notes/Daily_Notes/Notes_$suffix
 }
 
 findFile() {
    cd ~/Desktop/Notes
-   files="$(find . -name *$1* | tr '\n' ' ')"
+   files="$(find . -name '*$1*' | tr '\n' ' ')"
    echo files = $files
    if [ "$files" = "" ] ; then
       echo files empty, using grep
-      grep --recursive --files-with-matches $1 . | tr '\n' ' '
+      files=$(grep --recursive --files-with-matches $1 . | tr '\n' ' ')
    fi
    vim $files -p
 }

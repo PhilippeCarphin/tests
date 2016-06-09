@@ -14,77 +14,47 @@ int isDelim(char c){
    }
 }
 
-int printSection(const char * start, const char * end){
+int printLine(const char * start, const char * end){
    const char * p = start;
    while ( p <= end ) putchar(*p++);
+   putchar('\n');
 }
 
 int main ( int argc , char ** argv ) {
 
    if( argc <= 2 ) exit(1);
 
-   int wrapLength = atoi(argv[2]);
-
-   /* if ( strlen(argv[1]) <= wrapLength ) {
-      puts ( argv[1] );
-      exit(0);
-   }
-   */
-
-
-   char * lastDelim = NULL;
-   char * input = strdup(argv[1]);
-
-   char * current = NULL, * previous = NULL;
-
-   int chars = 1;
-   int totalChars = 0;
-
-   /* Find last word break with fewer than 80 chars */
-
-   current = input;
-   while( *current != '\0' ){
-      while ( chars <= wrapLength && *current != '\0'){
-         while ( !isDelim( *current ) ) ++current, ++chars;
-         if( chars <= wrapLength) lastDelim = current;
-         current++, ++chars;
-      }
-      *(lastDelim) = '\n';
-      current = lastDelim + 1;
-      chars = 1;
-   }
-
-done:
-   puts(input);
-   free(input);
-
    char * start = argv[1];
    char * lastChar = argv[1];
-   current = argv[1];
+   char * current = argv[1];
+   int wrapLength = atoi(argv[2]);
 
+   int chars = 1;
    while( *current != '\0' ){
-      while( 1 ){
+      while( chars <= wrapLength ){
          while ( !isDelim( *current ) ) ++current, ++chars;
          if( chars <= wrapLength){
-            lastChar = current-1; // lastDelim is actually the last non-delimiter
+            if(*current == '\0'){
+               puts(start);
+               return 0;
+            }
+            lastChar = current-1;
             current++,chars++;
-         } else {
-            goto here;
          }
       }
-here:
-      printSection(start,lastChar);
-      putchar('\n');
+
+      printLine(start,lastChar);
       current = lastChar + 1;
-      while(isDelim(*current))
-         if( *current == '\0') return 0; else ++current;
+      while(isDelim(*current)){
+         if( *current == '\0')
+            return 0;
+         else
+            ++current;
+      }
       start = current;
       lastChar = current;
       chars = 1;
    }
-
-
-
 
    return 0;
 }

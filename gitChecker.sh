@@ -6,6 +6,7 @@
 #
 # supply argument "short" to get only the summary of commits by which origin is
 # behind or ahead.
+  repos="$repos /home/ops/afsi/phc/.philconfig /home/ops/afsi/phc/Documents/test"
 #
 # TODO Supply repo_home and repos as options
 ################################################################################

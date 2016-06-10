@@ -43,6 +43,9 @@ int main ( int argc , char ** argv ) {
          }
       }
 
+      if( lastChar == start )
+         lastChar = current-1;
+
       printLine(start,lastChar);
       current = lastChar + 1;
       while(isDelim(*current)){

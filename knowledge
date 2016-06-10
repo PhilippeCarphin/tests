@@ -1,1 +1,2 @@
-echo "$1" >> ~/Documents/knowledge.txt
+lineWrapper "$1" 80 >> ~/Documents/knowledge.txt
+echo "================================================================================" >> ~/Documents/knowledge.txt

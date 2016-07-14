@@ -1,23 +1,21 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 
-double sinus(double x){
-   int n=1,f=n;
-   double p=x,s=x;
+float sinus(float x){
+   int n=0,m;float t=1,s=0,c=0;
 l:
-   p*=-x*x;
-   
-   f*=++n*n++;
-   fprintf(stdout, "f(%d) = %d, px = %f, s = %f, term(n) = %f\n",n,f,p,s,p/f);
-
-   s += p/f;
-   if(n<9) goto l;
-
+   m=n%2;
+   fprintf(stderr, "m=%d, !m=%d\n",m,!m);
+   s += t*m;
+   c += t*!m;
+   t *= (m?-1:1)*x/++n;
+   if(n<19)goto l;
    return s;
 }
 
-double get_double()
+float get_float()
 {
    char * r = 0;
    size_t s = 8;
@@ -25,14 +23,26 @@ double get_double()
    /* printf("line read = %s\n",r);  */
    float d;
    sscanf(r,"%f",&d);
-   /* printf("double read = %f\n",d); */
+   /* printf("float read = %f\n",d); */
    return d;
 }
 
 int main ( int argc , char ** argv ) {
 
+   /* Read number of values */
+d:
+   ;
+   /* Read a value */
 
-   double val=get_double();
+   /* Calculate sine and cosine */
+
+   /* output sine and cosine */
+
+   /* goto d if number of values read is smaller than N */
+
+   
+   /* float val=get_float(); */
+   float val = 5.0;
    printf("sin(%f) = %f\n",val,sinus(val));
 
    return 0;

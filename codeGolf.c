@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -29,24 +30,33 @@ float get_float()
 
 int main ( int argc , char ** argv ) {
 
-   /* fprintf(stderr, "Size of int = %d, sizeof size_t = %lu\n", sizeof(int), sizeof(size_t)); */
-   size_t N,n,m;float t,s,c,x;char*l;
+   fprintf(stderr, "Size of int = %lu, sizeof size_t = %lu, sizeof(long unsigned int) = %lu\n", sizeof(int), sizeof(size_t),sizeof(long unsigned int));
+   size_t N,n,m,i;float t,s,c,x;char*l=0;
    /* Read number of values */
-   getline(&l,&s,stdin);
+   getline(&l,&i,stdin);
    sscanf(l,"%lu",&N);
-   fprintf(stderr, "number of values to read N = %lu\n",N);
+   fprintf(stderr, "number of values to read N = %lu, size read = %lu\n",N,i);
 d:
-   getline(&l,&s,stdin);
+
+   getline(&l,&i,stdin);
    sscanf(l,"%f",&x);
    printf("float read = %f\n",x);
-   ;
    /* Read a value */
+l:
+   s=c=0;n=0;t=1;
 
    /* Calculate sine and cosine */
+   m=n%2;
+   /* fprintf(stderr, "m=%lu, !m=%d\n",m,!m); */
+   /* s += t*m; */
+   /* c += t*!m; */
+   /* t *= (m?-1:1)*x/++n; */
+   /* if(n<19)goto l; */
 
    /* output sine and cosine */
 
    /* goto d if number of values read is smaller than N */
+   if(--N)goto d;
 
    return 0;
 }

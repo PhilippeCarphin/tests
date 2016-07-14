@@ -38,22 +38,24 @@ int main ( int argc , char ** argv ) {
    fprintf(stderr, "number of values to read N = %lu, size read = %lu\n",N,i);
 d:
 
+   i = 0;
    getline(&l,&i,stdin);
    sscanf(l,"%f",&x);
    printf("float read = %f\n",x);
    /* Read a value */
-l:
    s=c=0;n=0;t=1;
+l:
 
    /* Calculate sine and cosine */
    m=n%2;
    /* fprintf(stderr, "m=%lu, !m=%d\n",m,!m); */
-   /* s += t*m; */
-   /* c += t*!m; */
-   /* t *= (m?-1:1)*x/++n; */
-   /* if(n<19)goto l; */
+   s += t*m;
+   c += t*!m;
+   t *= (m?-1:1)*x/++n;
+   if(n<19)goto l;
 
    /* output sine and cosine */
+   printf("%f\n%f\n",c,s);
 
    /* goto d if number of values read is smaller than N */
    if(--N)goto d;

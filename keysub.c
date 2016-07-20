@@ -10,29 +10,21 @@ char * keysub(const char *str, const char ** values, const char *frontDelim, con
    char variable[100];
    char *var = variable;
    const char *value;
-   char *val;
+   const char *val;
    int i = 0;
-   char *tmp = NULL;
+   char *stopPoint = NULL;
 
    while( *p != 0 ){
 
-      
-      tmp = strstr(p,frontDelim);
-      printf("tmp is %s\n",tmp);
-      /* Copy until the start of front delim is encountered.*/
-#if 0
-      while(*p != *frontDelim && *p != '\0')
-         *dst++ = *p++;
-#else
-      if(tmp != NULL){
-         while( p < tmp )
+      stopPoint = strstr(p,frontDelim);
+      if(stopPoint != NULL){
+         while( p < stopPoint )
             *dst++ = *p++;
       } else {
          while(*p != 0)
             *dst++ = *p++;
          break;
       }
-#endif
 
       /* If *p == 0 we're done */
       if( *p == '\0' )
@@ -47,13 +39,15 @@ char * keysub(const char *str, const char ** values, const char *frontDelim, con
       }
       p += strlen(frontDelim);
 
-      /* Copy into variable name until a '}' is encountered*/
-      while(*p != *endDelim && *p != '\0')
-         *var++ = *p++;
-      *var = '\0'; printf("Variable name is %s\n",variable);
-
-      if( p != strstr(p,endDelim)) printf("Front variable token %s must be accompanied by matching ending variable token %s\n", frontDelim, endDelim);
-      p += strlen(endDelim);
+      /* Copy into variable name until a endDelim is encountered*/
+      stopPoint = strstr(p,endDelim);
+      if(stopPoint != NULL){
+         while( p < stopPoint)
+            *var++ = *p++;
+         p += strlen(endDelim);
+      }else{ 
+         printf("Front variable token %s must be accompanied by matching ending variable token %s\n", frontDelim, endDelim);
+      }
 
       /* find value of variable */
       /* Calling getdef, and have getdef either look in the deffile or in the
@@ -61,7 +55,6 @@ char * keysub(const char *str, const char ** values, const char *frontDelim, con
        * "${variable_name}" for "value".  And it's getdef's job to find the
        * value corresponding to "variable_name". */
       value = values[i++];
-      printf("variable value is %s\n",value);
 
       /* Copy value into destination string */
       val = value;
@@ -97,5 +90,15 @@ int main ( int argc , char ** argv ) {
 
    printf("output : %s\n",output);
 
+   printf("===================================================\n");
+   input = "This Dominicword1Racette a Dominicword2Racette.";
+   output = keysub(input,values,"Dominic","Racette");
+
+   if( strcmp(output,"This is a string.") != 0)
+      printf("Test failed. ");
+   else
+      printf("Test passed. ");
+
+   printf("output : %s\n",output);
    return 0;
 }

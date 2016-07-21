@@ -19,6 +19,7 @@ int SeqUtil_tokenCount( const char* source, const char* tokenSeparator )
    free(tmpSource);
    return count;
 }
+
 int isDelim( char c, char * delim){
    char * d = delim;
    while ( *d != '\0')
@@ -26,20 +27,70 @@ int isDelim( char c, char * delim){
          return 1;
    return 0;
 }
+
 int phil_tokenCount( const char* source, const char* tokenSeparator )
 {
    int count = 0;
    char * p = (char *)source;
    while ( *p != '\0' ){
+
+      /* Skip delimiters */
       while ( isDelim(*p,tokenSeparator) ) p++;
+
+      /* If *p == 0, we are done, otherwise we found the start of a new token */
       if( *p == '\0' ) return count;
       else count++;
+
+      /* go to the end of the token. */
       while ( !isDelim(*p,tokenSeparator) && *p != '\0' ) p++;
    }
    return count;
 }
 
-#define tokenCount SeqUtil_tokenCount
+/********************************************************************************
+ * Based on the implementation of strtok from Apple open source:
+ * http://opensource.apple.com//source/Libc/Libc-167/string.subproj/strtok.c
+********************************************************************************/
+int strtok_style__tokenCount( s, delim )
+   register const char * s;
+   register const char * delim;
+{
+   register char * spanp;
+   register int c, sc;
+   int count = 0;
+   register const char * p = s;
+   /* if( s == NULL || *s == 0 ) return count; */
+
+cont:
+   /* Skip delimiters */
+   c = *s++;
+   for( spanp = (char *) delim; (sc = *spanp++) != 0;){
+      if( c == sc )
+         goto cont;
+   }
+
+   /* If we're at the end of the string we are done, otherwise, we've found the
+    * start of a token */
+   if( c == 0 ) return count;
+   else count++;
+
+   /* Skip non-delimiters until the end of the string or until we find a
+    * delimiter ('/0' included */
+   for(;;){
+      c = *s++;
+      spanp = (char *)delim;
+      do{
+         if((sc = *spanp++) == c){
+            if( c == 0 )
+               return count;
+            else
+               goto cont;
+         }
+      }while(sc != 0);
+   }
+}
+
+#define tokenCount strtok_style__tokenCount
 
 int main ( int argc , char ** argv ) {
 

@@ -5,80 +5,77 @@
 char * keysub(const char *str, const char ** values, const char *frontDelim, const char *endDelim)
 {
    char output[1000];   /* Char array in which we construct the output */
-   char variable[100];  /* Array into which we copy the variable name */
-   const char *p = str, /* Iterator on the characters of the input string */
-              *var,     /* Iterator on the characters of variable char array */
-              *value,   /* Value that will replace variable name */
-              *val;     /* Iterator on value of variable */
+   char var_name[100];  /* Array into which we copy the variable name */
+   const char *src=str, /* Iterator on the characters of the input string */
+              *value;   /* Value that will replace variable name */
    char * dst = output; /* Iterator on output array */
    int i = 0;           /* Only used for testing */
    char *stopPoint;     /* Used to locate occurrence of delimiter string */
+   size_t l, fl = strlen(frontDelim), el = strlen(endDelim);
+   register char c;
 
-   while( *p != 0 ){
-      /*
-       * Copy until the first occurrence of startDelim. If none is found, copy
-       * the whole string, and exit the loop.
-       */
-      stopPoint = strstr(p,frontDelim);
+   while( *src != 0 ){
+
+   /* PART 1 : COPY UNTIL NEXT VARIABLE */
+      /* find the next occurrence of startDelim. If none is found, copy */
+      stopPoint = strstr(src,frontDelim);
       if(stopPoint != NULL){
-         while( p < stopPoint ) *dst++ = *p++;
+         /* Copy src-stopPoint bytes into dst */
+         memcpy(dst,src,l = stopPoint - src);
+         /* we advance the pointers */
+         src+=l+fl;
+         dst+=l;
       } else {
-         while(*p != 0) *dst++ = *p++;
-         break;
+         while((c=*src++) != 0) *dst++ = c;
+         goto done; /* I don't like breaks because it's less obvious where it goes */
       }
 
-      /*
-       * Now *p points on the start of the front delimiter string.  Check that
-       * the delimiter string is valid, and advance by the length of said
-       * delimiter. We know that we can safely advance by strlen(frontDelim)
-       * because we would have broken out of the loop if we couldn't
-       */
-      p += strlen(frontDelim);
-
-      /*
-       * Copy until the first occurrence of endDelim.  We must be able to find
-       * endDelim or else it means that we got invalid input. The pointer p
-       * might point to the end of the string but we don't use it until the next
-       * iteration, so this case will be caught when we test to start the next
-       * iteration.
-       */
-      stopPoint = strstr(p,endDelim);
+   /* PART 2 : COPY THE VARIABLE NAME */
+      /* Then we find the next end delimiter */
+      stopPoint = strstr(src,endDelim);
       if(stopPoint != NULL){
-         char *var = variable;
-         while( p < stopPoint) *var++ = *p++;
-         p += strlen(endDelim);
+         /* copy from src to endDelim ("word1") into the var_name */
+         memcpy(var_name,src,l = stopPoint-src);var_name[l] = '\0';
+         /* Advance the src pointer */
+         src += l + el;
       }else{
          goto delim_mismatch;
       }
 
-      /*
-       * find value of variable
-       * Calling getdef, and have getdef either look in the deffile or in the
-       * environment.  Everyone does his job, this functions job is to change
-       * "${variable_name}" for "value".  And it's getdef's job to find the
-       * value corresponding to "variable_name".
-       */
+   /* PART 3 : GET THE VALUE OF THE VARIABLE */
+      /* find value of variable */
       value = values[i++];
+      /*
+       * if( getFromEnv )
+       *    value = getenv(var_name);
+       * else
+       *    value = SeqUtil_getdef(...);
+       */
+
+   /* PART 4 : COPY THE VARIABLE'S VALUE IN THE OUTPUT STRING */
+      /* Copy value into destination string.  The dst pointer advances as we copy. */
+      l = strlen(value);
+      memcpy(dst,value,l);
+      dst += l;
 
       /*
-       * Copy value into destination string
+       * if( !getFromEnv )
+       *    free(value);
        */
-      val = value;
-      while( *val != '\0' )
-         *dst++ = *val++;
    }
 
-   /*
-    * We are done, mark the end of the return string with a nul byte
-    */
+done:
    *dst = '\0';
-
    return strdup(output);
 
 delim_mismatch:
    printf("Front variable token %s must be accompanied by matching ending variable token %s\n",
                                                          frontDelim, endDelim);
+   return NULL;
 }
+
+
+
 int main ( int argc , char ** argv ) {
 
    const char *values[2] = {"is","string"};
@@ -93,7 +90,7 @@ int main ( int argc , char ** argv ) {
    printf("output : %s\n",output);
 
    printf("===================================================\n");
-   input = "This %*&$((((word1)))) a %*&$((((word2)))).";
+   input = "This %*&$((((word1)))) a %*&$((((wor2)))).";
    output = keysub(input,values,"%*&$((((","))))");
 
    if( strcmp(output,"This is a string.") != 0)

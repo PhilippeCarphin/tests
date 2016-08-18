@@ -1,0 +1,53 @@
+Installing LLVM and CLANG:
+http://linuxdeveloper.blogspot.ca/2012/12/building-llvm-32-from-source.html
+
+	1) Make a temporary directory for the build process.  Can delete this after.
+
+		$ mkdir CLANG_TEMP_DIR
+		$ cd CLANG_TEMP_DIR/
+
+	2) Download the latest version of LLVM sources including clang (C frontend) and compiler RT from http://llvm.org/releases/download.html#3.2
+
+		$ wget http://llvm.org/releases/3.2/llvm-3.2.src.tar.gz
+		$ wget http://llvm.org/releases/3.2/clang-3.2.src.tar.gz
+		$ wget http://llvm.org/releases/3.2/compiler-rt-3.2.src.tar.gz
+
+	3) Unpack everything
+
+		$ tar zxf ./llvm-3.2.src.tar.gz
+		$ tar zxf clang-3.2.src.tar.gz 
+		$ tar zxf compiler-rt-3.2.src.tar.gz 
+
+	4) Move things around a bit
+
+		$ mv ./llvm-3.2.src ./llvm-3.2
+		$ mv ./clang-3.2.src ./clang
+		$ mv ./clang ./llvm-3.2/tools/
+		$ mv ./compiler-rt-3.2.src ./compiler-rt
+		$ mv ./compiler-rt ./llvm-3.2/projects/
+
+	5) Create directory for the build and cd into it
+
+		$ mkdir build_town
+		$ cd build_town/
+
+	6) Launch the configura script
+
+		$ ../llvm-3.2/configure --enable-shared --prefix=$HOME/.local
+
+	7) Compile (needs almost 700mb)
+
+		$ make
+
+	8) Install (copy the built things to $HOME/.local [188mb])
+
+		$ make install
+
+	9) Remove the temporary directory
+
+		$ cd ../..
+		$ rm CLANG_TMP_DIR
+
+ALL DONE!
+
+

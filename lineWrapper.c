@@ -18,6 +18,7 @@ int printLine(const char * start, const char * end){
    const char * p = start;
    while ( p <= end ) putchar(*p++);
    putchar('\n');
+   return 0;
 }
 
 int main ( int argc , char ** argv ) {
@@ -25,39 +26,26 @@ int main ( int argc , char ** argv ) {
    if( argc <= 2 ) exit(1);
 
    char * start = argv[1];
-   char * lastChar = argv[1];
+   char * lastDelim = argv[1];
    char * current = argv[1];
    int wrapLength = atoi(argv[2]);
+   char c = *current;
 
    int chars = 1;
-   while( *current != '\0' ){
-      while( chars <= wrapLength ){
-         while ( !isDelim( *current ) ) ++current, ++chars;
-         if( chars <= wrapLength){
-            if(*current == '\0'){
-               puts(start);
-               return 0;
-            }
-            lastChar = current-1;
-            current++,chars++;
-         }
-      }
 
-      if( lastChar == start )
-         lastChar = current-1;
-
-      printLine(start,lastChar);
-      current = lastChar + 1;
-      while(isDelim(*current)){
-         if( *current == '\0')
-            return 0;
-         else
-            ++current;
+   /* Go to 80 chars */
+   while(c != 0){
+      lastDelim = start;
+      while((c = *current++) != 0 && chars++ <= wrapLength ){
+         if( isDelim(c) )
+            lastDelim = current - 1;
       }
+      printLine(start,lastDelim);
       start = current;
-      lastChar = current;
       chars = 1;
    }
+
+
 
    return 0;
 }

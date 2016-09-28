@@ -12,10 +12,8 @@ char * keysub(const char *str, const char ** values, const char *frontDelim, con
    int i = 0;           /* Only used for testing */
    char *stopPoint;     /* Used to locate occurrence of delimiter string */
    size_t l, fl = strlen(frontDelim), el = strlen(endDelim);
-   register char c;
 
    while( *src != 0 ){
-
    /* PART 1 : COPY UNTIL NEXT VARIABLE */
       /* find the next occurrence of startDelim. If none is found, copy */
       stopPoint = strstr(src,frontDelim);
@@ -26,7 +24,8 @@ char * keysub(const char *str, const char ** values, const char *frontDelim, con
          src+=l+fl;
          dst+=l;
       } else {
-         while((c=*src++) != 0) *dst++ = c;
+         memcpy(dst,src,l = strlen(src));
+         dst += l;
          goto done; /* I don't like breaks because it's less obvious where it goes */
       }
 

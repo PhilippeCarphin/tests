@@ -1,45 +1,39 @@
 #define _POSIX_C_SOURCE 200809L
 
+#include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 #include <inttypes.h>
 #include <math.h>
 #include <time.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <ctype.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdarg.h>
-#include <dirent.h>
-#include <signal.h>
-#include <unistd.h>
-#include <pwd.h>
-#include <glob.h>
-#include <sys/types.h> 
-#include <sys/stat.h> 
-#include <sys/wait.h>
-#include <fcntl.h> 
 
 #define NS_PER_SEC 1000000000
 #define MS_PER_NS 1000000
-#define MAX 50000
+#define MAX 5000000
 
 struct Args{
    char * string;
 };
 typedef int (* function)(struct Args *);
 
-int with_dup(struct Args *args)
+int copy_lib(struct Args *args)
 {
-   free(strdup(getenv("SEQ_EXP_HOME")));
-   /* strdup(getenv("SEQ_EXP_HOME")); */
+   char buffer[1000];
+   size_t l = strlen(args->string);
+   memcpy(buffer,args->string,l);
+   buffer[l] = 0;
+   /* printf("%s\n",buffer); */
    return 0;
 }
 
-int no_dup(struct Args *args)
+int copy_phil(struct Args *args)
 {
-   getenv("SEQ_EXP_HOME");
+   char buffer[1000];
+   register const char *src = args->string;
+   register       char *dst = buffer;
+   register char c;
+   while((c = *src++)) *dst++ = c;
+   *dst = 0;
    return 0;
 }
 
@@ -47,19 +41,16 @@ unsigned long getCurrentTime(void);
 unsigned long time_lots_of(function f, struct Args *);
 typedef int word;
 int main ( int argc , char ** argv ) {
-   putenv("SEQ_EXP_HOME=/users/dor/afsi/phc/Documents/sample");
 
-
-   unsigned long int time = 0;
-   function f;
+   unsigned long int time;
+   function f = copy_lib;
    struct Args args = { "This is a string to copy"};
 
-   f = with_dup;
    time = time_lots_of(f,&args);
-   printf("with_dup : %lu\n",time);
-   f = no_dup;
+   printf(" time lots of copy_lib : %lu\n",time);
+   f = copy_phil;
    time = time_lots_of(f,&args);
-   printf("   no_dup: %lu\n",time);
+   printf("time lots of copy_phil : %lu\n",time);
    /* f(&args); */
    return 0;
 }
@@ -88,8 +79,7 @@ unsigned long getCurrentTime(void)
 unsigned long time_lots_of(function f, struct Args * args)
 {
    unsigned long start_time = getCurrentTime(); 
-   int i;
-   for (i = 0; i < MAX; ++i){
+   for ( int i = 0; i < MAX; ++i){
       f(args);
    }
    return getCurrentTime() - start_time;

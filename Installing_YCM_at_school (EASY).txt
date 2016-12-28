@@ -1,0 +1,71 @@
+Installing YCM at school (EASY)
+
+	1) Install Vundle (and download YCM)
+
+			$ git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim
+
+		Add this at the top of your .vimrc file (notice the line with "Plugin 'Valloric/YouCompleteMe'")
+
+			set nocompatible              " be iMproved, required
+			filetype off                  " required
+
+			" set the runtime path to include Vundle and initialize
+			set rtp+=~/.vim/bundle/Vundle.vim
+			call vundle#begin()
+
+			" let Vundle manage Vundle, required
+			Plugin 'VundleVim/Vundle.vim'
+
+			" Extra plugins to add with vundle go here
+			Plugin 'Valloric/YouCompleteMe'
+
+			call vundle#end()            " required
+			filetype plugin indent on    " required
+
+		Launch vim and run
+
+			PluginInstall
+
+		in command mode (so from normal mode, hit ":" then type the command and hit ENTER).  This will take some time since it will run git clone of the YouCompleteMe github repository.
+
+	2) Compile YouCompleteMe:
+		
+		(You can lookup what extra flags you might want.  --clang-completer is for C family of languages).
+
+			$ cd .vim/bundle/YouCompleteMe/
+			$ ./install.py --clang-completer
+
+	3) Add a .ycm_extra_conf.py to your C/C++ project directory to enable completion.  
+
+		Most of the time the one given by Valloric:
+
+			$ wget https://raw.githubusercontent.com/Valloric/ycmd/master/cpp/ycm/.ycm_extra_conf.py
+
+		will do.
+
+	APPENDIX
+
+		A) Confirm extra_conf
+
+			By default, you will be asked whether or not to load the .ycm_extra_conf.py every time you load vim.  To disable add
+
+				let g:ycm_confirm_extra_conf = 0
+
+			to vimrc file.
+
+		B) Global extra_conf
+
+			Define a path to a .ycm_extra_conf.py file to load if a project specific one is not found in your project directory.
+
+                let g:ycm_global_ycm_extra_conf = ''
+                                                  /\
+                                            Path goes here
+		C) NOTES:
+
+			At home, I needed to do
+
+				$ dnf install clang cmake python-devel
+
+			Add these to my fedoraInstall/startupBasic.sh
+
+			

@@ -43,6 +43,8 @@ char *l_binrep(long unsigned int n, char *dst)
    char *p = dst;
    for(;i--;){
       *p++ = '0' + ((n >> i)&1u);
+      if( i%8 == 0)
+         *p++ = ' ';
    }
    *p = '\0';
    return 0;
@@ -63,6 +65,18 @@ int main ( int argc , char ** argv ) {
    long unsigned int hi = 0x8080808080808080;
    long unsigned int lo = 0x0101010101010101;
    long unsigned int lw = 0x030134ff00124124;
+
+   long unsigned int one = 1;
+   long unsigned int two = 2;
+   long unsigned int zero = 0;
+
+   l_binrep(one - two,lui);
+   printf("one minus two  : %s\n",lui);
+   l_binrep(zero - one,lui);
+   printf("zero minus one : %s\n",lui);
+   l_binrep(zero - two,lui);
+   printf("zero minus two : %s\n",lui);
+
    long unsigned int nlw = ~lw;
    long unsigned int di = lw - lo;
    long unsigned int dAnlw = di & nlw;
@@ -71,6 +85,8 @@ int main ( int argc , char ** argv ) {
    l_binrep(lo,lui);  printf(" lo : %s\n",lui);
    l_binrep(lw,lui);  printf(" lw : %s\n",lui);
    l_binrep(-lw,lui); printf("-lw : %s\n",lui);
+   l_binrep(lw,lui);  printf(" lw : %s\n",lui);
+   l_binrep(lo,lui);  printf(" lo : %s\n",lui);
    l_binrep(di,lui);  printf(" di : %s\n",lui);
    l_binrep(nlw,lui); printf("nlw : %s\n",lui);
    l_binrep(rep,lui); printf("rep : %s\n",lui);
@@ -87,8 +103,6 @@ int main ( int argc , char ** argv ) {
    printf("Representation of integer %d : %s\n",i,integer);
 
    printf("Size of enum : %lu  and  size of int : %lu\n", sizeof(enum HELLO), sizeof(int));
-
-
    
    return 0;
 }

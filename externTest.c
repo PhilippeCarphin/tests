@@ -8,12 +8,23 @@
 #include <fcntl.h>
 
 #define SEQ_MAXFIELD 1000
+/********************************************************************************
+ * This test shows the use of the extern keyword in a context where it is
+ * actually useless except maybe for readability.
+********************************************************************************/
 extern int globVar;
 int globVar = 1;
 int externTest()
 {
-  extern int globVar;
-  return globVar++;
+	/*
+	 * This following line could be omitted.  When referring to a global
+	 * variable in the same file, this declaration is not necessary.
+	 *
+	 * I will make another test that will see if this can be used when the
+	 * global variable is declared in another file.
+	 */
+	extern int globVar;
+	return globVar++;
 }
 
 

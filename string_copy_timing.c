@@ -16,20 +16,42 @@ struct Args{
 };
 typedef int (* function)(struct Args *);
 
-int strlen_lib(struct Args *args)
+int copy_lib(struct Args *args)
 {
+   char buffer[1000];
+   size_t l = strlen(args->string);
+   memcpy(buffer,args->string,l);
+   buffer[l] = 0;
+   /* printf("%s\n",buffer); */
    return 0;
 }
 
-int strlen_phil(struct Args *args)
+int copy_phil(struct Args *args)
 {
+   char buffer[1000];
+   register const char *src = args->string;
+   register       char *dst = buffer;
+   register char c;
+   while((c = *src++)) *dst++ = c;
+   *dst = 0;
    return 0;
 }
 
 unsigned long getCurrentTime(void);
 unsigned long time_lots_of(function f, struct Args *);
+typedef int word;
 int main ( int argc , char ** argv ) {
 
+   unsigned long int time;
+   function f = copy_lib;
+   struct Args args = { "This is a string to copy"};
+
+   time = time_lots_of(f,&args);
+   printf(" time lots of copy_lib : %lu\n",time);
+   f = copy_phil;
+   time = time_lots_of(f,&args);
+   printf("time lots of copy_phil : %lu\n",time);
+   /* f(&args); */
    return 0;
 }
 
@@ -57,8 +79,7 @@ unsigned long getCurrentTime(void)
 unsigned long time_lots_of(function f, struct Args * args)
 {
    unsigned long start_time = getCurrentTime(); 
-   int i;
-   for (i = 0; i < MAX; ++i){
+   for ( int i = 0; i < MAX; ++i){
       f(args);
    }
    return getCurrentTime() - start_time;

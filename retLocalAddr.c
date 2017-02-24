@@ -25,10 +25,25 @@ int strlen_phil(struct Args *args)
 {
    return 0;
 }
+/* Causes warning */
+char * phil()
+{
+   char buffer[] = "HELLO";
+   return buffer;
+}
 
+/* Does not cause warning */
+char * phil_static()
+{
+   static char buffer[] = "HELLO";
+   return buffer;
+}
 unsigned long getCurrentTime(void);
 unsigned long time_lots_of(function f, struct Args *);
 int main ( int argc , char ** argv ) {
+
+   phil();
+   phil_static();
 
    return 0;
 }

@@ -1,0 +1,39 @@
+Installing tmux at school:
+SOURCE: https://gist.github.com/ryin/3106801
+
+	0) Create a temporary directory and cd into it.
+
+		mkdir TMPDIR
+		cd TMPDIR
+
+	1) Install libevent
+
+		$ wget https://github.com/downloads/libevent/libevent/libevent-2.0.19-stable.tar.gz
+		$ tar xvzf libevent-2.0.19-stable.tar.gz
+		$ cd libevent-2.0.19-stable
+		$ ./configure --prefix=$HOME/.local --disable-shared
+		$ make
+		$ make install
+
+
+	2) Install tmux
+
+		$ TMUX_VERSION=1.8
+		$ wget -O tmux-${TMUX_VERSION}.tar.gz http://sourceforge.net/projects/tmux/files/tmux/tmux-${TMUX_VERSION}/tmux-${TMUX_VERSION}.tar.gz/download
+		$ tar xvzf tmux-${TMUX_VERSION}.tar.gz
+		$ cd tmux-${TMUX_VERSION}
+		$ ./configure CFLAGS="-I$HOME/.local/include -I$HOME/.local/include/ncurses" LDFLAGS="-L$HOME/.local/lib -L$HOME/.local/include/ncurses -L$HOME/.local/include"
+		$ CPPFLAGS="-I$HOME/.local/include -I$HOME/.local/include/ncurses" LDFLAGS="-static -L$HOME/.local/include -L$HOME/.local/include/ncurses -L$HOME/.local/lib" make
+		$ cp tmux $HOME/.local/bin
+
+	3) Delete the temporary directory
+
+		$ cd ..
+		$ rm -rf TMPDIR
+
+	4) Add Phil's .tmux.conf to your $HOME folder
+
+		$ cd ~
+		$ wget https://raw.githubusercontent.com/PewMcDaddy/configurations/master/tmux.conf
+
+

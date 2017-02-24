@@ -15,20 +15,23 @@ struct Args{
    char * string;
 };
 typedef int (* function)(struct Args *);
-
-int strlen_lib(struct Args *args)
-{
-   return 0;
-}
-
-int strlen_phil(struct Args *args)
-{
-   return 0;
-}
-
 unsigned long getCurrentTime(void);
 unsigned long time_lots_of(function f, struct Args *);
+typedef int word;
+
 int main ( int argc , char ** argv ) {
+
+   const char * source = "environment";
+
+   if( source == "environment")
+      printf(" source == \"environment\"\n");
+
+   source = "definition";
+
+   if( source == "definition")
+      printf(" source == \"definition\"\n");
+
+
 
    return 0;
 }

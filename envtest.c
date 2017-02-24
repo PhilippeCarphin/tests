@@ -18,18 +18,35 @@ typedef int (* function)(struct Args *);
 
 int strlen_lib(struct Args *args)
 {
-   return 0;
+   const char * str = args->string;
+   return (int)strlen(str);
 }
 
 int strlen_phil(struct Args *args)
 {
-   return 0;
+   const char * str = args->string;
+   register const char * s = args->string;
+   for(;*s;++s);
+   return (int)(s - str);
 }
 
 unsigned long getCurrentTime(void);
 unsigned long time_lots_of(function f, struct Args *);
+typedef int word;
 int main ( int argc , char ** argv ) {
+   /*
+    * This shows how environment variables are stored.  They are put in the
+    * process space as one continuous block of memory made up of NUL terminated
+    * strings of the form
+    * VARIABLE_NAME=variable_value
+    * Notice that a '#' is used to indicate the NUL byte.
+    */
+   char *p = getenv("HOME");
 
+   while(1){
+      if (*p == '\0') putchar(35);
+      putchar(*p++);
+   }
    return 0;
 }
 

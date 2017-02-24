@@ -1,17 +1,27 @@
-cd ~/Desktop/Notes/Daily_Notes
+#!/bin/bash
+
 command=$(basename $0)
+notes_dir=$HOME/Documents/Notes
 
 openFile() {
    if [ "$1" != "" ] ; then
-      suffix=$1.md
+	   file=Notes_$1.md
    else
-      suffix=$(date +%m-%d).md
+	   file=Notes_$(date +%m-%d).md
    fi
-   vim $HOME/Desktop/Notes/Daily_Notes/Notes_$suffix
+   if [ ! -d "$notes_dir" ]; then
+	   echo "Creating note directory $notes_dir"
+	   echo -n "Press enter to continue"
+	   read b
+	   mkdir -p $notes_dir
+   fi
+   pushd $notes_dir
+   vim $notes_dir/$file
+   popd
 }
 
 findFile() {
-   cd ~/Desktop/Notes
+   pushd $notes_dir
    files="$(find . -name "*$1*" | tr '\n' ' ')"
    echo files = $files
    if [ "$files" = "" ] ; then
@@ -19,6 +29,7 @@ findFile() {
       files=$(grep --recursive --files-with-matches $1 . | tr '\n' ' ')
    fi
    vim $files -p
+   popd
 }
 
 

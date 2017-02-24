@@ -35,7 +35,7 @@ char * keysub(const char *str, const char ** values, const char *frontDelim, con
          /*
           * Copy src-stopPoint bytes into dst
           */
-         memcpy(dst,src,len = stopPoint - src);
+        memcpy(dst,src,len = stopPoint - src);
          /*
           *   this_
           *   ^
@@ -46,7 +46,13 @@ char * keysub(const char *str, const char ** values, const char *frontDelim, con
           * we advance the pointers: src advances by the length of what was
           * copied
           */
-         src+=len;
+         printf("src:%s\n",src);
+         printf("stopPoint:%s\n",stopPoint);
+         printf("len:%d\n",len);
+         src+=len+fl;
+         printf("src is %s\n",src);
+
+          printf("output%s\n",output);getchar();
          dst+=len;
          /* this_${word1}_is_a_${word2}.
           *      ^
@@ -62,7 +68,7 @@ char * keysub(const char *str, const char ** values, const char *frontDelim, con
           * Of course, these to moves for src would be done in one line
           * src += len + fl;
           */
-         src += fl;
+         /* src += fl; */
          /* this_${word1}_is_a_${word2}.
           *        ^
           *       src

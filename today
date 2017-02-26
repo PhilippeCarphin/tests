@@ -1,2 +1,0 @@
-suffix=$(date +%m-%e).txt
-vim $HOME/Desktop/Notes/Daily_Notes/Notes_$suffix

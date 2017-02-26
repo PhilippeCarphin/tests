@@ -1,4 +1,10 @@
 #include <string.h>
+/*
+ * This file was made for the 3rd year project at Polytechnique.  One guy needed
+ * some way to easily get the sub-tokens of a string. This does this without any
+ * dynamic memory allocation (cause embedded...).  It turned out to not be
+ * useful for the rest, but it's troroughly tested and should work OK.
+ */
 
 #define MAX_TOKENS 30
 #define MAX_LENGTH 2048

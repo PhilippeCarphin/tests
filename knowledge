@@ -1,7 +1,0 @@
-if [ "$1" = "" ] ; then
-   vim ~/Documents/knowledge.txt
-   exit 0
-fi
-
-lineWrapper "$1" 80 >> ~/Documents/knowledge.txt
-echo "================================================================================" >> ~/Documents/knowledge.txt

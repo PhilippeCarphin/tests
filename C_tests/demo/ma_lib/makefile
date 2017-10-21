@@ -15,7 +15,7 @@ lib_dir=lib
 AR = ar
 ARFLAGS = -crs
 CC = gcc
-CFLAGS += -I $(include_dir)
+CFLAGS += -I $(include_dir) -MMD
 
 ################################################################################
 # Intermediate variables
@@ -45,3 +45,6 @@ $(trg):$(obj)
 clean:
 	rm -rf $(obj)
 	rm -rf $(trg)
+
+include $(build_dir)/*.d
+

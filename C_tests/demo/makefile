@@ -1,22 +1,24 @@
-src = $(wildcard *.c)
-inc = -I ./include
-obj = main.o
-libdir = lib
-lib = -L $(libdir) -l phil
-lib_file = lib/libphil.a
+lib_root = ma_lib
 
+src = $(wildcard *.c)
+inc = -I ./$(lib_root)/include
+obj = main.o
+lib = -L $(lib_root)/lib -l ma_lib
 
 .c.o:
 	gcc -c $^ $(inc)
 
 all: exec
 
-exec: $(obj) $(lib_file)
+exec: $(obj) lib
 	gcc -o exec $(obj) $(lib)
 
-$(lib_file):
-	cd lib ; make
+lib:
+	@echo "building library"
+	@cd $(lib_root) ; make
+	@echo "done building library"
 
 clean:
 	rm -rf exec
 	rm -rf *.o
+	cd $(lib_root) ; make clean

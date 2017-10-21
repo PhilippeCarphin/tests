@@ -12,6 +12,11 @@ include_dir=./include
 build_dir=build
 lib_dir=lib
 
+AR = ar
+ARFLAGS = -crs
+CC = gcc
+CFLAGS += -I $(include_dir)
+
 ################################################################################
 # Intermediate variables
 ################################################################################
@@ -21,7 +26,7 @@ obj_tmp = $(subst $(src_dir), $(build_dir), $(src))
 obj= $(obj_tmp:.c=.o)
 trg = $(lib_dir)/lib$(lib_name).a
 
-all:libphil.a
+all:$(trg)
 
 .PHONY:vars clean
 
@@ -30,12 +35,12 @@ vars:
 	@echo "inc = $(inc)"
 	@echo "obj = $(obj)"
 
-$(obj): build/%.o: src/%.c
+$(obj): $(build_dir)/%.o: $(src_dir)/%.c
 	@echo "compiling $^ to $@"
-	gcc -c $^ $(inc) -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 
-libphil.a:$(obj)
-	ar -crs lib/libphil.a $(obj)
+$(trg):$(obj)
+	$(AR) $(ARFLAGS) $(trg) $(obj)
 
 clean:
 	rm -rf $(obj)

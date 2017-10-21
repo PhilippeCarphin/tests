@@ -2,12 +2,13 @@
 # Variables donnant la structure de notre projet
 ################################################################################
 trg=exec
-src_dir=.
-build_dir=.
+src_dir=./src
+build_dir=./build
+inc_dir=./include
 lib_root = ../ma_lib
 lib_name = ma_lib
 lib_inc = $(lib_root)/include
-src = $(wildcard *.c)
+src = $(wildcard $(src_dir)/*.c)
 ################################################################################
 # Variables pour les commandes qu'on va exécuter
 ################################################################################
@@ -15,7 +16,7 @@ CC = gcc
 LD = gcc
 MAKE = make
 RM = rm -rf
-CFLAGS = -I $(lib_inc) -MMD
+CFLAGS = -I $(lib_inc) -I $(inc_dir) -MMD
 LDFLAGS = -L $(lib_root)/lib -l $(lib_name)
 ################################################################################
 # Variable pour le fichier de notre librairie, normalement on en a pas besoin
@@ -31,7 +32,9 @@ c_none=\033[0m
 ################################################################################
 # les cibles pour builder notre projet
 ################################################################################
-obj = $(src:.c=.o)
+obj_tmp = $(src:.c=.o)
+obj = $(subst $(src_dir), $(build_dir), $(obj_tmp))
+
 .PHONY:vars lib clean_lib clean cleanall
 all: $(trg)
 $(trg): $(lib_file) $(obj) # 2
@@ -42,6 +45,7 @@ $(obj): $(build_dir)/%.o : $(src_dir)/%.c
 	@$(CC) $(CFLAGS) -c $< -o $@
 clean:
 	$(RM) exec $(obj)
+	$(RM) $(build_dir)/*.d
 ################################################################################
 # Partie non standard
 ################################################################################

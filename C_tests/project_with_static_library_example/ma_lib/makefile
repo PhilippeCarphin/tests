@@ -11,40 +11,34 @@ src_dir=src
 include_dir=./include
 build_dir=build
 lib_dir=lib
-
 AR = ar
 ARFLAGS = -crs
 CC = gcc
 CFLAGS += -I $(include_dir) -MMD
-
 ################################################################################
 # Intermediate variables
 ################################################################################
 src = $(wildcard $(src_dir)/*.c)
 inc = -I $(include_dir)
+dep = $(wildcard $(build_dir)/*.d)
 obj_tmp = $(subst $(src_dir), $(build_dir), $(src))
 obj= $(obj_tmp:.c=.o)
 trg = $(lib_dir)/lib$(lib_name).a
-
+.PHONY:all vars clean
 all:$(trg)
-
-.PHONY:vars clean
-
+$(obj):$(build_dir)/%.o: $(src_dir)/%.c
+	@echo "compiling $^ to $@"
+	$(CC) $(CFLAGS) -c $< -o $@
+$(trg):$(obj)
+	$(AR) $(ARFLAGS) $(trg) $(obj)
 vars:
 	@echo "src = $(src)"
 	@echo "inc = $(inc)"
 	@echo "obj = $(obj)"
-
-$(obj): $(build_dir)/%.o: $(src_dir)/%.c
-	@echo "compiling $^ to $@"
-	$(CC) $(CFLAGS) -c $< -o $@
-
-$(trg):$(obj)
-	$(AR) $(ARFLAGS) $(trg) $(obj)
-
 clean:
 	rm -rf $(obj)
 	rm -rf $(trg)
+	rm -rf $(build_dir)/*.d
 
-include $(build_dir)/*.d
+include $(dep)
 

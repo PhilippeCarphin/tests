@@ -4,7 +4,6 @@
 trg=exec
 src_dir=.
 build_dir=.
-prj_inc=.
 lib_root = ../ma_lib
 lib_name = ma_lib
 lib_inc = $(lib_root)/include
@@ -38,7 +37,6 @@ all: $(trg)
 $(trg): $(lib_file) $(obj) # 2
 	@echo "$(c_yellow)Building executable $@ from $(obj), linking with lib$(lib_name).a $(c_none)"
 	@$(LD) $(LDFLAGS) -o $(trg) $(obj)
-.c.o:
 $(obj): $(build_dir)/%.o : $(src_dir)/%.c
 	@echo "$(c_magenta)Building object $@ from $<$(c_none)"
 	@$(CC) $(CFLAGS) -c $< -o $@
@@ -64,7 +62,7 @@ vars:
 	@echo "CFLAGS = $(CFLAGS)"
 	@echo "LDFLAGS = $(LDFLAGS)"
 
-include *.d
+-include *.d
 
 # 0) Normalement un projet qui utilise une librairie externe ne s'occuppe pas de
 # builder cette librairie

@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "func.h"
+#include "other.h"
 
 int main(void)
 {

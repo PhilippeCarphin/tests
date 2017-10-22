@@ -6,10 +6,10 @@ RM = rm -rf
 ################################################################################
 # Color codes for terminal output
 ################################################################################
-c_green=\033[0;32m
-c_magenta=\033[0;35m
-c_yellow=\033[0;33m
-c_none=\033[0m
+c_green=tput setaf 3
+c_magenta=tput setaf 4
+c_yellow=tput setaf 5
+c_none=tput sgr 0
 
 
 

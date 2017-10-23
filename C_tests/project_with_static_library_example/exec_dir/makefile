@@ -1,7 +1,6 @@
 ################################################################################
 # Variables donnant la structure de notre projet
 ################################################################################
--include ../makefile.common
 trg=exec
 src_dir=./src
 build_dir=./build
@@ -32,7 +31,7 @@ bca = $(subst $(src_dir), $(build_dir), $(srd:.c=.o))
 all: $(trg)
 $(trg): $(lib_file) $(obj) # 2
 	@$(c_yellow); echo "Building executable $@ from $(obj), linking with lib$(lib_name).a"; $(c_none)
-	$(LD) $(LDFLAGS) -o $(trg) $(obj)
+	$(LD) -o $(trg) $(obj) $(LDFLAGS)
 clean:
 	$(RM) exec $(obj)
 	$(RM) $(build_dir)/*.d
@@ -58,6 +57,7 @@ vars:
 	@echo "LDFLAGS = $(LDFLAGS)"
 	@cd $(lib_root) ; $(MAKE) vars
 
+-include ../makefile.common
 -include *.d
 
 # 0) Normalement un projet qui utilise une librairie externe ne s'occuppe pas de

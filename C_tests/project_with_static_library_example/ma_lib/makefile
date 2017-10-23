@@ -1,4 +1,3 @@
--include ../makefile.common
 ###############################################################################
 # These variables specify your project structure
 # lib_name : name of library (the file will be lib$(lib_name).a
@@ -20,22 +19,19 @@ CFLAGS += -I $(include_dir) -MMD
 src = $(wildcard $(src_dir)/*.c)
 inc = -I $(include_dir)
 dep = $(wildcard $(build_dir)/*.d)
-obj_tmp = $(subst $(src_dir), $(build_dir), $(src))
-obj= $(obj_tmp:.c=.o)
+obj = $(subst $(src_dir),$(build_dir),$(src:.c=.o))
 trg = $(lib_dir)/lib$(lib_name).a
 
 .PHONY:all vars clean
 all:$(trg)
 $(trg):$(obj)
-	$(c_yellow); echo "Building archive file"; $(c_none)
+	$(call archive_info,$@,$^)
 	$(AR) $(ARFLAGS) $(trg) $(obj)
-$(obj): $(build_dir)/%.o : $(src_dir)/%.c
-	@$(c_magenta); echo "Building object $@ from $<"; $(c_none)
-	@$(CC) $(CFLAGS) -c $< -o $@
 vars:
 	@echo "src = $(src)"
 	@echo "inc = $(inc)"
 	@echo "obj = $(obj)"
+	@echo "CFLAGS = $(CFLAGS)"
 clean:
 	rm -rf $(obj)
 	rm -rf $(trg)
@@ -43,3 +39,4 @@ clean:
 
 -include *.d
 
+-include ../makefile.common

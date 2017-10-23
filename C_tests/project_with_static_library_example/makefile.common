@@ -6,13 +6,55 @@ RM = rm -rf
 ################################################################################
 # Color codes for terminal output
 ################################################################################
-c_green=tput setaf 3
-c_magenta=tput setaf 4
-c_yellow=tput setaf 5
-c_none=tput sgr 0
+fg=tput setaf
+bg=tput setab
+black=0
+red=1
+green=2
+yellow=3
+blue=4
+magenta=5
+cyan=6
+white=7
+grey=8
+red=9
+green=10
+yellow=11
+blue=12
+magenta=13
+cyan=14
+white=7
+grey=8
+
+clear=tput sgr 0
+
+define compile_info
+	@$(bg) $(grey); $(fg) $(green)
+	@echo "========== Compilation step : $2 -> $1"
+	@$(clear)
+endef
+
+define link_info
+	@$(bg) $(grey); $(fg) $(blue)
+	@echo "========== Linking step : $2 -> $1 (linking with lib : $3)"
+	@$(clear)
+endef
+
+define archive_info
+	@$(bg) $(grey); $(fg) $(cyan)
+	@echo "========== Archiving step : $2 -> $1"
+	@$(clear)
+endef
+
+define make_oter_dir
+	@$(fg) $(yellow); echo "====$(var)======================= making $2 in $1 ============================"; $(clear)
+	@cd $1; $(MAKE) $2
+	@$(fg) $(yellow); echo "====================== done making $2 in $1 ============================"; $(clear)
+endef
+
 
 $(obj): $(build_dir)/%.o : $(src_dir)/%.c
-	@echo "$(c_magenta)Building object $@ from $<$(c_none)"
+	$(call compile_info,$@,$<)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 

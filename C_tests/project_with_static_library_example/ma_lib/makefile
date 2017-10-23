@@ -19,14 +19,13 @@ CFLAGS += -I $(include_dir) -MMD
 src = $(wildcard $(src_dir)/*.c)
 inc = -I $(include_dir)
 dep = $(wildcard $(build_dir)/*.d)
-obj_tmp = $(subst $(src_dir), $(build_dir), $(src))
-obj= $(obj_tmp:.c=.o)
+obj = $(subst $(src_dir),$(build_dir),$(src:.c=.o))
 trg = $(lib_dir)/lib$(lib_name).a
 
 .PHONY:all vars clean
 all:$(trg)
 $(trg):$(obj)
-	$(c_yellow); echo "Building archive file"; $(c_none)
+	$(call archive_info,$@,$^)
 	$(AR) $(ARFLAGS) $(trg) $(obj)
 vars:
 	@echo "src = $(src)"

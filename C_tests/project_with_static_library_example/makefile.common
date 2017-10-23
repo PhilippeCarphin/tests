@@ -3,20 +3,12 @@ MAKE = make
 CC = gcc
 AR = ar
 RM = rm -rf
+$(obj): $(build_dir)/%.o : $(src_dir)/%.c
+	$(call compile_info,$@,$<)
+	$(CC) $(CFLAGS) -c $< -o $@
 ################################################################################
 # Color codes for terminal output
 ################################################################################
-fg=tput setaf
-bg=tput setab
-black=0
-red=1
-green=2
-yellow=3
-blue=4
-magenta=5
-cyan=6
-white=7
-grey=8
 red=9
 green=10
 yellow=11
@@ -26,36 +18,31 @@ cyan=14
 white=7
 grey=8
 
-clear=tput sgr 0
+cl=$(shell tput sgr0)
 
+compile_colors=$(shell tput setab $(grey))$(shell tput setaf $(green))
 define compile_info
-	@$(bg) $(grey); $(fg) $(green)
-	@echo "========== Compilation step : $2 -> $1"
-	@$(clear)
+	@echo "$(compile_colors)========== Compilation step : $2 -> $1 $(cl)"
 endef
 
+link_colors=$(shell tput setab $(grey))$(shell tput setaf $(magenta))
 define link_info
-	@$(bg) $(grey); $(fg) $(blue)
-	@echo "========== Linking step : $2 -> $1 (linking with lib : $3)"
-	@$(clear)
+	@echo "$(link_colors)========== Linking step : $2 -> $1 (linking with lib : $3)$(cl)"
 endef
 
+archive_colors=$(shell tput setab $(grey))$(shell tput setaf $(cyan))
 define archive_info
-	@$(bg) $(grey); $(fg) $(cyan)
-	@echo "========== Archiving step : $2 -> $1"
-	@$(clear)
+	@echo "$(archive_colors)========== Archiving step : $2 -> $1$(cl)"
 endef
 
+cd_colors=$(shell tput setaf $(yellow))$(shell tput setab $(white)) asdf
 define make_oter_dir
-	@$(fg) $(yellow); echo "====$(var)======================= making $2 in $1 ============================"; $(clear)
+	@echo "$(cd_colors)=========================== making $2 in $1 ============================$(cl)"
 	@cd $1; $(MAKE) $2
-	@$(fg) $(yellow); echo "====================== done making $2 in $1 ============================"; $(clear)
+	@echo "$(cd_colors)====================== done making $2 in $1 ============================$(cl)"
 endef
 
 
-$(obj): $(build_dir)/%.o : $(src_dir)/%.c
-	$(call compile_info,$@,$<)
-	$(CC) $(CFLAGS) -c $< -o $@
 
 
 

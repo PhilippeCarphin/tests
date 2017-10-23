@@ -26,6 +26,7 @@ trg = $(lib_dir)/lib$(lib_name).a
 .PHONY:all vars clean
 all:$(trg)
 $(trg):$(obj)
+	$(c_yellow); echo "Building archive file"; $(c_none)
 	$(AR) $(ARFLAGS) $(trg) $(obj)
 vars:
 	@echo "src = $(src)"

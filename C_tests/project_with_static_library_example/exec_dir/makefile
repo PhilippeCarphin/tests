@@ -31,8 +31,8 @@ bca = $(subst $(src_dir), $(build_dir), $(srd:.c=.o))
 .PHONY:vars lib clean_lib clean cleanall
 all: $(trg)
 $(trg): $(lib_file) $(obj) # 2
-	@echo "$(c_yellow)Building executable $@ from $(obj), linking with lib$(lib_name).a $(c_none)"
-	@$(LD) $(LDFLAGS) -o $(trg) $(obj)
+	@$(c_yellow); echo "Building executable $@ from $(obj), linking with lib$(lib_name).a"; $(c_none)
+	$(LD) $(LDFLAGS) -o $(trg) $(obj)
 clean:
 	$(RM) exec $(obj)
 	$(RM) $(build_dir)/*.d
@@ -41,15 +41,14 @@ clean:
 ################################################################################
 lib:$(lib_file) #4 juste pour pouvoir ecrire 'make lib' dans le terminal
 $(lib_file): # 0
-	@echo "$(c_green)building library$(c_none)"
+	@$(c_green); echo "building library"; $(c_none)
 	@cd $(lib_root) ; $(MAKE)
-	@echo "$(c_green)done building library$(c_none)"
+	@$(c_green); echo "done building library"; $(c_none)
 cleanall:clean_lib clean
 clean_lib:
-	@echo "$(c_green)Cleaning library$(c_none)"
-	cd $(lib_root) ; make clean
-	# @cd $(lib_root) ; $(MAKE) clean #3
-	@echo "$(c_green)done cleaning library$(c_none)"
+	@$(c_green); echo "Cleaning library"; $(c_none)
+	@cd $(lib_root) ; $(MAKE) clean #3
+	@$(c_green); echo "done cleaning library"; $(c_none)
 vars:
 	@echo "obj = $(obj)"
 	@echo "abc = $(abc)"

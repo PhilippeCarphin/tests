@@ -1,4 +1,3 @@
--include ../makefile.common
 ###############################################################################
 # These variables specify your project structure
 # lib_name : name of library (the file will be lib$(lib_name).a
@@ -28,13 +27,11 @@ trg = $(lib_dir)/lib$(lib_name).a
 all:$(trg)
 $(trg):$(obj)
 	$(AR) $(ARFLAGS) $(trg) $(obj)
-$(obj): $(build_dir)/%.o : $(src_dir)/%.c
-	@echo "$(c_magenta)Building object $@ from $<$(c_none)"
-	@$(CC) $(CFLAGS) -c $< -o $@
 vars:
 	@echo "src = $(src)"
 	@echo "inc = $(inc)"
 	@echo "obj = $(obj)"
+	@echo "CFLAGS = $(CFLAGS)"
 clean:
 	rm -rf $(obj)
 	rm -rf $(trg)
@@ -42,3 +39,4 @@ clean:
 
 -include *.d
 
+-include ../makefile.common

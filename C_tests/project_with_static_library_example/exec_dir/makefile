@@ -25,15 +25,14 @@ lib_file = $(lib_root)/lib/lib$(lib_name).a # 1
 ################################################################################
 obj_tmp = $(src:.c=.o)
 obj = $(subst $(src_dir), $(build_dir), $(obj_tmp))
+abc = $($(subst $(src_dir), $(build_dir), $(obj_tmp)):.c=.o)
+bca = $(subst $(src_dir), $(build_dir), $(srd:.c=.o))
 
 .PHONY:vars lib clean_lib clean cleanall
 all: $(trg)
 $(trg): $(lib_file) $(obj) # 2
 	@echo "$(c_yellow)Building executable $@ from $(obj), linking with lib$(lib_name).a $(c_none)"
 	@$(LD) $(LDFLAGS) -o $(trg) $(obj)
-$(obj): $(build_dir)/%.o : $(src_dir)/%.c
-	@echo "$(c_magenta)Building object $@ from $<$(c_none)"
-	@$(CC) $(CFLAGS) -c $< -o $@
 clean:
 	$(RM) exec $(obj)
 	$(RM) $(build_dir)/*.d
@@ -53,9 +52,12 @@ clean_lib:
 	@echo "$(c_green)done cleaning library$(c_none)"
 vars:
 	@echo "obj = $(obj)"
+	@echo "abc = $(abc)"
+	@echo "cba = $(cba)"
 	@echo "src = $(src)"
 	@echo "CFLAGS = $(CFLAGS)"
 	@echo "LDFLAGS = $(LDFLAGS)"
+	@cd $(lib_root) ; $(MAKE) vars
 
 -include *.d
 

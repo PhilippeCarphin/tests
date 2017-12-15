@@ -7,8 +7,8 @@ all:
 	gcc -S $(file).c -o $(asm_file)
 
 linux:
-	ssh phcarb@$(computer).info.polymtl.ca "cd $(src_dir) ; make"
-	scp phcarb@$(computer).info.polymtl.ca:~$(src_dir)/$(file)-Linux.s
+	ssh phcarb@$(computer).info.polymtl.ca "cd $(src_dir) ; ls"
+	# scp phcarb@$(computer).info.polymtl.ca:~$(src_dir)/$(file)-Linux.s
 
 
 vars:

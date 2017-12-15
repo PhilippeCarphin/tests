@@ -4,6 +4,12 @@
 
 int main(int argc, char **argv)
 {
-	printf("hello world\n");
+	puts("hello world\n");
+	char a = getchar();
+	if(a == 'a'){
+		puts("got an 'a'\n");
+	} else {
+		puts("didn't get an 'a'\n");
+	}
 	return 0x77;
 }

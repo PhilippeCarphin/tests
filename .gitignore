@@ -8,3 +8,7 @@ getopt/*
 *.s
 lineWrapper
 *.pyc
+*vgcore.*
+*.log
+*.lst
+*.out

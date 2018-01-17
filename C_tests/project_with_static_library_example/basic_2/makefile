@@ -3,20 +3,20 @@ src_dir=./src
 build_dir=./build
 inc_dir=./include
 # PROJECT FILES
-src = $(wildcard $(src_dir)/*.c)
-obj = $(subst $(src_dir),$(build_dir),$(src:.c=.o))
+src = $(notdir $(wildcard $(src_dir)/*.c))
+obj = $(src:.c=.o)
 trg=exec
 # PROJECT COMPILATION TOOLS AND SETTINGS
-CC = gcc
 CFLAGS = -I $(inc_dir) -MMD $(extra_flags)
-
+OUTPUT_OPTION = -o build/$@
+VPATH = ./src:./build
 all: $(trg)
 $(trg): $(obj)
-	$(CC) -o $(trg) $(obj)
-$(obj): $(build_dir)/%.o : $(src_dir)/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) -o $(trg) $(addprefix $(build_dir)/,$(obj))
+
 clean:
 	$(RM) $(trg) $(obj)
+	$(RM) $(build_dir)/*.o
 
 vars:
 	@echo "src = $(src)"

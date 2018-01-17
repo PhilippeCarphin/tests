@@ -1,0 +1,6 @@
+[100m[92m========== Compilation step : src/main.c -> build/main.o (B[m
+gcc -I ../ma_lib/include -I ./include -MMD -c src/main.c -o build/main.o
+[100m[92m========== Compilation step : src/other.c -> build/other.o (B[m
+gcc -I ../ma_lib/include -I ./include -MMD -c src/other.c -o build/other.o
+[100m[95m========== Linking step : ./build/main.o ./build/other.o -> exec (linking with lib : ma_lib)(B[m
+gcc -o exec ./build/main.o ./build/other.o -L ../ma_lib/lib -l ma_lib

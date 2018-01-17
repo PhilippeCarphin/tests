@@ -4,6 +4,7 @@
 #include "transition.h"
 #include "state.h"
 #include "action.h"
+#include "termios.h"
 const int debug = 0;
 
 // Variable globale représentant l'état courant de notre machine à état
@@ -22,7 +23,7 @@ volatile int transition_a_faire = 0;
 #include "hidden_code.h" // Some code is hidden to make the interesting part clearer
 int main(void)
 {
-	HIDDEN_START;
+	INPUT_CATCHING_STUFF_INIT;
 
 	while(1){
 		if(transition_a_faire){
@@ -32,7 +33,9 @@ int main(void)
 		state_action(current_state);
 	}
 
-	HIDDEN_END;
+	tcsetattr( STDIN_FILENO, TCSANOW, &oldt);
+
+	INPUT_CATCHING_STUFF_END;
 	return 0;
 }
 

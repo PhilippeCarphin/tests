@@ -28,7 +28,8 @@ void *check_input(){
 *******************************************************************************/
 #define HIDDEN_START \
 	pthread_t input_thread;\
-	pthread_create(&input_thread, NULL, check_input, NULL);
+	pthread_create(&input_thread, NULL, check_input, NULL); \
+	\
 
 /*******************************************************************************
  * Appelé à la fin du main pour attendre sur le thread

@@ -25,7 +25,7 @@ int main(void)
 {
 	INPUT_CATCHING_STUFF_INIT;
 
-	while(1){
+	for(;;){
 		if(transition_a_faire){
 			current_state = next_state(current_state, input);
 			transition_a_faire = 0;

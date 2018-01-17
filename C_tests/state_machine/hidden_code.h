@@ -12,12 +12,9 @@
 void *check_input(){
 	char c;
 	while(1){
-		c = getchar();
-		if(c != '\n'){
-			input = c;
-			transition_a_faire = 1;
-		}
-		if(c == 'q') exit(0);
+		input = getchar();
+		transition_a_faire = 1;
+		if(input == 'q') exit(0);
 	}
 	return NULL;
 }

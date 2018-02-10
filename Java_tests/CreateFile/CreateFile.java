@@ -8,11 +8,27 @@ public class CreateFile
 	public static void main(String[] args)
 	{
 
+		String filename = null;
+		if( args.length == 1){
+			filename = args[0];
+		}
+		else {
+			System.out.println("Filename must be provided on command line");
+			System.exit(1);
+		}
+
+		createFile(filename);
+
+	}
+
+	private static boolean createFile(String filename)
+	{
+		boolean fileCreated = false;
 		try {
 
-			File f = new File("created_file.txt");
+			File f = new File(filename);
 
-			boolean fileCreated = f.createNewFile();
+			fileCreated = f.createNewFile();
 
 			if( fileCreated ){
 				System.out.println("File has been created");
@@ -24,6 +40,7 @@ public class CreateFile
 			e.printStackTrace();
 		}
 
+		return fileCreated;
 	}
 }
 

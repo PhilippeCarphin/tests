@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include "object_counter.h"
 
 int object_count = 0;
 

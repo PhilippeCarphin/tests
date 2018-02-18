@@ -1,8 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include "object_counter.h"
 
-extern int object_count;
-void print_object_count();
 int main(void)
 {
 	object_count = 3;

@@ -12,3 +12,4 @@ lineWrapper
 *.log
 *.lst
 *.out
+*.dSYM

@@ -1,0 +1,14 @@
+
+# This makefile demonstrates the use of the .ONESHELL builtin 'target'
+# The presence of this target in the makefile makes it so that for all
+# targets in the makefile, the various lines of the recipe will be executed
+# in the same subshell.
+.ONESHELL:
+
+all:
+	cd subdir
+	ls
+
+foo:
+	cd subdir
+	ls

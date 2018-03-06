@@ -5,10 +5,10 @@
 *.swn
 *.o
 getopt/*
-*.s
 lineWrapper
 *.pyc
 *vgcore.*
 *.log
 *.lst
 *.out
+*.dSYM

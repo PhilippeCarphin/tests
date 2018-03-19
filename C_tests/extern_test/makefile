@@ -5,7 +5,6 @@ all: $(TRG)
 
 $(TRG):$(OBJ)
 	gcc $(OBJ)
-
 vars:
 	@echo "OBJ = $(OBJ)"
 	@echo "SRC = $(SRC)"

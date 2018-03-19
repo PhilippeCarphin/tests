@@ -5,7 +5,6 @@
 *.swn
 *.o
 getopt/*
-*.s
 lineWrapper
 *.pyc
 *vgcore.*

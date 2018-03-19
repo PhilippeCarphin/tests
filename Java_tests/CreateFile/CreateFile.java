@@ -24,10 +24,16 @@ public class CreateFile
 	private static boolean createFile(String filename)
 	{
 		boolean fileCreated = false;
+		boolean dirCreated = false;
 		try {
 
 			File f = new File(filename);
+			File d = f.getParentFile();
 
+			dirCreated = d.mkdir();
+			if( dirCreated ){
+				System.out.println("Directory " + f.getParent() + " created");
+			}
 			fileCreated = f.createNewFile();
 
 			if( fileCreated ){

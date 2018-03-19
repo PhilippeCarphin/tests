@@ -1,0 +1,6 @@
+*.o
+*.d
+*.dSYM
+*.out
+*.swp
+main.s

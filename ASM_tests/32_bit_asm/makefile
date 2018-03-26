@@ -9,7 +9,7 @@ ASMFLAGS = $(CALLING_CONVENTION_FLAG) $(DEBUG_INFO_FLAG)
 
 # Source files
 C_SRC = main.c
-ASM_SRC = sum_s.s
+ASM_SRC = sum_s.s mat_s.s
 
 # The assembler version of C source files
 ASM_FROM_C = $(C_SRC:.c=.s)

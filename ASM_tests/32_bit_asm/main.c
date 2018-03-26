@@ -6,6 +6,26 @@ int var_glob = 1998;
 // Function implemented in sum_s.s
 int sum_s(int n);
 
+int mult(int a, int b)
+{
+	return a * b;
+}
+
+int mat_transpose_s(const int *in, int *out, int size);
+
+int mat_transpose(const int * in, int * out, int size)
+{
+
+	int sum = 0;
+	for(int i = 0; i < size; ++i){
+		for(int j = 0; j < size; ++j)
+		{
+			
+		}
+	}
+	return 42;
+}
+
 /*******************************************************************************
  *
 *******************************************************************************/
@@ -23,7 +43,11 @@ int sum_c(int n)
 *******************************************************************************/
 int main()
 {
-	printf("sum_c(40) is %d\n", sum_c(40));
-	printf("sum_s(40) is %d\n", sum_s(40));
+	int *a, *b, c;
+	int res_c = mat_transpose(a,b,c);
+	int res_s = mat_transpose_s(a,b,8);
+
+	printf("mat_transpose(a,b,c) = %d\n", res_c);
+	printf("mat_transpose_s(a,b,c) = %d\n", res_s);
 	return 0;
 }

@@ -20,7 +20,7 @@ int mat_transpose(const int * in, int * out, int size)
 	for(int i = 0; i < size; ++i){
 		for(int j = 0; j < size; ++j)
 		{
-			
+			sum += in[i * size + j];
 		}
 	}
 	return sum;
@@ -43,11 +43,16 @@ int sum_c(int n)
 *******************************************************************************/
 int main()
 {
-	int *a, *b, c;
-	int res_c = mat_transpose(a,b,c);
-	int res_s = mat_transpose_s(a,b,8);
+	int *in, *out, c;
 
-	printf("mat_transpose(a,b,c) = %d\n", res_c);
-	printf("mat_transpose_s(a,b,c) = %d\n", res_s);
+	int mat_in[] = {1,2,3,4};
+	in = mat_in;
+	c = 2;
+
+	int res_c = mat_transpose(in,out,c);
+	int res_s = mat_transpose_s(in,out,c);
+
+	printf("mat_transpose(in,out,c) = %d\n", res_c);
+	printf("mat_transpose_s(in,out,c) = %d\n", res_s);
 	return 0;
 }

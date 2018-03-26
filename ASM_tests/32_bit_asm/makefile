@@ -5,7 +5,7 @@
 CALLING_CONVENTION_FLAG = -m32
 DEBUG_INFO_FLAG = -gdwarf-2
 CFLAGS = $(CALLING_CONVENTION_FLAG) $(DEBUG_INFO_FLAG) -MMD
-ASMFLAGS = $(CALLING_CONVENTION_FLAG)
+ASMFLAGS = $(CALLING_CONVENTION_FLAG) $(DEBUG_INFO_FLAG)
 
 # Source files
 C_SRC = main.c
@@ -21,14 +21,6 @@ OBJ = $(C_SRC:.c=.o) $(ASM_SRC:.s=.o)
 TRG = main.out
 
 all:exe asm
-git:
-	rm .gitignore
-	make .gitignore
-.gitignore:
-	@echo "makeing gitignore"
-	@echo "*.o\n*.d\n*.dSYM\n*.out\n*.swp" > $@
-	@echo "$(ASM_FROM_C)" | tr ' ' '\n' >> $@
-	@cat .gitignore
 
 exe:$(TRG)
 asm:$(ASM_FROM_C)
@@ -44,7 +36,14 @@ $(TRG):$(OBJ)
 	gcc $(CFLAGS) -S $< -o $@
 
 test:$(TRG)
-	./main.out
+	./$(TRG)
+
+vars:
+	@echo "OBJ = $(OBJ)"
+	@echo "C_SRC = $(C_SRC)"
+	@echo "ASM_FROM_C = $(ASM_FROM_C)"
+	@echo "CFLAGS = $(CFLAGS)"
+	@echo "ASMFLAGS = $(ASMFLAGS)"
 
 -include *.d
 

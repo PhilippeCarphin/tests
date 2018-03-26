@@ -7,6 +7,8 @@ mat_transpose_s:
 
 	subl	$16, %esp
 
+	movl $0, 12(%ebp)
+
 	movl	$0, -4(%ebp)
 	jmp	check_continue_outer
 outer_loop_body:
@@ -33,6 +35,6 @@ check_continue_outer:
 	nop
 
 
-	movl $42, %eax
+	movl 12(%ebp), %eax
 	leave
 	ret

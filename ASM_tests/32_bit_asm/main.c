@@ -23,7 +23,7 @@ int mat_transpose(const int * in, int * out, int size)
 			
 		}
 	}
-	return 42;
+	return sum;
 }
 
 /*******************************************************************************

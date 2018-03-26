@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+int var_glob = 1998;
+
 // Function implemented in sum_s.s
 int sum_s(int n);
 
@@ -11,7 +13,7 @@ int sum_c(int n)
 {
 	int sum = 0;
 	for(int i = 0; i < n; ++i){
-		sum = i + sum;
+		sum = i*i + sum;
 	}
 	return sum;
 }

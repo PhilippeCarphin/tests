@@ -6,6 +6,7 @@ sum_s:
 	pushl %ebp
 	movl %esp, %ebp
 
+	movl $42, %eax
 
 	popl %ebp
 	# jump à l'instruction suivante

@@ -11,7 +11,7 @@
 # loop for reading links until we hit a non-link file
 #
 # Here I read the link only once and assume that there won't be more than one
-# level of inderection.
+# level of indirection.
 
 echo '$0:'$0
 echo $INSTALL_DIR

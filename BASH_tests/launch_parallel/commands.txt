@@ -1,0 +1,3 @@
+(time (echo 'boner' ; sleep 1 ; echo 'allo' ; sleep 1 ; echo 'bonjour') >/dev/null) 2>&1 | tr '\\n' ' ' && echo
+(time (echo 'boner' ; sleep 1 ; echo 'pipi' ; sleep 2 ; echo 'barbecue') >/dev/null) 2>&1 | tr '\\n' ' ' && echo
+(time (echo 'boner' ; sleep 2 ; echo 'caca' ; sleep 2 ; echo 'auvent') >/dev/null) 2>&1 | tr '\\n' ' ' && echo

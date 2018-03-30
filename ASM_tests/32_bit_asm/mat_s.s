@@ -4,11 +4,24 @@
 mat_transpose_s:
 	pushl	%ebp
 	movl	%esp, %ebp
-	subl	$16, %esp
-	pushl %ecx
-	pushl %ebx
-	movl 8(%ebp), %ecx
-
+	subl	$12, %esp
+ # +-----------------+
+ # |      sum        | = -12(%ebp)
+ # +-----------------+
+ # |       j         | = -8(%ebp)
+ # +-----------------+
+ # |       i         | = -4(%ebp)
+ # +-----------------+
+ # |    OLD EBP      | <-- %ebp
+ # +-----------------+
+ # |      RET        | = 4(%ebp)
+ # +-----------------+
+ # |      in         | = 8(%ebp)
+ # +-----------------+
+ # |      out        | = 12(%ebp)
+ # +-----------------+
+ # |     size        | = 16(%ebp)
+ # +-----------------+
 	movl $0, 12(%ebp)
 
 	movl	$0, -4(%ebp)
@@ -29,7 +42,8 @@ inner_loop_body:
 	movl	-8(%ebp), %eax # j -> eax
 	addl	%edx, %eax # add 
 
-	# mem[%ecx + 4*%eax] -> %edx
+	# mem[in + 4*%eax] -> %edx
+	movl 8(%ebp), %ecx
 	movl (%ecx, %eax, 4), %edx
 
 	# sum += %edx
@@ -55,7 +69,5 @@ check_continue_outer:
 	movl 12(%ebp), %eax
 
 done:
-	popl %ebx
-	popl %ecx
 	leave
 	ret

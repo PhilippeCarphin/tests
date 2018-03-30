@@ -1,7 +1,8 @@
-
-	.globl mat_transpose_s
+	.globl mat_transpose_s # Name for Linux
+	.globl _mat_transpose_s # Name for Darwin
 
 mat_transpose_s:
+_mat_transpose_s:
 	pushl	%ebp
 	movl	%esp, %ebp
 	subl	$12, %esp

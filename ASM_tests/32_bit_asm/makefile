@@ -20,6 +20,9 @@ OBJ = $(C_SRC:.c=.o) $(ASM_SRC:.s=.o)
 # Executable file made from the object files
 TRG = main.out
 
+test:$(TRG)
+	./$(TRG)
+
 all:exe asm
 
 exe:$(TRG)
@@ -34,9 +37,6 @@ $(TRG):$(OBJ)
 	gcc $(ASMFLAGS) -c $< -o $@
 %.s:%.c
 	gcc $(CFLAGS) -S $< -o $@
-
-test:$(TRG)
-	./$(TRG)
 
 vars:
 	@echo "OBJ = $(OBJ)"

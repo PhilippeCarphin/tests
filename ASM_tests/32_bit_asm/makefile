@@ -5,11 +5,11 @@
 CALLING_CONVENTION_FLAG = -m32
 DEBUG_INFO_FLAG = -gdwarf-2
 CFLAGS = $(CALLING_CONVENTION_FLAG) $(DEBUG_INFO_FLAG) -MMD
-ASMFLAGS = $(CALLING_CONVENTION_FLAG)
+ASMFLAGS = $(CALLING_CONVENTION_FLAG) $(DEBUG_INFO_FLAG)
 
 # Source files
 C_SRC = main.c
-ASM_SRC = sum_s.s
+ASM_SRC = sum_s.s mat_s.s
 
 # The assembler version of C source files
 ASM_FROM_C = $(C_SRC:.c=.s)
@@ -20,15 +20,10 @@ OBJ = $(C_SRC:.c=.o) $(ASM_SRC:.s=.o)
 # Executable file made from the object files
 TRG = main.out
 
+test:$(TRG)
+	./$(TRG)
+
 all:exe asm
-git:
-	rm .gitignore
-	make .gitignore
-.gitignore:
-	@echo "makeing gitignore"
-	@echo "*.o\n*.d\n*.dSYM\n*.out\n*.swp" > $@
-	@echo "$(ASM_FROM_C)" | tr ' ' '\n' >> $@
-	@cat .gitignore
 
 exe:$(TRG)
 asm:$(ASM_FROM_C)
@@ -43,8 +38,12 @@ $(TRG):$(OBJ)
 %.s:%.c
 	gcc $(CFLAGS) -S $< -o $@
 
-test:$(TRG)
-	./main.out
+vars:
+	@echo "OBJ = $(OBJ)"
+	@echo "C_SRC = $(C_SRC)"
+	@echo "ASM_FROM_C = $(ASM_FROM_C)"
+	@echo "CFLAGS = $(CFLAGS)"
+	@echo "ASMFLAGS = $(ASMFLAGS)"
 
 -include *.d
 

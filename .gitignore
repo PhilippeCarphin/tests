@@ -12,3 +12,4 @@ lineWrapper
 *.lst
 *.out
 *.dSYM
+*.so

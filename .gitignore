@@ -13,3 +13,4 @@ lineWrapper
 *.out
 *.dSYM
 *.so
+*.dylib

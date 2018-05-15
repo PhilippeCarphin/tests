@@ -1,4 +1,8 @@
+#ifdef __APPLE__
+#include </usr/include/tcl.h>
+#else
 #include <tcl.h>
+#endif
 
 // ref http://wiki.tcl.tk/11153
 

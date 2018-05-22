@@ -10,3 +10,6 @@ CFLAGS=-shared -DUSE_TCL_STUBS -fPIC
 
 $(trg):$(src)
 	gcc $(CFLAGS) -o $@ -I$(tcl_inc) $^ $(LDLIBS)
+
+mac:$(src)
+	gcc -dynamiclib -DUSE_TCL_STUBS sayhello.c -L/Library/Frameworks/Tcl.framework -ltclstub8.5 -o libhello.dylib

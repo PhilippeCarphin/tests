@@ -6,7 +6,7 @@ tcl_inc=/usr/include/tcl8.5/
 tcl_lib=/usr/lib/x86_64-linux-gnu/
 
 LDLIBS=-L$(tcl_lib) -l tclstub8.5
-CFLAGS=-shared -DUSE_TCL_STUBS -fPIC
+CFLAGS=-shared -DUSE_TCL_STUBS -fPIC -std=c11
 
 $(trg):$(src)
 	gcc $(CFLAGS) -o $@ -I$(tcl_inc) $^ $(LDLIBS)

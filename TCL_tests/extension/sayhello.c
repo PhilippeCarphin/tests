@@ -1,22 +1,28 @@
-#ifdef __APPLE__
-#include </usr/include/tcl.h>
-#else
 #include <tcl.h>
-#endif
 
 // ref http://wiki.tcl.tk/11153
+static int print_args(int objc, Tcl_Obj *const objv[]){
+    printf("C : %s() BEGIN\n", __func__);
+    for(int i=0; i<objc; ++i){
+        puts(Tcl_GetString(objv[i]));
+    }
+    printf("C : %s() END\n", __func__);
+}
 
 static int
 Hello_Cmd(ClientData cdata, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[])
 {
+    printf("C : %s() BEGIN\n", __func__);
     Tcl_SetObjResult(interp, Tcl_NewStringObj("Hello, World!", -1));
-    puts("A puts from the C code");
+    print_args(objc, objv);
+    printf("C : %s() END\n", __func__);
     return TCL_OK;
 }
 
 int
 Hello_Init(Tcl_Interp *interp)
 {
+    printf("C : %s() BEGIN\n", __func__);
     if(Tcl_InitStubs(interp, TCL_VERSION, 0) == NULL){
         return TCL_ERROR;
     }
@@ -27,5 +33,6 @@ Hello_Init(Tcl_Interp *interp)
 
     Tcl_CreateObjCommand(interp, "hello", Hello_Cmd, NULL, NULL);
 
+    printf("C : %s() END\n", __func__);
     return TCL_OK;
 }

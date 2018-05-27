@@ -6,6 +6,7 @@ LDLIBS = -lpthread -ldl -lsqlite3
 test_db=test.db
 
 bad_test_cmd=CREATE TABLE phil (a int, b int)
+query_statement=SELECT * FROM phil;
 
 a=$(shell date +%s)
 b=$(shell date +%M)
@@ -21,3 +22,5 @@ test:$(trg)
 	./$(trg) $(test_db) "$(bad_test_cmd)"
 	@echo "This test is supposed to pass"
 	./$(trg) $(test_db) "$(good_test_cmd)"
+	@echo "This is a query"
+	./$(trg) $(test_db) "$(query_statement)"

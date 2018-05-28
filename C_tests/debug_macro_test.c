@@ -6,6 +6,26 @@
 #include <inttypes.h>
 #include <math.h>
 #include <time.h>
+#define DEBUG
+#include "debug.h"
+
+void test_debug_h()
+{
+   FUNCBEGIN
+
+   DBG_PRINT("This is a test of DBG_PRINT\n");
+
+   int i = 7;
+   int my_int = 8;
+   char *my_string = "hello world!";
+   float my_float = 3.1415;
+   IVAL(i);
+   IVAL(my_int);
+   SVAL(my_string);
+   VARVALUE(my_float, %f);
+
+   FUNCEND
+}
 
 
 void someFunc(char * str)
@@ -16,15 +36,8 @@ void someFunc(char * str)
 
 int main ( int argc , char ** argv ) {
 
-   someFunc("Hello");
-   fprintf(stderr, "In file %s, line %d.\n",__FILE__,__LINE__);
-   fprintf(stderr, "In file %s, line %d.\n",__FILE__,__LINE__);
-   fprintf(stderr, "In file %s, line %d.\n",__FILE__,__LINE__);
-   fprintf(stderr, "In file %s, line %d.\n",__FILE__,__LINE__);
-   someFunc("Goodbye");
-   fprintf(stderr, "In file %s, line %d.\n",__FILE__,__LINE__);
-   fprintf(stderr, "In file %s, line %d.\n",__FILE__,__LINE__);
-   fprintf(stderr, "In file %s, line %d.\n",__FILE__,__LINE__);
+   test_debug_h();
+
    return 0;
 }
 

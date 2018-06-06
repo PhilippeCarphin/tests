@@ -3,7 +3,9 @@
 #include <string.h>
 #include <limits.h>
 
-char input[] =
+#define METHOD 1
+
+char test_input[] =
 "./src/ca/polymtl/inf8480/tp1/server/Server.java\n\
 ./src/ca/polymtl/inf8480/tp1/client/FakeServer.java\n\
 ./src/ca/polymtl/inf8480/tp1/client/Client.java\n\
@@ -45,14 +47,18 @@ int tokenize_on_lines(char *string, char **lines){
 	return 0;
 }
 
-int main(void)
+int main(int argc, char *argv[])
 {
+   char *input = test_input;
+   if(argc > 1){
+      input = argv[1];
+   }
 	int lc = line_count(input);
 	char *lines[line_count(input) + 1];
 	tokenize_on_lines(input, lines);
 
 	int min_match_length = strlen(lines[0]);
-#if 1
+#if METHOD == 1
 	char **line = lines;
 	while(*++line != NULL){
 		int match_length = line_match_length(lines[0], *line);
@@ -60,7 +66,7 @@ int main(void)
 			min_match_length = match_length;
 		}
 	}
-#else
+#elif METHOD == 2
 	for(int i = 1; i < lc; ++i){
 		int match_length = line_match_length(lines[0], lines[i]);
 		if(match_length < min_match_length){
@@ -68,7 +74,6 @@ int main(void)
 		}
 	}
 #endif
-
 	for(int i = 0; i < min_match_length; ++i){
 		putchar(lines[0][i]);
 	}

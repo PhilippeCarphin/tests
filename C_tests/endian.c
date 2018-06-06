@@ -4,12 +4,13 @@
 
 int main(void)
 {
-	int a = 0xDEADBEEF;
-	unsigned char *c = (unsigned char *)&a;
-	for(int i = 0; i < sizeof(int); ++i){
-		printf("c[%d] = %x\n", i, c[i]);
+	int a = 0xAABBCCDD;
+	unsigned char *bytes = (unsigned char *)&a;
+   printf("The bytes in memory of %x are\n", a);
+	for(unsigned int i = 0; i < sizeof(int); ++i){
+		printf("bytes[%d] = %x\n", i, bytes[i]);
 	}
-	if(c[0] == 0xEF)
+	if(bytes[0] == 0xDD)
 		printf("Little-endian\n");
 	else
 		printf("Big-endian\n");

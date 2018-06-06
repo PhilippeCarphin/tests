@@ -6,7 +6,7 @@
  * useful.
  */
 
-#ifdef DEBUG
+#ifdef PHIL_DEBUG
 #define DBG_PRINT(...) printf("%s():%d ",__func__, __LINE__);printf(__VA_ARGS__)
 #else
 #define DBG_PRINT(...) do{}while(0)

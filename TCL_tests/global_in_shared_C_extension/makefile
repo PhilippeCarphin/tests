@@ -1,12 +1,12 @@
-trg=libhello.so
-src=sayhello.c
+trg=libglobal_string.so
+src=global_string.c
 
 # Locations for the CMC filesystem
 tcl_inc=/usr/include/tcl8.6/
 tcl_lib=/usr/lib/x86_64-linux-gnu/
 
 LDLIBS=-L$(tcl_lib) -l tclstub8.6
-CFLAGS=-shared -DUSE_TCL_STUBS -fPIC -std=c11
+CFLAGS=-shared -DUSE_TCL_STUBS -fPIC -std=c11 -g
 
 $(trg):$(src)
 	gcc $(CFLAGS) -o $@ -I$(tcl_inc) $^ $(LDLIBS)

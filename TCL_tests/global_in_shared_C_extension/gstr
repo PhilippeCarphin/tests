@@ -1,0 +1,7 @@
+#!/usr/bin/tclsh
+load ./libglobal_string[info sharedlibextension]
+
+global_string set_to "Hello"
+global_string show_value
+global_string set_to "world"
+global_string show_value

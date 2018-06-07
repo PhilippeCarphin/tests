@@ -7,7 +7,7 @@
  */
 
 #ifdef PHIL_DEBUG
-#define DBG_PRINT(...) printf("%s():%d ",__func__, __LINE__);printf(__VA_ARGS__)
+#define DBG_PRINT(...) fprintf(stderr,"%s():%d ",__func__, __LINE__);fprintf(stderr,__VA_ARGS__)
 #else
 #define DBG_PRINT(...) do{}while(0)
 #endif

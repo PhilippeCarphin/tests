@@ -1,6 +1,8 @@
 	.globl	sum_s
+	.globl  _sum_s
 
 sum_s:
+_sum_s:
 
 	pushl	%ebp
 	movl	%esp, %ebp

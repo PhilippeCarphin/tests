@@ -15,15 +15,28 @@ int mat_transpose_s(const int *in, int *out, int size);
 
 int mat_transpose(const int * in, int * out, int size)
 {
-
 	int sum = 0;
 	for(int i = 0; i < size; ++i){
-		for(int j = 0; j < size; ++j)
+		for(int j = 0; j < i; ++j)
 		{
 			sum += in[i * size + j];
+			out[i * size + j] = in[j*size + i];
+			out[j * size + i] = in[i*size + j];
 		}
+		out[i * size + i] = in[i*size +i];
 	}
 	return sum;
+}
+int print_matrix(const int *mat, const int size)
+{
+	for(int i = 0; i < size; ++i){
+		printf("  ");
+		for(int j = 0; j < size; ++j){
+			printf("%d ", mat[i * size + j]);
+		}
+		printf("\n");
+	}
+	return 0;
 }
 
 /*******************************************************************************
@@ -46,13 +59,17 @@ int main()
 	int *in, *out, c;
 
 	int mat_in[] = {1,2,3,4};
-	in = mat_in;
-	c = 2;
+	int mat_out[sizeof(mat_in)];
+	int mat_out_s[sizeof(mat_in)];
+	int size = 2;
 
-	int res_c = mat_transpose(in,out,c);
-	int res_s = mat_transpose_s(in,out,c);
+	printf("mat_transpose(in,out,c) = \n");
+	mat_transpose(mat_in, mat_out, size);
+	print_matrix(mat_out, size);
 
-	printf("mat_transpose(in,out,c) = %d\n", res_c);
-	printf("mat_transpose_s(in,out,c) = %d\n", res_s);
+	printf("mat_transpose_s(in,out,c) = \n");
+	mat_transpose_s(mat_in, mat_out_s, size);
+	print_matrix(mat_out_s, size);
+	// sum_s(3);
 	return 0;
 }

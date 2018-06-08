@@ -13,26 +13,25 @@
  */
 
 
+int char_to_number(char c){return (int) c;}
 /*******************************************************************************
  * Silly switch statement based on input char
 *******************************************************************************/
-void what_char( char c ){
+int what_char( char c ){
 
    switch ( c )
    {
       case 'A':
-         printf("A");
-         break;
+         return char_to_number('A');
       case 'B':
-         printf("B");
+         return char_to_number('B');
          break;
       case 'C':
-         printf("C");
+         return char_to_number('C');
          break;
       default:
-         printf("default");
+         return char_to_number('X');
    }
-   printf("END\n");
 }
 
 /*******************************************************************************

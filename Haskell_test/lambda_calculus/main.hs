@@ -1,9 +1,15 @@
-true   = \x y -> x
-false  = \x y -> y
+-- DOWNLOAD : https://www.haskell.org/platform/
+-- BUILD : See Makefile
+-- true : λx.λy.y
+true  = \x y -> x
+-- false: λx.λy.x
+false = \x y -> y
 
 not_op = \b   -> b false true
-and_op = \x y -> x y false -- if x is false, return false without checking y, otherwise return whatever y is.
-or_op  = \x y -> x true y -- if x is true, return true without checking y, otherwise, return whatever y is.
+-- a compléter --
+and_op = \x y -> true -- hint : if x is false, return false without checking y, otherwise return whatever y is.
+or_op  = \x y -> true -- hint : if x is true, return true without checking y, otherwise, return whatever y is.
+<<<<<<< Updated upstream
 
 
 -- Lambda calculus-y definition of the integer
@@ -24,10 +30,14 @@ three = \i x -> i (i (i x))
 incr = \number -> \i x -> i (number i x)
 num 0 = \i x -> x
 num n = incr(num(n-1))
-
 main = do
-    putStrLn ("true  = " ++ true  "true" "false") -- true  is the function that selects the first  of it's arguments
-    putStrLn ("false = " ++ false "true" "false") -- false is the function that selects the second of it's arguments
+    -- true  is the function that selects the first  of it's arguments
+    putStrLn ("true  = " ++ true  "true" "false")
+     -- false is the function that selects the second of it's arguments`
+    putStrLn ("false = " ++ false "true" "false")
+    -- you can tell whether a function is true or false by calling it with the
+    -- arguments "true" "false" because if said function is true, it will selects
+    -- the first argument and if it is false it will select the second
     putStrLn "======== NOT ========"
     -- not_op true is the function that selects the second of it's arguments, so -- not_op true is false
     putStrLn ("not_op true  = "       ++ (not_op true)        "true" "false")
@@ -35,7 +45,6 @@ main = do
     putStrLn ("not_op false = "       ++ (not_op false)       "true" "false")
     -- and so on ...
     putStrLn "======== AND ========"
-    putStrLn ("not_op false = "       ++ (not_op false)       "true" "false")
     putStrLn ("and_op false false = " ++ (and_op false false) "true" "false")
     putStrLn ("and_op false true  = " ++ (and_op false true)  "true" "false")
     putStrLn ("and_op true  false = " ++ (and_op true false)  "true" "false")
@@ -45,6 +54,7 @@ main = do
     putStrLn ("or_op  false true  = " ++ (or_op false true)   "true" "false")
     putStrLn ("or_op  true  false = " ++ (or_op true false)   "true" "false")
     putStrLn ("or_op  true  true  = " ++ (or_op true true)    "true" "false")
+
     putStrLn "==== Natural numbers= "
     print (zero                (\n->n+1) 0) -- apply the arithmetic increment zero times to 0
     print (one                 (\n->n+1) 0) -- apply the arithmetic increment one time to 0
@@ -57,6 +67,3 @@ main = do
     print ((num 7)             (\n->n+1) 0)
     print ((num 88)            (\n->n+1) 0)
     print ((num 9999)          (\n->n+1) 0)
-
-
-

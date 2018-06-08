@@ -1,0 +1,29 @@
+This code demonstrates the behavior of global variables in a C extension and
+also the a scheme for handling and dispatching a TCL command in a general way.
+
+There is the obligatory
+
+   static int <lib-name>_Init(Tcl_Interp *interp)
+
+function and the
+
+   static int my_command_handler(
+         ClientData cdata,
+         Tcl_Interp *interp,
+         int objc,
+         Tcl_Obj *const objv[]
+   )
+
+which is provided to Tcl as it's interface to call my stuff.
+
+This scheme uses the subcommand format since it is easier to add functions this
+way.  Instead of doing a bunch of of Tcl_CreateObjCommand() for a bunch of
+functions, we just treat the first argument as a mandatory subcommand.
+
+A switch function looks up the subcommand in a table and dispatches to the right
+fucntion.
+
+The error codes are separated into implementation error codes and interface
+error codes (GSTR_{SUCCESS,ERROR} and TCL_{OK,ERROR} respectively).
+
+

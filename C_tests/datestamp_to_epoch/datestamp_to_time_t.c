@@ -33,15 +33,18 @@ int sql_datestamp_to_epoch(const char *datestamp, time_t *e)
    int retval = 0;
    struct tm t;
    if((retval = sql_datestamp_to_tm(datestamp, &t)) != SUCCESS){
-      DBG_PRINT("sql_datestamp_to_tm() failure\n");
-      return retval;
+      DBG_PRINT("error: sql_datestamp_to_tm() failure\n");
+      goto err;
    }
 
    if((retval = tm_to_epoch(&t, e)) != SUCCESS){
-      DBG_PRINT("tm_to_epoch() failure\n");
-      return retval;
+      DBG_PRINT("error: tm_to_epoch() failure\n");
+      goto err;
    }
 
+   return retval;
+err:
+   *e = 0;
    return retval;
 }
 int epoch_to_sql_datestamp(time_t *e, char *buff)
@@ -50,15 +53,18 @@ int epoch_to_sql_datestamp(time_t *e, char *buff)
    struct tm t;
 
    if((retval = epoch_to_tm(e, &t)) != SUCCESS){
-      DBG_PRINT("epoch_to_tm() failure\n");
-      return retval;
+      DBG_PRINT("error: epoch_to_tm() failure\n");
+      goto err;
    }
 
    if((retval = tm_to_sql_datestamp(&t, buff)) != SUCCESS){
-      DBG_PRINT("tm_to_sql_datestamp() failure\n");
-      return retval;
+      DBG_PRINT("error: tm_to_sql_datestamp() failure\n");
+      goto err;
    }
 
+   return retval;
+err:
+   *buff = 0;
    return retval;
 }
 
@@ -75,25 +81,37 @@ int sql_datestamp_to_tm(const char *datestamp, struct tm *t)
    );
 
    if(retval == EOF){
-      DBG_PRINT("sscanf() failure\n");
-      return FAILURE;
+      DBG_PRINT("error: sscanf() failure\n");
+      goto err;
    } else if( retval != 6){
-      DBG_PRINT("sscanf() could not find 6 elements in datestamp %s\n", datestamp);
-      return FAILURE;
+      DBG_PRINT("error: sscanf() could not find 6 (yyyy-mm-dd HH:MM:SS) elements in datestamp %s\n", datestamp);
+      goto err;
+   }
+
+   if(t->tm_year < 0 || t->tm_mon < 0 || t->tm_mday < 0
+      || t->tm_hour < 0 || t->tm_min < 0 || t->tm_sec < 0){
+      DBG_PRINT("error: Invalid values found in datestamp %s\n", datestamp);
+      goto err;
    }
 
    t->tm_year -= EPOCH_START_YEAR; // year 0 is 1900
    t->tm_mon -= 1; // Months are 0-11
 
    return SUCCESS;
+err:
+   memset(t, 0, sizeof *t);
+   return FAILURE;
 }
-int tm_to_sql_datestamp(struct tm *t, char *buffer)
+int tm_to_sql_datestamp(struct tm *t, char *buff)
 {
-   if(strftime(buffer, 100, "%Y-%m-%d %H:%M:%S", t) <= 0){
-      DBG_PRINT("strftime() failure\n");
-      return FAILURE;
+   if(strftime(buff, 100, "%Y-%m-%d %H:%M:%S", t) <= 0){
+      DBG_PRINT("error: strftime() failure\n");
+      goto err;
    }
    return SUCCESS;
+err:
+   *buff = 0;
+   return FAILURE;
 }
 
 /*******************************************************************************
@@ -131,8 +149,8 @@ void test_conversion(const char *datestamp)
 {
    time_t epoch_time;
    if(sql_datestamp_to_epoch(datestamp, &epoch_time)){
-      DBG_PRINT("Error converting from datestamp to epoch\n");
-      exit(-1);
+      DBG_PRINT("Error converting from datestamp=%s to epoch\n", datestamp);
+      // exit(-1);
    }
 
    char re_datestamp[100];

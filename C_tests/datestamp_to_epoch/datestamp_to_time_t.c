@@ -2,12 +2,24 @@
  * This test shows how to convert a datestamp received as a string and turn it
  * into a struct tm then into a time_t
  */
+
+/*
+ * _BSD_SOURCE is so that I can have the timegm() function from time.h
+ * Also, I put it at the top because it seems like stdlib.h defines it.
+ * You would think that if stdlib.h defines it, then all I have to do is put the
+ * include of time.h below but if I do that, I still get an implicit declaration
+ * warning for timegm
+ */
+#define _BSD_SOURCE
+#define _POSIX_C_SOURCE 200809L
+#include <time.h>
+
 #include <stdlib.h>
 #include <stdio.h>
-#include <time.h>
 #include <string.h>
 #define PHIL_DEBUG
 #include "../debug.h"
+
 
 // https://en.wikipedia.org/wiki/Epoch_(reference_date)
 // https://www.tutorialspoint.com/c_standard_library/c_function_mktime.htm // (Parameters section)
@@ -22,8 +34,11 @@ int epoch_to_sql_datestamp(time_t *e, char *buff);
 int sql_datestamp_to_tm(const char *datestamp, struct tm *t);
 int tm_to_sql_datestamp(struct tm *t, char *buff);
 
-int tm_to_epoch(struct tm* t, time_t *e);
-int epoch_to_tm(time_t *e, struct tm *t);
+int gmt_tm_to_epoch(struct tm* t, time_t *e);
+int epoch_to_tm_gmt(time_t *e, struct tm *t);
+
+int local_tm_to_epoch(struct tm* t, time_t *e);
+int epoch_to_tm_local(time_t *e, struct tm *t);
 
 /*******************************************************************************
  * Convert between sql datestamp and epoch time
@@ -37,7 +52,7 @@ int sql_datestamp_to_epoch(const char *datestamp, time_t *e)
       goto err;
    }
 
-   if((retval = tm_to_epoch(&t, e)) != SUCCESS){
+   if((retval = gmt_tm_to_epoch(&t, e)) != SUCCESS){
       DBG_PRINT("error: tm_to_epoch() failure\n");
       goto err;
    }
@@ -52,7 +67,7 @@ int epoch_to_sql_datestamp(time_t *e, char *buff)
    int retval = SUCCESS;
    struct tm t;
 
-   if((retval = epoch_to_tm(e, &t)) != SUCCESS){
+   if((retval = epoch_to_tm_local(e, &t)) != SUCCESS){
       DBG_PRINT("error: epoch_to_tm() failure\n");
       goto err;
    }
@@ -79,6 +94,7 @@ int sql_datestamp_to_tm(const char *datestamp, struct tm *t)
          &t->tm_year, &t->tm_mon, &t->tm_mday,
          &t->tm_hour, &t->tm_min, &t->tm_sec
    );
+   t->tm_mon -= 1; // Months are 0-11
 
    if(retval == EOF){
       DBG_PRINT("error: sscanf() failure\n");
@@ -88,14 +104,13 @@ int sql_datestamp_to_tm(const char *datestamp, struct tm *t)
       goto err;
    }
 
-   if(t->tm_year < 0 || t->tm_mon < 0 || t->tm_mday < 0
+   if(t->tm_year < 0 || (t->tm_mon < 0 || 12 <= t->tm_mon ) || t->tm_mday < 0
       || t->tm_hour < 0 || t->tm_min < 0 || t->tm_sec < 0){
       DBG_PRINT("error: Invalid values found in datestamp %s\n", datestamp);
       goto err;
    }
 
    t->tm_year -= EPOCH_START_YEAR; // year 0 is 1900
-   t->tm_mon -= 1; // Months are 0-11
 
    return SUCCESS;
 err:
@@ -115,16 +130,25 @@ err:
 }
 
 /*******************************************************************************
- * Be careful about local time.  Localtime says it, it considers localtime, and
- * so does mktime().  See
- * https://www.tutorialspoint.com/c_standard_library/c_function_mktime.htm
+ * Conversion between struct tm and time_t.  Local and GMT versions.
 *******************************************************************************/
-int tm_to_epoch(struct tm* t, time_t *e)
+int gmt_tm_to_epoch(struct tm* t, time_t *e)
+{
+   *e = timegm(t); // Considers local time
+   return SUCCESS;
+}
+int epoch_to_tm_gmt(time_t *e, struct tm *t)
+{
+   *t = *gmtime(e); // considers local time
+   return SUCCESS;
+}
+
+int local_tm_to_epoch(struct tm* t, time_t *e)
 {
    *e = mktime(t); // Considers local time
    return SUCCESS;
 }
-int epoch_to_tm(time_t *e, struct tm *t)
+int epoch_to_tm_local(time_t *e, struct tm *t)
 {
    *t = *localtime(e); // considers local time
    return SUCCESS;
@@ -134,11 +158,26 @@ int epoch_to_tm(time_t *e, struct tm *t)
 /*******************************************************************************
  * Run tests on the arguments of the program
 *******************************************************************************/
+static unsigned long getCurrentTime(void);
 void test_conversion(const char *datestamp);
+char *datestamps[] = {
+   "2018-03-06 13:49:50",
+   "2018-03-06 13:46:38",
+   "2018-03-06 11:23:00",
+   "2018-03-06 12:05:16",
+   "2018-03-06 14:15:00",
+   "2018-03-06 10:33:00",
+   "2018-03-06 13:06:00",
+   "2018-03-06 13:24:00",
+   "2018-03-06 -11:14:00",
+   "2018-77-06 14:10:00",
+   "2018-06- 22:54:30"
+};
+
 int main(int argc, char **argv)
 {
-   for(int i = 1; i < argc; i++){
-      const char *datestamp = argv[i];
+   for(int i = 0; i < sizeof(datestamps)/sizeof(*datestamps) ; i++){
+      const char *datestamp = datestamps[i];
       test_conversion(datestamp);
    }
    struct tm time;
@@ -153,17 +192,39 @@ void test_conversion(const char *datestamp)
       // exit(-1);
    }
 
+#if 0
    char re_datestamp[100];
    if(epoch_to_sql_datestamp(&epoch_time, re_datestamp)){
       DBG_PRINT("Error converting from epoch to datestamp\n");
-      exit(-2);
+      // exit(-2);
    }
 
-   printf("datestamp=%s -> time_t=%ld -> ctime=%s\n", datestamp, epoch_time, re_datestamp);
+   fprintf(stderr, "datestamp=%s -> time_t=%ld -> ctime=%s\n", datestamp, epoch_time, re_datestamp);
 
    if(strcmp(datestamp, re_datestamp) != 0){
-      printf("TEST FAILED: %s -> %s\n", datestamp, re_datestamp);
+      fprintf(stderr, "TEST FAILED: %s -> %s\n", datestamp, re_datestamp);
    }
+#endif
+
+   long unsigned int t0, t1;
+   time_t ep;
+   struct tm t;
+   sql_datestamp_to_tm(datestamps[3], &t);
+   t0 = getCurrentTime();
+   ep = timegm(&t);
+   t1 = getCurrentTime();
+   printf("It took %lu nanoseconds\n",t1-t0);
+}
+#define MS_PER_SEC 1000
+#define US_PER_SEC 1000000
+#define NS_PER_SEC 1000000000
+static unsigned long getCurrentTime(void)
+{
+   struct timespec spec;
+
+   clock_gettime(CLOCK_MONOTONIC, &spec);
+
+   return NS_PER_SEC * spec.tv_sec + spec.tv_nsec;
 }
 
 #endif

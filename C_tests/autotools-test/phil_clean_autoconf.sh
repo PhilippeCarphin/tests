@@ -1,4 +1,6 @@
-files="config.log
+files="INSTALL\
+ COPYING\
+ config.log
  Makefile\
  Makefile.in\
  aclocal.m4\

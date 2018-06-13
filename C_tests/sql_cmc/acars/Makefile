@@ -1,7 +1,7 @@
 trg = dbinterface.out
 src = main.c
 
-LDLIBS = -lsqlite3 -lpthread -ldl
+LDLIBS = -L /home/cmss/afsm/pca/.local/sqlite3/lib -lsqlite3 -lpthread -ldl
 CFLAGS = -Wall -std=c99
 
 all:$(trg)

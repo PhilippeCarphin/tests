@@ -20,11 +20,6 @@
 #define PHIL_DEBUG
 #include "../debug.h"
 
-
-// https://en.wikipedia.org/wiki/Epoch_(reference_date)
-// https://www.tutorialspoint.com/c_standard_library/c_function_mktime.htm // (Parameters section)
-const int EPOCH_START_YEAR = 1900;
-
 const int SUCCESS = 0;
 const int FAILURE = -1;
 
@@ -95,6 +90,8 @@ int sql_datestamp_to_tm(const char *datestamp, struct tm *t)
          &t->tm_hour, &t->tm_min, &t->tm_sec
    );
    t->tm_mon -= 1; // Months are 0-11
+   // http://pubs.opengroup.org/onlinepubs/009695399/basedefs/xbd_chap04.html#tag_04_14
+   t->tm_year -= 1900; // Because before 2000, this would be just the last two digits of the year. k
 
    if(retval == EOF){
       DBG_PRINT("error: sscanf() failure\n");
@@ -110,7 +107,6 @@ int sql_datestamp_to_tm(const char *datestamp, struct tm *t)
       goto err;
    }
 
-   t->tm_year -= EPOCH_START_YEAR; // year 0 is 1900
 
    return SUCCESS;
 err:
@@ -169,9 +165,9 @@ char *datestamps[] = {
    "2018-03-06 10:33:00",
    "2018-03-06 13:06:00",
    "2018-03-06 13:24:00",
-   "2018-03-06 -11:14:00",
-   "2018-77-06 14:10:00",
-   "2018-06- 22:54:30"
+   "2018-03-06 -11:14:00", // SHOULD FAIL
+   "2018-77-06 14:10:00",  // SHOULD FAIL
+   "2018-06- 22:54:30"     // SHOULD FAIL
 };
 
 int main(int argc, char **argv)
@@ -192,7 +188,6 @@ void test_conversion(const char *datestamp)
       // exit(-1);
    }
 
-#if 0
    char re_datestamp[100];
    if(epoch_to_sql_datestamp(&epoch_time, re_datestamp)){
       DBG_PRINT("Error converting from epoch to datestamp\n");
@@ -204,27 +199,5 @@ void test_conversion(const char *datestamp)
    if(strcmp(datestamp, re_datestamp) != 0){
       fprintf(stderr, "TEST FAILED: %s -> %s\n", datestamp, re_datestamp);
    }
-#endif
-
-   long unsigned int t0, t1;
-   time_t ep;
-   struct tm t;
-   sql_datestamp_to_tm(datestamps[3], &t);
-   t0 = getCurrentTime();
-   ep = timegm(&t);
-   t1 = getCurrentTime();
-   printf("It took %lu nanoseconds\n",t1-t0);
 }
-#define MS_PER_SEC 1000
-#define US_PER_SEC 1000000
-#define NS_PER_SEC 1000000000
-static unsigned long getCurrentTime(void)
-{
-   struct timespec spec;
-
-   clock_gettime(CLOCK_MONOTONIC, &spec);
-
-   return NS_PER_SEC * spec.tv_sec + spec.tv_nsec;
-}
-
 #endif

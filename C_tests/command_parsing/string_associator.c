@@ -25,7 +25,7 @@ int int_associated_to(char *str, struct string_associator *ass)
 {
 	printf("%s() str = %s \n",__FUNCTION__, str);
 	int retval;
-	
+
 	char *s = tolower_str(strdup(str));
 	for(struct string_associator *p = ass; p->str_val != NULL; ++p){
 		printf("\texamining : p->str_val:%s -- p->int_val:%d\n", p->str_val, p->int_val);

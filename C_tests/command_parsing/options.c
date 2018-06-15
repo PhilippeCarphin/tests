@@ -8,11 +8,11 @@
 
 /*
  * This file has N basic parts
- * 
+ *
  * the parse_opts() function is to be called in the main will parse the command
  * line arguments into the struct my_opts.
  *
- * To define the options, one must modify the 
+ * To define the options, one must modify the
  * struct option options[] array in parse_opts.
  * and complete the function's switch with the options.
  *
@@ -21,7 +21,7 @@
  *
  * It is also recommended to also complete the print_opts() function.
  */
- 
+
 
 struct string_associator flag_associator[] = {
 	{ FLAG_YELLOW, "yellow"},
@@ -43,13 +43,13 @@ static int show_usage();
  *
  ******************************************************************************/
 int parse_opts(int argc, char * const * argv, struct my_options *opts)
-{	
+{
 	printf("%s()\n",__FUNCTION__);
 	int retval = 0;
-	
+
 	int opt;
 	int index;
-	
+
 	struct option options[] = {
 		{ "help", 0,  0, 'h' },
 		{ "int_value", 1, 0, 'i'},
@@ -57,7 +57,7 @@ int parse_opts(int argc, char * const * argv, struct my_options *opts)
 		{ "flag", 1, 0, 'f'		},
 		{0,0,0,0}
 	};
-	
+
 	while(( opt = getopt_long(argc, argv, "hi:s:f:", options, &index)) != -1 ){
 		printf("%s() : opt = %d, optarg = %s\n", __FUNCTION__, opt, optarg);
 		switch(opt){

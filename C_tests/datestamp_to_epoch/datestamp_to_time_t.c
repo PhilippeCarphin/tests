@@ -172,9 +172,13 @@ char *datestamps[] = {
 
 int main(int argc, char **argv)
 {
-   for(int i = 0; i < sizeof(datestamps)/sizeof(*datestamps) ; i++){
-      const char *datestamp = datestamps[i];
-      test_conversion(datestamp);
+   if(argc > 1){
+      test_conversion(argv[1]);
+   } else {
+      for(int i = 0; i < sizeof(datestamps)/sizeof(*datestamps) ; i++){
+         const char *datestamp = datestamps[i];
+         test_conversion(datestamp);
+      }
    }
    struct tm time;
    memset(&time, 0, sizeof(struct tm));

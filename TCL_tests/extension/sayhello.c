@@ -1,7 +1,7 @@
 #include <tcl.h>
 
 // ref http://wiki.tcl.tk/11153
-static int tcl_print_args(int objc, Tcl_Obj *const objv[]){
+static void tcl_print_args(int objc, Tcl_Obj *const objv[]){
     printf("C : %s() BEGIN\n", __func__);
     for(int i=0; i<objc; ++i){
         printf("C : Tcl_GesString(objv[%d])=%s\n",i, Tcl_GetString(objv[i]));
@@ -12,6 +12,7 @@ static int tcl_print_args(int objc, Tcl_Obj *const objv[]){
 static int
 Hello_Cmd(ClientData cdata, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[])
 {
+    (void) cdata;
     printf("C : %s() BEGIN\n", __func__);
     Tcl_SetObjResult(interp, Tcl_NewStringObj("HELLO_CMD RESULT", -1));
     tcl_print_args(objc, objv);

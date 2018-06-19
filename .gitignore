@@ -15,3 +15,7 @@ lineWrapper
 *.so
 *.dylib
 callgrind.out.*
+
+# Common extensions for database files
+*.db
+*.sqlite

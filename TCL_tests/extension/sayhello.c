@@ -1,3 +1,7 @@
+#include <stdlib.h>
+#include <string.h>
+#define PHIL_DEBUG
+#include "../../C_tests/debug.h"
 #include <tcl.h>
 
 // ref http://wiki.tcl.tk/11153
@@ -17,7 +21,17 @@ Hello_Cmd(ClientData cdata, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[])
     Tcl_SetObjResult(interp, Tcl_NewStringObj("HELLO_CMD RESULT", -1));
     tcl_print_args(objc, objv);
     printf("C : %s() END\n", __func__);
-    return TCL_OK;
+    int retval = TCL_OK;
+    if(objc > 1){
+       const char *str = Tcl_GetString(objv[1]);
+       if(strcmp(str, "TCL_OK") == 0){
+          retval = TCL_OK;
+       } else if(strcmp(str, "TCL_ERROR") == 0){
+          retval = TCL_ERROR;
+       }
+    }
+    DBG_PRINT("Returning %d\n", retval);
+    return retval;
 }
 
 int

@@ -65,7 +65,7 @@ fizzbuzz:
    # Allocate stack space and initialise
    subq $16, %rsp
    movq %rsi, -8(%rbp)
-   # -16(%rbp) will be used to remember if the number is divisible by 3
+   # -16(%rbp) will be used to remember the remainder after division by 3
 
 ########################### Output "fizz" if divisible by 3 ####################
 check_divis_3:

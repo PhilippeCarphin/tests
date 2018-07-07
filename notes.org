@@ -1,0 +1,19 @@
+#+TITLE: Programming language test notes
+
+* Languages
+ 
+** LISP
+
+*** Install
+Fedora: dnf install sbcl
+REPL : sbcl
+
+Fedora : dnf install clisp
+
+*** Building
+
+*scbl* is the REPL and *clip* runs my lisp file.
+
+*** Hello World
+
+*** General form

@@ -19,3 +19,9 @@ callgrind.out.*
 # Common extensions for database files
 *.db
 *.sqlite
+
+# Compiled lisp code, I think
+*.fasl
+
+# For org-mode exports
+*.html

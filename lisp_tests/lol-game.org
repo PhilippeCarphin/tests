@@ -1,0 +1,20 @@
+#+TITLE: Notes about Land Of Lisp and running things
+
+* Running things
+
+** Straight up running a file
+
+#+BEGIN_SRC bash
+$ clisp lol-game.lisp
+# From the line that
+(
+(GARDEN (YOU ARE IN A BEAUTIFUL GARDEN.  THERE IS A WELL IN FRONT OF YOU))
+#+END_SRC
+
+** Loading the file in the REPL
+
+#+BEGIN_SRC bash
+$ sbcl
+> (load (compile-file "lol-game.lisp"))
+> (assoc 'garden *nodes*)
+#+END_SRC

@@ -1,0 +1,18 @@
+#BEGIN_CONTAINER key1
+#BEGIN_OBJECT obs
+bapadi
+boopi
+#END_OBJECT
+#BEGIN_OBJECT elem
+Aquarius, the age of aquarius
+#END_OBJECT
+#END_CONTAINER
+
+#BEGIN_CONTAINER notkey2 
+#BEGIN_OBJECT obs
+I'm just a poor boy from a poor family
+#END_OBJECT
+#BEGIN_OBJECT elem
+I'm just a poor boy nobody loves me
+#END_OBJECT
+#END_CONTAINER

@@ -1,5 +1,5 @@
 
-CFLAGS += -Wall -g -std=c99
+CFLAGS += -Wall -g -std=gnu99
 
 .PHONY: all a.out
 all:a.out

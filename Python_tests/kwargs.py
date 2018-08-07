@@ -62,6 +62,9 @@ def generate_python_functions(plugin_spec):
         functions += "\n\n" + func_def
     return functions
 
+class PySpookiArgumentError(Exception):
+    pass
+
 def phildecorate(func):
     funcname = func.__name__
     argspec = inspect.getargspec(func)
@@ -72,24 +75,29 @@ def phildecorate(func):
     print("function argspec : " + str(argspec))
 
     def new_func(**kwargs):
-        nonlocal defaults
-        for arg in kwargs:
+        words = [funcname]
+        for arg in argnames:
             default = defaults[arg]
-            if default == True or default == False:
+            if default == False:
                 print("{} is a flag".format(arg))
+                if arg in kwargs and arg == True:
+                    words.append("--" + "arg")
             elif arg not in kwargs:
-                print("{} is not specified, use defautl = {}".format(arg, default))
-            else:
+                if default is None:
+                    print("{} is not specified, use defautl = {}".format(arg, default))
+                    raise PySpookiArgumentError("Argument {} is required".format(arg))
+                words.append("--{} {}".format(arg, default))
+            elif arg in kwargs: 
+                if kwargs[arg] is None:
+                    raise PySpookiArgumentError("Spooki functions cannot have None values")
+                words.append("--{} {}".format(arg, kwargs[arg]))
                 print("{} has value {}".format(arg, kwargs[arg]))
+        print(' '.join(words))
     return new_func
 
 @phildecorate
 def decorated_arg_function(humeur=None, couleur='piss-bucket', phil_est_hot=True):
-    cpp_cmd = generate_cpp_command(
-        inspect.stack()[0][3],
-        inspect.getargvalues(inspect.currentframe())
-    )
-    print("=="+cpp_cmd+"==")
+    pass
 
 
 if __name__ == "__main__":
@@ -98,8 +106,8 @@ if __name__ == "__main__":
     named_arg_function(humeur=8, couleur=7)
     named_noarg_function()
     print("CALLING DECORATED FUNCTION")
-    decorated_arg_function(humeur=None, couleur='piss-bucket', phil_est_hot=True)
+    decorated_arg_function(humeur='piss-bucket', couleur='rouge', phil_est_hot=True)
     print("CALLING DECORATED FUNCTION")
-    decorated_arg_function(humeur=None, phil_est_hot=True)
+    decorated_arg_function(humeur='Joyeux', phil_est_hot=True)
     # phildecorate(named_arg_function)
     # print(generate_python_functions(plugin_spec))

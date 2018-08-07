@@ -46,16 +46,22 @@ def make_spooki_command(funcname, argspec, kwargs):
     words = [funcname]
     for arg in argspec:
 
-        if arg in kwargs:
-            argvalue = kwargs[arg]
-            del kwargs[arg]
+        print("Argument {} has default {}".format(arg, argspec[arg]))
 
-            if is_flag(arg):
+        if is_flag(arg):
+            if arg in kwargs:
+                argvalue = kwargs[arg]
+                del kwargs[arg]
                 if argvalue not in [True, False]:
                     raise PySpookiArgumentError("Flag argument {} can only be True or False".format(arg))
                 if argvalue is True:
                     words.append("--{}".format(arg))
-            elif argvalue is not None:
+        elif arg in kwargs:
+            argvalue = kwargs[arg]
+            print("Value of {} is a {}".format(arg, argvalue))
+            del kwargs[arg]
+
+            if argvalue is not None:
                 words.append("--{} {}".format(arg, argvalue))
             else:
                 raise PySpookiArgumentError("Spooki functions cannot have None for arguments")
@@ -103,7 +109,7 @@ def make_spooki_function(func):
 
 @make_spooki_function
 def decorated_arg_function(humeur=None,
-                           couleur='piss-bucket',
+                           couleur='morning-dew',
                            bonjour=False):
     """EXAMPLE SPECIFICATION : A function that doesn't do anything.
 
@@ -127,12 +133,12 @@ def windchill(temperature="cold", pressure=130, some_flag=False):
 
 
 if __name__ == "__main__":
-    print("CALLING DECORATED FUNCTION")
-    decorated_arg_function(humeur='piss-bucket', couleur='rouge', bonjour=True)
-    print("CALLING DECORATED FUNCTION")
-    decorated_arg_function(humeur='Joyeux', bonjour=True)
-    print("CALLING DECORATED FUNCTION")
-    decorated_arg_function(couleur='rouge', humeur='piss-bucket', bonjour=True)
+    # print("CALLING DECORATED FUNCTION")
+    # decorated_arg_function(humeur='piss-bucket', couleur='rouge', bonjour=True)
+    # print("CALLING DECORATED FUNCTION")
+    # decorated_arg_function(humeur='Joyeux', bonjour=True)
+    # print("CALLING DECORATED FUNCTION")
+    # decorated_arg_function(couleur='rouge', humeur='piss-bucket', bonjour=True)
     windchill()
     windchill(some_flag=True)
-    windchill(not_a_real_arg=8)
+    # windchill(not_a_real_arg=8)

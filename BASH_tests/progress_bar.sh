@@ -1,4 +1,4 @@
-#!/bin/zsh
+#!/bin/bash
 #
 # This is experimentation with the carrage return character.
 #
@@ -7,17 +7,17 @@ for ((i=0;i<10;i=i+2)) ; do
 	for ((j=0;j<$i;j++)) ; do
 		echo -n "#"
 	done
-	echo -n "\r"
-	echo -n "\r x"
-	echo -n "\rBonjour"
+	printf "\r"
+	printf "\r x"
+	printf "\rBonjour"
 done
 
-echo -n "\r"
+printf "\r"
 
 sleep 1
-echo -n "AA"
+printf "AA"
 sleep 1
-echo -n "BB"
+printf "BB"
 sleep 1
-echo -n "CC"
+printf "CC"
 

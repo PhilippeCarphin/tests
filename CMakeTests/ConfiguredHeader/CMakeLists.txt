@@ -5,7 +5,7 @@ set(VARNAME a_var_name)
 set(A_MACRO \#define)
 
 project (Tutorial)
-add_executable(Tuto main.cpp)
+add_executable(Tuto.out main.cpp)
 
 configure_file (
   "cmake_config.h.in"

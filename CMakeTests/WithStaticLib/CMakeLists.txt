@@ -7,7 +7,7 @@ project (Tutorial)
 add_library(say_hello say_hello.cpp)
 
 # Defines an executable to build with filename Tuto and source main.cpp
-add_executable(Tuto main.cpp)
+add_executable(Tuto.out main.cpp)
 
 # Causes the Tuto executable to be built with "-lsay_hello"
-target_link_libraries(Tuto say_hello)
+target_link_libraries(Tuto.out say_hello)

@@ -1,0 +1,5 @@
+#define Tutorial_PROGRAM_AUTHOR @Tutorial_PROGRAM_AUTHOR@
+#define USER $ENV{USER}
+#define PWD @PWD@
+#define @VARNAME@ "bucket"
+@A_MACRO@ asdf "fdsa"

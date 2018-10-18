@@ -36,6 +36,33 @@ def decorated_arg_function(humeur=None,
     """
     pass
 
+class PyUnixArg:
+    def __init__(self, argname):
+        self.argname = argnamejk
+class PyUnixOption:
+    # option
+    # optarg
+    pass
+class PyUnixPosarg:
+    # argname
+    # default
+    pass
+class PyUnixFlag:
+    pass
+class PyArgList:
+    # just a list of words
+    # like for mv or rm
+    # except mv is more complicated.  Then you have
+    # to add something like a last_arg property along with the option_before
+    # property.  If last_arg is true, then the function will have
+    # unix_move(target=os.path.join(...), files_to_move=my_file_list)
+    # unix_move(files_to_move=my_file_list, target=os.path.join(...))
+    # So I would specify one kwarg that is a PyArgList, and one that is a PyUnixOption.
+    # and I would get the function above.
+class PyUnixKwarg(name=this, other_prop=that, option_prefix='--', with_equal=False)
+# def make_unix_function(initial_words, args = ((name, default), (name, default), ...), kwargs, options_before=True)
+def make_unix_function(initial_words,list_arg_spec):
+    # list_arg_spec is a list of PyUnixXYarg
 def make_unix_function(initial_words, argspec=[()], kwargspec={}, options_before=True, varargs=false):
     # Validate that argspec is a list of 2-element tuples
     # validate that kwargspec is a dictionary of

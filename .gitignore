@@ -30,10 +30,3 @@ callgrind.out.*
 exec
 .idea
 .nfs*
-CMakeCache.txt
-CMakeFiles
-Makefile
-cmake_install.cmake
-*.a
-*.out
-build

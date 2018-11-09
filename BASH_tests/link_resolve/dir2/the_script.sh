@@ -1,0 +1,1 @@
+../dir1/the_script.sh

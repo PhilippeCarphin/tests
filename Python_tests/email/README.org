@@ -1,0 +1,82 @@
+#+TITLE: Sending emails with python
+
+* Intro
+
+The message itself is wrapped in the =email.EmailMessage= class.  We set it's
+attributes and we send it through an SMTP connection.
+
+This connection is managed by the =smtplib.SMTP= class.  We look up the address
+and port of the SMTP server we want to send to, then we use the =login()= method
+of the =SMTP= class to authenticate.
+
+Finally, putting it all together, we send our email using =SMTP.sendmail(...,
+our_message)= and close the connection.
+
+* The =EmailMessage= object
+
+#+BEGIN_SRC python
+from email.message import EmailMessage
+my_message = EmailMessage()
+my_message['Subject'] = "Subject of email"
+my_message.set_content("This is the content of the email")
+my_message['From'] = from_address
+my_message['To'] = to_address
+#+END_SRC
+
+* SMTP Connection and authentication
+
+#+BEGIN_SRC python
+import smtplib
+from_smtp = 'smtp-mail.outlook.com'
+s = smtplib.SMTP(from_smtp, 587 )
+s.ehlo()
+s.starttls()
+s.ehlo()
+s.login(from_address, password)
+#+END_SRC
+
+* Sending the email
+
+#+BEGIN_SRC python
+s.sendmail(from_address, to_address, my_message.as_string())
+#+END_SRC
+
+or one can use the =send_message()= method that is made to work with the object
+of the =email= package.
+
+#+BEGIN_SRC python
+s.send_message(my_message, from_address, to_address)
+#+END_SRC
+
+Also note that =to_address= can also be a list of strings.  The function checks
+whether it receives a list or a single string.
+
+* Closing the connection
+
+#+BEGIN_SRC python
+s.quit()
+#+END_SRC
+
+* Extra considerations
+
+** Credentials
+
+#+BEGIN_SRC python
+import getpass
+password = getpass.getpass('Say password for user {} : '.format(from_address))
+#+END_SRC
+
+** Addresses
+
+Addresses are stored in a separate file to escape publication on GitHub.
+
+#+BEGIN_SRC python
+try:
+    with open('./.addresses') as f:
+        lines = list(map(lambda l: l.strip(), f.readlines()))
+        from_address = lines[0]
+        to_address = lines[1]
+except Exception:
+    print("There must be a file in PWD called .addresses two lines each containing an email address")
+    sys.exit(1)
+#+END_SRC

@@ -34,5 +34,40 @@ def send_mail(origin, destination, subject, content):
 def test_send_mail():
     send_mail("phil103@hotmail.com", "pcarphin@gmail.com", "el subjecto", "el contento")
 
+
+def send_cmc_command():
+    import sys
+    usage = "Fist argument : subject\nSecondArgument : content\n\n Message will be sent to my CMC address from my hotmail address"
+    subject = ""
+    content = ""
+    try:
+        subject = sys.argv[1]
+    except IndexError:
+        print("send_mail ERROR: Missing argument\n\n" + usage)
+        quit()
+
+    try:
+        content = sys.argv[2]
+    except IndexError:
+        print("send_mail ERROR: Missing argument\n\n" + usage)
+        quit()
+
+    send_mail(
+        "phil103@hotmail.com",
+        "pcarphin@gmail.com",
+        subject, content)
+
+def resolve_nicknames(potential_nickname):
+    if potential_nickname in addresses:
+        return addresses[potential_nickname]
+
+addresses = {
+    "cmc": "philippe.carphin2@canada.ca",
+    "hotmail": "phil103@hotmail.com",
+    "poly": "philippe.carphin@polymtl.ca"
+    }
+def test_send_cmc_command():
+    send_cmc_command()
 if __name__ == "__main__":
-    test_send_mail()
+    # test_send_mail()
+    test_send_cmc_command()

@@ -31,3 +31,4 @@ exec
 .idea
 .nfs*
 cmake-build*
+build

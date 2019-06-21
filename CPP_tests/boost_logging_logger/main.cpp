@@ -1,20 +1,29 @@
-#include <iostream>
-#include <boost/log/core.hpp>
-#include <boost/log/trivial.hpp>
-#include <boost/log/expressions.hpp>
-void init()
-{
-    boost::log::core::get()->set_filter ( boost::log::trivial::severity >= boost::log::trivial::info );
-}
+#include <boost/move/utility_core.hpp>
+#include <boost/log/sources/logger.hpp>
+#include <boost/log/sources/record_ostream.hpp>
+#include <boost/log/sources/global_logger_storage.hpp>
+#include <boost/log/utility/setup/file.hpp>
+#include <boost/log/utility/setup/common_attributes.hpp>
+
+namespace logging = boost::log;
+namespace src = boost::log::sources;
+namespace keywords = boost::log::keywords;
+BOOST_LOG_INLINE_GLOBAL_LOGGER_DEFAULT(my_logger_struct, src::logger_mt)
+
 int main(int, char*[])
 {
-    init();
-    BOOST_LOG_TRIVIAL(trace) << "A trace severity message";
-    BOOST_LOG_TRIVIAL(debug) << "A debug severity message";
-    BOOST_LOG_TRIVIAL(info) << "An informational severity message";
-    BOOST_LOG_TRIVIAL(warning) << "A warning severity message";
-    BOOST_LOG_TRIVIAL(error) << "An error severity message";
-    BOOST_LOG_TRIVIAL(fatal) << "A fatal severity message";
+    src::logger_mt& my_logger_instance = my_logger_struct::get();
+
+    logging::record rec = my_logger_instance.open_record();
+    if(rec)
+    {
+        logging::record_ostream my_record_ostream{rec};
+        my_record_ostream << "Hello World by hand";
+        my_record_ostream.flush();
+        my_logger_instance.push_record(boost::move(rec));
+    }
+
+    BOOST_LOG(my_logger_instance) << "Hello World";
 
     return 0;
 }

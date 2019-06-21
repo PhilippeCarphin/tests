@@ -7,6 +7,7 @@
 #include <boost/log/utility/setup/common_attributes.hpp>
 #include <boost/log/sources/severity_logger.hpp>
 #include <boost/log/sources/record_ostream.hpp>
+#include <boost/log/utility/setup/console.hpp>
 
 namespace logging = boost::log;
 namespace src = boost::log::sources;
@@ -22,6 +23,8 @@ void init()
         keywords::time_based_rotation = sinks::file::rotation_at_time_point(0, 0, 0), /*< ...or at midnight >*/
         keywords::format = "[%TimeStamp%]: %Message%"                                 /*< log record format >*/
     );
+
+    logging::add_console_log(std::cout);
 
     logging::core::get()->set_filter
     (

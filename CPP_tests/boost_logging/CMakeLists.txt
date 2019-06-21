@@ -24,7 +24,7 @@ ADD_EXECUTABLE(main main.cpp)
 
 # At CMC, this line is not necessary, probably because on my mac
 # libraries are installed in places that g++ doens't look in automatically.
-INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
+TARGET_INCLUDE_DIRECTORIES(main PRIVATE ${Boost_INCLUDE_DIR})
 
 # Not Boost_LOG_LIBRARY, not BOOST_LOG_LIBRARIES, not boost_LOG_LIBRARIES,
 # it's Boost_LOG_LIBRARIES

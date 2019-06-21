@@ -12,7 +12,7 @@ ADD_EXECUTABLE(main main.cpp)
 # Added the 'system' component
 FIND_PACKAGE(Boost COMPONENTS log system REQUIRED)
 ADD_DEFINITIONS(-DBOOST_LOG_DYN_LINK)
-INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
+TARGET_INCLUDE_DIRECTORIES(main PRIVATE ${Boost_INCLUDE_DIR})
 # Added linking to the 'system' library of boost
 TARGET_LINK_LIBRARIES(main ${Boost_LOG_LIBRARIES} ${Boost_SYSTEM_LIBRARY})
 

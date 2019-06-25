@@ -1,3 +1,7 @@
+
+
+// TUTORIAL https://www.boost.org/doc/libs/1_63_0/libs/log/doc/html/log/tutorial/sources.html
+
 #include <boost/move/utility_core.hpp>
 #include <boost/log/sources/logger.hpp>
 #include <boost/log/sources/record_ostream.hpp>

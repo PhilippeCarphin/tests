@@ -7,10 +7,14 @@ is_relative_link(){
     [[ $1 != /* ]]
 }
 
+portnorm(){
+    echo "$(cd -P "$(dirname $1)" > /dev/null && pwd)/$(basename $1)"
+}
+
 follow_links()
 {
-    local file="$1"
-    local curr_dir
+    local file="$(portnorm $1)"
+    local curr_dir="$(cd -P "$(dirname $file)" > /dev/null && pwd)"
     while [ -L $file ] ; do
         curr_dir="$(cd -P "$(dirname $file)" > /dev/null && pwd)"
         file="$(readlink $file)"
@@ -18,6 +22,7 @@ follow_links()
             file="$curr_dir/$file"
         fi
     done
+    file=$(portnorm $file)
     echo $file
 }
 

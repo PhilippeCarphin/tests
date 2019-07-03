@@ -20,13 +20,19 @@ FIND_PACKAGE(Boost COMPONENTS log REQUIRED)
 # application configuration accordingly.
 ADD_DEFINITIONS(-DBOOST_LOG_DYN_LINK)
 
-
 ADD_EXECUTABLE(main main.cpp)
 
 # At CMC, this line is not necessary, probably because on my mac
 # libraries are installed in places that g++ doens't look in automatically.
-INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
+TARGET_INCLUDE_DIRECTORIES(main PRIVATE ${Boost_INCLUDE_DIR})
 
 # Not Boost_LOG_LIBRARY, not BOOST_LOG_LIBRARIES, not boost_LOG_LIBRARIES,
 # it's Boost_LOG_LIBRARIES
 TARGET_LINK_LIBRARIES(main ${Boost_LOG_LIBRARIES})
+
+
+# After removing some stuff that was not necessary at home,
+# I tried it again at CMC, it turns out that it needed to link
+# with the threading library.
+FIND_PACKAGE(Threads)
+TARGET_LINK_LIBRARIES(main ${CMAKE_THREAD_LIBS_INIT})

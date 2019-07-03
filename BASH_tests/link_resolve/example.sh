@@ -1,18 +1,57 @@
 #!/bin/bash
 
-source $HOME/Documents/GitHub/tests/BASH_tests/link_resolve/bin/the_script.sh
+
+bootstrap_is_relative_link(){
+    [[ $1 != /* ]] && [ -L $1 ]
+}
+
+bootstrap_follow_links()
+{
+    local file="$(cd -P "$(dirname $1)" > /dev/null && pwd)/$(basename $1)"
+    local curr_dir="$(cd -P "$(dirname $file)" > /dev/null && pwd)"
+    while [ -L $file ] ; do
+        curr_dir="$(cd -P "$(dirname $file)" > /dev/null && pwd)"
+        file="$(readlink $file)"
+        if is_relative_link $file ; then
+            file="$curr_dir/$file"
+        fi
+    done
+    echo $file
+}
+
+
+this_example_file=$(bootstrap_follow_links ${BASH_SOURCE[0]})
+this_example_dir=$(cd -P $(dirname $this_example_file) > /dev/null && pwd)
+
+if ! source $this_example_dir/bin/the_script.sh ; then
+    echo "ERROR : Could not source"
+    exit
+fi
 
 # This finds the current directory of the file while resolving 
 # ref https://stackoverflow.com/a/246128/5795941
 
-# NOTE: This is BASH specific. The point of this script is to show what to do
-# once you have a value of "this_file". For ZSH, this is different. See
-# BASH_tests/detect_sourcing.sh for a more complete solution.
+# we have dir2/example.sh -> ../dir1/example.sh -> ../example.sh
+# which happens to be this exact file.
+this_file=$this_example_dir/links/link_to_file
+echo "==================== Initial =============================="
+echo "this_file = $this_file"
 
-# NOTE: The #!/bin/bash solves the problem of worrying about ZSH but only if the
-# script is being run. If it is sourced, then it will be ZSH that runs it, and
-# so this line won't work.
-this_file=${BASH_SOURCE[0]}
+this_file=$(follow_links $this_file)
+
+echo "================== FINAL VALUES ==========================="
+this_dir=$(cd -P $(dirname $this_file) > /dev/null && pwd)
+if [ -d $this_file ] ; then
+    this_dir=$this_file
+else
+    this_dir=$(cd -P $(dirname $this_file) > /dev/null && pwd)
+fi
+
+echo " this_dir = $this_dir"
+echo "this_file = $this_file"
+
+echo '***************************************************************************'
+this_file=$this_example_dir/links/link_to_dir
 echo "==================== Initial =============================="
 echo "this_file = $this_file"
 
@@ -22,15 +61,11 @@ this_file=$(follow_links $this_file)
 this_file=$(cd -P "$(dirname $this_file)" && pwd)/$(basename $this_file)
 
 echo "================== FINAL VALUES ==========================="
-this_dir=$(cd -P $(dirname $this_file) > /dev/null && pwd)
+if  [ -d $this_file ] ; then
+    this_dir=$this_file
+else
+    this_dir=$(cd -P $(dirname $this_file) > /dev/null && pwd)
+fi
 
 echo " this_dir = $this_dir"
 echo "this_file = $this_file"
-
-# NOTE: The preceding gives a full path to the file after following all symlinks
-# and resolving all the links in the path. If the file is somewhere in your
-# project and you want to have the project root, you can do something like this:
-# echo "$(cd -P "$(dirname $this_file)/.." > /dev/null && pwd)"
-
-python_way=$(python -c "import os,sys; print(os.path.realpath(sys.argv[1]))" ${BASH_SOURCE[0]})
-echo "Python way: $python_way"

@@ -8,15 +8,16 @@ is_relative_link(){
 }
 
 portnorm(){
+    # Portable normalization for OSX
     echo "$(cd -P "$(dirname $1)" > /dev/null && pwd)/$(basename $1)"
 }
 
 follow_links()
 {
     local file="$(portnorm $1)"
-    local curr_dir="$(cd -P "$(dirname $file)" > /dev/null && pwd)"
+    local curr_dir="$(dirname $file)"
     while [ -L $file ] ; do
-        curr_dir="$(cd -P "$(dirname $file)" > /dev/null && pwd)"
+        curr_dir="$(dirname $file)"
         file="$(readlink $file)"
         if is_relative_link $file ; then
             file="$curr_dir/$file"

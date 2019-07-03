@@ -3,27 +3,27 @@
 # Change this to false to see why the 'if is_relative_link' part is necessary.
 handle_relative_links=true
 
-is_relative_link(){
+is_relative_path(){
     [[ $1 != /* ]]
 }
 
-portnorm(){
-    # Portable normalization for OSX
+# Portable normalization for OSX
+portable_normpath(){
     echo "$(cd -P "$(dirname $1)" > /dev/null && pwd)/$(basename $1)"
 }
 
 follow_links()
 {
-    local file="$(portnorm $1)"
+    local file="$(portable_normpath $1)"
     local curr_dir="$(dirname $file)"
     while [ -L $file ] ; do
         curr_dir="$(dirname $file)"
         file="$(readlink $file)"
-        if is_relative_link $file ; then
+        if is_relative_path $file ; then
             file="$curr_dir/$file"
         fi
     done
-    file=$(portnorm $file)
+    file=$(portable_normpath $file)
     echo $file
 }
 

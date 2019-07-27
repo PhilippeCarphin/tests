@@ -1,0 +1,17 @@
+Second connected component
+
+#+BEGIN_SRC sh
+git init
+echo "First connected component" > readme.org
+git add readme.org
+git commit -m "First connected component"
+git branch first_cc
+
+echo "Second connected component" > readme.org
+git add readme.org
+git commit --amend "Second connected component"
+
+# check with gitk 
+gitk --all
+#+END_SRC
+

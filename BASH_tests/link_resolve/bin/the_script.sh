@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# Change this to false to see why the 'if is_relative_link' part is necessary.
-handle_relative_links=true
-
 is_relative_path(){
     [[ $1 != /* ]]
 }

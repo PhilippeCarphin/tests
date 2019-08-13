@@ -1,0 +1,25 @@
+\begin{filecontents}{mytestbib.bib}
+@book{goossens93,
+    author = "Frank Mittelbach and Michel Goossens  and Johannes Braams and David Carlisle  and Chris Rowley",
+    title = "The {LaTeX} Companion",
+    year = "1993",
+    publisher = "Addison-Wesley",
+    address = "Reading, Massachusetts"
+}
+\end{filecontents}
+\documentclass{article}
+\usepackage{filecontents}
+\usepackage{natbib}
+\usepackage{bibentry}
+\nobibliography*
+
+\begin{document}
+
+A full in-text cite of \bibentry{goossens93}.
+
+A regular citation of \cite{goossens93}.
+
+\bibliographystyle{plainnat}
+\bibliography{mytestbib}
+
+\end{document}

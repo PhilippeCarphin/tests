@@ -1,24 +1,32 @@
 #include <iostream>
+#include <string>
 
-extern "C" int to_wrap(char c, float *f);
+extern "C" int to_wrap(char *s, float *f);
 
-extern "C" int to_wrap_good(char c, float f);
+extern "C" int to_wrap_good(char *s, float f);
 
-inline static void wrapper_function(char c, float f)
+inline static void wrapper_function(std::string s, float f)
 {
-    to_wrap(c, &f);
+    to_wrap(&s[0], &f);
 }
 
-void wrapper_function_good(char c, float f)
+inline static void wrapper_function_good(std::string s, float f)
 {
-    to_wrap_good(c, f);
+    to_wrap_good(&s[0], f);
+}
+
+void many_float_params(float f1, float f2, float f3)
+{
+   
 }
 
 int main(void)
 {
-    char c = 'A';
+   std::string s = "The constant pi";
     float f = 3.1415;
 
-    wrapper_function(c,f);
-    wrapper_function_good(c,f);
+
+    wrapper_function(s,f);
+    wrapper_function_good(s,f);
+    wrapper_function(s,f);
 }

@@ -4,10 +4,10 @@ test:all
 	./main
 
 libfrmn.so:frmn.f
-	gfortran -shared  $(LDFLAGS) $^ -o $@
+	gfortran -shared -fPIC $(LDFLAGS) $^ -o $@
 
 librmn.so:rmn.c libfrmn.so
-	gcc -shared -Wno-format -fPIC -std=c99 -O3 $(LDFLAGS) -lfrmn -o $@ $<
+	gcc -shared -Wno-format -fPIC $(LDFLAGS) -lfrmn -o $@ $<
 
 main:main.cpp librmn.so
 	g++ -o $@ $< $(LDFLAGS) -l rmn -l frmn

@@ -26,11 +26,11 @@ int main(void)
 
     // calling f_ezsetfal_() directly from this file causes a segfault
     // f_ezsetval_(c_str, &f);
-    c_ezsetval(c_str, f);
-    c_ezsetval2(c_str, &f);
+    // c_ezsetval(c_str, f);
+    // c_ezsetval2(c_str, &f);
     // c_ezsetval2()
 
     wrapper_function(s,f);
     wrapper_function_good(s,f);
-    wrapper_function(s,f);
+    // wrapper_function(s,f);
 }

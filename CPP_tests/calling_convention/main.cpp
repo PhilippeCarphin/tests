@@ -33,4 +33,5 @@ int main(void)
     wrapper_function(s,f);
     wrapper_function_good(s,f);
     // wrapper_function(s,f);
+    c_to_wrap(&s[0], &f);
 }

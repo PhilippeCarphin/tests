@@ -1,3 +1,3 @@
       subroutine f_ezsetval()
-      print*,"I am f_ezsetval"
+      print*,"Hello World"
       end subroutine f_ezsetval

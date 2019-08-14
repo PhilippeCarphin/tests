@@ -5,7 +5,7 @@ extern "C" void f_ezsetval_(const char *, float *f);
 extern "C" int c_ezsetval(const char *s, float f);
 extern "C" int c_ezsetval2(const char *s, float *f);
 
-extern "C" int c_to_wrap(char *s, float *f);
+extern "C" int c_to_wrap(const char *s, float *f);
 extern "C" int c_to_wrap_good(char *s, float f);
 inline static void wrapper_function(std::string s, float f) {
     // Uncommenting this line causes
@@ -14,7 +14,7 @@ inline static void wrapper_function(std::string s, float f) {
     c_to_wrap(&s[0], &f);
 }
 inline static void wrapper_function_good(std::string s, float f) {
-    std::cout << " C++     :    " << __PRETTY_FUNCTION__ << " " << f << std::endl;
+    std::cout << " C++     :    " << __FUNCTION__ << "() " << f << std::endl;
     c_to_wrap_good(&s[0], f);
 }
 
@@ -33,4 +33,5 @@ int main(void)
     wrapper_function(s,f);
     wrapper_function_good(s,f);
     wrapper_function(s,f);
+    c_to_wrap(c_str, &f);
 }

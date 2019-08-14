@@ -1,12 +1,12 @@
 #include <stdio.h>
 
-int c_to_wrap(char *s, float f) {
+int c_to_wrap(float f) {
         // printf(" C       :    %s() %f (%p)\n",__func__, f, f);
         printf(" C       :    c_to_wrap() %f (%p)\n", f, f);
         return 0;
 }
 
-int c_to_wrap_good(char *s, float f) {
+int c_to_wrap_good(float f) {
         printf(" C       :    %s() %f\n", __func__, f);
         return 0;
 }

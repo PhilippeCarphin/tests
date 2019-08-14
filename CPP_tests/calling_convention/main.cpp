@@ -8,9 +8,13 @@ extern "C" int c_ezsetval2(const char *s, float *f);
 extern "C" int c_to_wrap(char *s, float *f);
 extern "C" int c_to_wrap_good(char *s, float f);
 inline static void wrapper_function(std::string s, float f) {
+    // Uncommenting this line causes
+    // C       :    c_to_wrap() 0.000000 (0x7ffeef4a034c) 
+    // std::cout << " C++     :    " << __FUNCTION__ << "() " << f << std::endl;
     c_to_wrap(&s[0], &f);
 }
 inline static void wrapper_function_good(std::string s, float f) {
+    std::cout << " C++     :    " << __PRETTY_FUNCTION__ << " " << f << std::endl;
     c_to_wrap_good(&s[0], f);
 }
 

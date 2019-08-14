@@ -9,7 +9,7 @@ extern "C" void f_ezsetval_(const char *, float f);
 
 extern "C" int c_ezsetval(const char *s, float f);
 
-// extern "C" int c_ezsetval2(const char *s, float * f);
+extern "C" int c_ezsetval2(const char *s, float * f);
 
 inline static void wrapper_function(std::string s, float f)
 {

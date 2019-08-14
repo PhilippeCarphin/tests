@@ -7,7 +7,7 @@ extern "C" int to_wrap_good(char *s, float f);
 
 extern "C" void f_ezsetval_(const char *, float f);
 
-extern "C" int c_ezsetval(const char *s, float *f);
+extern "C" int c_ezsetval(const char *s, float f);
 
 extern "C" int c_ezsetval2(const char *s, float *f);
 
@@ -33,7 +33,7 @@ int main(void)
     const char *c_str = s.c_str();
 
     // f_ezsetval_(c_str, f);
-    c_ezsetval(c_str, &f);
+    c_ezsetval(c_str, f);
     // c_ezsetval2(c_str, &f);
     // c_ezsetval2()
 

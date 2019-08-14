@@ -1,3 +1,3 @@
-      program hello
-      print *, "Hello World"
-      end program hello
+      subroutine f_ezsetval()
+      print*,"I am f_ezsetval"
+      end subroutine f_ezsetval

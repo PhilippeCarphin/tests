@@ -7,9 +7,9 @@ extern "C" int to_wrap_good(char *s, float f);
 
 extern "C" void f_ezsetval_(const char *, float f);
 
-extern "C" int c_ezsetval(const char *s, float f);
+extern "C" int c_ezsetval(const char *s, float *f);
 
-extern "C" int c_ezsetval2(const char *s, float * f);
+extern "C" int c_ezsetval2(const char *s, float *f);
 
 inline static void wrapper_function(std::string s, float f)
 {
@@ -30,10 +30,12 @@ int main(void)
 {
    std::string s = "The constant pi";
     float f = 3.1415;
-    // const char *c_str = s.c_str();
+    const char *c_str = s.c_str();
 
     // f_ezsetval_(c_str, f);
-    c_ezsetval(s.c_str(), f);
+    c_ezsetval(c_str, &f);
+    // c_ezsetval2(c_str, &f);
+    // c_ezsetval2()
 
     wrapper_function(s,f);
     wrapper_function_good(s,f);

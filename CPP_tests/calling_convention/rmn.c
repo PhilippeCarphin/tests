@@ -1,23 +1,23 @@
 #include <stdio.h>
 
-int to_wrap(char *s, float f)
-{
-        printf("The falue of the float is %f (%p)\n", f, f);
-
+int c_to_wrap(char *s, float f) {
+        // printf(" C       :    %s() %f (%p)\n",__func__, f, f);
+        printf(" C       :    c_to_wrap() %f (%p)\n", f, f);
+        return 0;
 }
 
-int to_wrap_good(char *s, float f)
-{
-        printf("The falue of the float is %f\n", f);
+int c_to_wrap_good(char *s, float f) {
+        printf(" C       :    %s() %f\n", __func__, f);
+        return 0;
 }
 
 extern void f_ezsetval_(char * s, float *fp);
-int c_ezsetval(char *s, float *fp)
-{
+int c_ezsetval(char *s, float *fp) {
         f_ezsetval_(s, fp);
+        return 0;
 }
 
-int c_ezsetval2(char *s, float *f)
-{
+int c_ezsetval2(char *s, float *f) {
         f_ezsetval_(s, f);
+        return 0;
 }

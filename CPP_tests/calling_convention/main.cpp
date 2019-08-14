@@ -28,7 +28,7 @@ inline static void wrapper_function_good(std::string s, float f) {
 int main(void)
 {
    std::string s = "The constant pi";
-    float f = 3.1416;
+   float f = 3.14159265359;
     const char *c_str = s.c_str();
 
     /*

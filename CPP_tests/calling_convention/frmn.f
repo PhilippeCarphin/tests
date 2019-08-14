@@ -1,5 +1,5 @@
       subroutine f_ezsetval(i, f)
       integer i
       real f
-      print*,"Hello World"
+      print*,f
       end subroutine f_ezsetval

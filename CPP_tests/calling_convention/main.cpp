@@ -1,7 +1,7 @@
 #include <iostream>
 #include <string>
 
-extern "C" void f_ezsetval_(const char *, float f);
+extern "C" void f_ezsetval_(const char *, float *f);
 extern "C" int c_ezsetval(const char *s, float f);
 extern "C" int c_ezsetval2(const char *s, float *f);
 
@@ -20,7 +20,8 @@ int main(void)
     float f = 3.1415;
     const char *c_str = s.c_str();
 
-    // f_ezsetval_(c_str, f);
+    // calling f_ezsetfal_() directly from this file causes a segfault
+    // f_ezsetval_(c_str, &f);
     c_ezsetval(c_str, f);
     c_ezsetval2(c_str, &f);
     // c_ezsetval2()

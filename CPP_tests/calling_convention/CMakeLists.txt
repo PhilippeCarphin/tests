@@ -1,4 +1,9 @@
-SET(CMAKE_FORTRAN_COMPILER /usr/bin/gfortran)
+if(${APPLE})
+  SET(CMAKE_FORTRAN_COMPILER /usr/local/bin/gfortran)
+else()
+  SET(CMAKE_FORTRAN_COMPILER /usr/bin/gfortran)
+endif()
+
 ENABLE_LANGUAGE(Fortran)
 cmake_minimum_required(VERSION 3.0)
 PROJECT(calling_convention CXX C FORTRAN)

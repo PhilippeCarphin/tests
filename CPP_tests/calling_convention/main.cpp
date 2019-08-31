@@ -48,10 +48,13 @@ C       :    c_to_wrap_good() 3.141600
 C       :    c_to_wrap() 0.000000 (0x7ffe32445e14)
 
      */
-    std::cout << " C++     :    main() calling wrapper_function(s, " << f << ") ..." << std::endl;
+    std::cout << " C++     :  main() calling wrapper_function(s, " << f << ") ..." << std::endl;
     wrapper_function(s,f);
+    std::cout << " C++     :  main() calling wrapper_function_good(s, " << f << ") ..." << std::endl;
     wrapper_function_good(s,f);
+    std::cout << " C++     :  main() calling c_to_wrap(s, " << f << ") (without wrapper) ..." << std::endl;
     c_to_wrap(&s[0], &f);
+    std::cout << " C++     :  main() calling wrapper_function_cout(s," << f << ") ..." << std::endl;
     wrapper_function_cout(s,f);
 
     /*

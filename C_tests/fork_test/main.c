@@ -9,7 +9,7 @@ void task_of_subprocess(){
 
 int main() {
 
-    fork();
-    printf("Hello, World!\n");
+    int fork_ret_val = fork();
+    printf("Hello, World! fork_ret_val=%d\n", fork_ret_val);
     return 0;
 }

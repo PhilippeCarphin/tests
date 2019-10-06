@@ -18,6 +18,14 @@ void thread_safe_print(std::string msg){
     // destruction of the object =lock= will release the mutex
 }
 
+fonction_a(){
+    std::cout << g_variable_int << std::endl;
+}
+
+fonction_b(){
+    std::cout << g_variable_int << std::endl;
+}
+
 void thread_worker(){
 
     while(true) {

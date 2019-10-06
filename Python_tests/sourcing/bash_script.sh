@@ -1,0 +1,2 @@
+#!/bin/bash
+export VARIABLE_FROM_SOURCED_SCRIPT=this_variable_is_set_from_bash

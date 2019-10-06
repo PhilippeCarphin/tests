@@ -18,12 +18,12 @@ void thread_safe_print(std::string msg){
     // destruction of the object =lock= will release the mutex
 }
 
-fonction_a(){
-    std::cout << g_variable_int << std::endl;
+void fonction_a(){
+    std::cout << "g_variable_int = " << g_variable_int << " and &g_variable_int=" << &g_variable_int << std::endl;
 }
 
-fonction_b(){
-    std::cout << g_variable_int << std::endl;
+void fonction_b(){
+    std::cout << "g_variable_int = " << g_variable_int << " and &g_variable_int=" << &g_variable_int << std::endl;
 }
 
 void thread_worker(){
@@ -34,7 +34,7 @@ void thread_worker(){
         std::thread::id this_id = std::this_thread::get_id();
 
         std::ostringstream oss("This thread has id ");
-        oss << this_id << " And g_variable_int = " << g_variable_int;
+        oss << this_id << " And g_variable_int = " << g_variable_int << " and &g_variable_int=" << &g_variable_int;
 
         thread_safe_print(oss.str());
     }

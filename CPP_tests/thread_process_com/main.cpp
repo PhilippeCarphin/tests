@@ -28,13 +28,14 @@ void fonction_b(){
 
 void thread_worker(){
 
+    int local_var = 0;
     while(true) {
         g_wait_mutex.lock();
 
         std::thread::id this_id = std::this_thread::get_id();
 
         std::ostringstream oss("This thread has id ");
-        oss << this_id << " And g_variable_int = " << g_variable_int << " and &g_variable_int=" << &g_variable_int;
+        oss << this_id << " And g_variable_int = " << g_variable_int << " and &g_variable_int=" << &g_variable_int << " local_var=" << local_var << "&local_var=" << &local_var;
 
         thread_safe_print(oss.str());
     }
@@ -44,8 +45,8 @@ int main() {
 
     // Print thread id of main thread
     std::thread::id main_id = std::this_thread::get_id();
-    std::ostringstream oss("Main thread ID thread has id ");
-    oss << main_id << " And g_variable_int = " << g_variable_int;
+    std::ostringstream oss;
+    oss << "Main thread ID: " << main_id << " And g_variable_int = " << g_variable_int;
     thread_safe_print(oss.str());
 
     // Set global variable to 0

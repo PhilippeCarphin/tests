@@ -17,7 +17,7 @@ public:
 
     ~PhilLogger();
     void log_special(std::string m);
-    static std::unique_ptr<PhilLogger> & instance();
+    static const std::unique_ptr<PhilLogger> & instance();
 
     PhilLogger();
     static std::unique_ptr<PhilLogger> _instance;

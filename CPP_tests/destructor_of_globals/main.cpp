@@ -12,7 +12,7 @@ public:
 };
 
 
-LoggerCreator lc;
+// LoggerCreator lc;
 OtherClass g_oc;
 std::unique_ptr<PhilLogger> PhilLogger::_instance;
 int main(void){

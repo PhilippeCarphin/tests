@@ -1,6 +1,6 @@
 variable = initial
 
-all:
-	@echo "variable = $(variable)"
+all:$(variable)
+	@echo "variable = $(variable), all depend de $<"
 
 variable = final

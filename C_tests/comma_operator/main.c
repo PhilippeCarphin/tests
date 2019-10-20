@@ -29,14 +29,13 @@ int f(int arg)
 }
 
 int main ( int argc, char* argv[]){
-
-   int a;
-   printf ("Commas are wack (a = 4, a += 3) -> %d \n", (a=4, a+=3));
-
-   printf("It executes the statements from left to right "
-		  "and returns the result of the last statement\n");
-
-   printf("Doing (f(1), f(2), f(3)) -> %d \n", (f(1), f(2), f(3)));
-
+   int i = 0;
+   int n = 0;
+   n = (i++, i++, i++, i++, 3);
+   printf("The values are i=%d,  n=%d\n", i, n);
+   n = i++, i++, i++, i++, 11;
+   printf("The values are i=%d,  n=%d\n", i, n);
+   (n = i++), i++, i++, i++, 111;
+   printf("The values are i=%d,  n=%d\n", i, n);
    return 0;
 }

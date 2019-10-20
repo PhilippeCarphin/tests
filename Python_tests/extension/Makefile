@@ -1,18 +1,21 @@
 src=myModule.c
 obj=myModule.o
 lib=myModule.so
+mac_lib = libmyModule.dylib
 
-LDFLAGS +=-shared
+
+LDFLAGS +=-shared -L /Library/Frameworks/Python.framework/Versions/3.7/lib
 LDLIBS  +=
-CFLAGS  += -I /usr/include/python3.5m
+CFLAGS  += -I /Library/Frameworks/Python.framework/Versions/3.7/include/python3.7m
 
-all:
-	$(CC) $(CFLAGS)
+all: lib
 
 lib:$(lib)
 $(lib):$(src)
 	$(CC) $(LDFLAGS) $(CFLAGS) -o $@ $^ $(LDLIBS)
 
 # FROM TCL EXTENSION for reference
-mac:$(src)
-	gcc -dynamiclib -DUSE_TCL_STUBS sayhello.c -L/Library/Frameworks/Tcl.framework -ltclstub8.5 -o libhello.dylib
+mac:$(mac_lib)
+
+$(mac_lib):$(src)
+	gcc -dynamiclib -DUSE_TCL_STUBS $< $(CFLAGS) $(LDFLAGS) -ltclstub8.5 -o $@

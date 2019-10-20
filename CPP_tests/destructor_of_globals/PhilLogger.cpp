@@ -2,6 +2,7 @@
 #include "OtherClass.h"
 
 
+std::unique_ptr<PhilLogger> PhilLogger::_instance;
 PhilLogger::PhilLogger(){
     std::cout << __PRETTY_FUNCTION__ << std::endl;
 }

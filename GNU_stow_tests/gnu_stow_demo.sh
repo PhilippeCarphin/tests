@@ -77,7 +77,7 @@ case $1 in
     ;;
 
 ## THIS ONE IS SUPPOSED TO FAIL
-# This is because the second call needs to delete $storage_dir/bin
+# This is because the second call needs to delete the link fresh_install_site/bin
 # to replace it with a directory containing links, however, it "belongs" to another storage location than the current one, so stow doesn't proceed with the second call.
 --different-storage-fresh)
     stow -t "$new_link_dir" -d "$storage_dir" -S AnApplication
@@ -85,16 +85,10 @@ case $1 in
     ;;
 
 # If stow doesn't have to delete anything, we can install things from different storage locations.
-# So crating empty directories is one way of supporting installation from different stroage locations.
+# So creating empty bin, lib, opt etc. directories is one way of supporting installation from different stroage locations.
 --different-storage)
     stow -t "$link_dir" -d "$storage_dir" -S AnApplication
     stow -t "$link_dir" -d "$other_storage_dir" -S OtherApplication
-    ;;
-
-# Override will not apply if things are from different storage locations.
---different-storage-override)
-    stow -t "$link_dir" -d "$storage_dir" -S AnApplication
-    stow -t "$link_dir" -d "$other_storage_dir" -S link_collision --override='.*'
     ;;
 
 # This doesn't work
@@ -107,6 +101,12 @@ case $1 in
 --fake-common-storage)
     stow -t "$new_link_dir" -d "$this_dir/common" -S AnApplication
     stow -t "$new_link_dir" -d "$this_dir/common" -S OtherApplication
+    ;;
+
+# Override will not apply if things are from different storage locations.
+--different-storage-override)
+    stow -t "$link_dir" -d "$storage_dir" -S AnApplication
+    stow -t "$link_dir" -d "$other_storage_dir" -S link_collision --override='.*'
     ;;
 *)
     echo "\$1 musta have a value in the case"

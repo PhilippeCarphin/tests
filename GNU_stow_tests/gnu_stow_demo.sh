@@ -23,13 +23,23 @@ this_dir=$(dirname "$(follow_links "$0")")
 link_dir=$this_dir/install-site
 storage_dir=$this_dir/storage
 
-# stow -t "$link_dir" -d "$storage_dir" -S AnApplication
+cd $this_dir ; git clean -dfx
+
+if [[ "$1" == --normal ]] ; then
+    stow -t "$link_dir" -d "$storage_dir" -S AnApplication --verbose 5
+fi
+
+if [[ "$1" == --ignore ]] ; then
+    stow -t "$link_dir" -d "$storage_dir" -S AnApplication --ignore 'an_application_other_subdir' --verbose 5
+fi
 
 if [[ "$1" == "--collision" ]] ; then
+    stow -t "$link_dir" -d "$storage_dir" -S AnApplication
     stow -t "$link_dir" -d "$storage_dir" -S link_collision
 fi
 
 if [[ "$1" == "--override" ]] ; then
+    stow -t "$link_dir" -d "$storage_dir" -S AnApplication
     stow -t "$link_dir" -d "$storage_dir" -S link_collision --override='.*'
 fi
 

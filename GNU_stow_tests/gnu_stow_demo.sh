@@ -62,5 +62,6 @@ new_link_dir=$this_dir/new_install_site
 
 if [[ $1 == --next ]] ; then
     stow -t "$new_link_dir" -d "$storage_dir" -S AnApplication
+    stow -t "$new_link_dir" -d "$storage_dir" -S link_collision --override='.*'
 fi
 

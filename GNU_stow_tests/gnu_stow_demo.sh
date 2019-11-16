@@ -23,7 +23,7 @@ this_dir=$(dirname "$(follow_links "$0")")
 link_dir=$this_dir/install-site
 storage_dir=$this_dir/storage
 
-cd $this_dir ; git clean -dfx >/dev/null 2>&1
+cd $this_dir || exit &&  git clean -dfx install-site fresh_install_site
 
 # This is the normal way, this will not run the operation if there
 # are conflicts.  Note, the second stow has no conflicts.
@@ -58,9 +58,15 @@ if [[ "$1" == --ignore ]] ; then
     stow -t "$link_dir" -d "$storage_dir" -S AnApplication --ignore 'an_application_other_subdir' --verbose 5
 fi
 
-new_link_dir=$this_dir/new_install_site
+new_link_dir=$this_dir/fresh_install_site
 
-if [[ $1 == --next ]] ; then
+# Demo with fresh directory, Things to note: After the first stow,
+# $new_link_dir/bin will be a link pointing to ../storage/AnApplication/bin but
+# after the second stow, since both packages have subdirectories called bin,
+# stow will replace the link to ../storage/AnApplication/bin with a directory
+# containing links to all the files in ../storage/AnApplication/bin and then
+# will do the links for OtherApplication.
+if [[ $1 == --fresh ]] ; then
     stow -t "$new_link_dir" -d "$storage_dir" -S AnApplication
     echo "== First one =="
     tree -l $new_link_dir
@@ -69,3 +75,8 @@ if [[ $1 == --next ]] ; then
     tree -l $new_link_dir
 fi
 
+other_storage_dir=$this_dir/other-storage
+
+if [[ $1 == -different-storage ]] ; then
+    stow -t "$new_link_dir" -d "$storage_dir" -S AnApplication
+    stow -t "$new_link_dir" -d "$other_storage_dir" -S OtherApplication

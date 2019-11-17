@@ -1,3 +1,6 @@
 [submodule "ASM_tests"]
 	path = ASM_tests
 	url = ./ASM_tests
+[submodule "GNU_stow_tests"]
+	path = GNU_stow_tests
+	url = ./GNU_stow_tests

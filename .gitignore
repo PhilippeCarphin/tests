@@ -32,3 +32,4 @@ exec
 .nfs*
 cmake-build*
 build
+.vscode

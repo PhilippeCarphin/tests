@@ -1,0 +1,32 @@
+#include <map>
+#include <string>
+#include <iostream>
+
+void print_map(std::map<std::string, std::string> &dict){
+    for(auto it : dict){
+        std::cout << it.first << std::endl;
+    }
+}
+
+    void clear_map(std::map<std::string, std::string> &dict){
+        // for(auto it : dict){
+        //     dict.erase(it);
+        // }
+        auto it = dict.begin();
+        for(;it != dict.end(); ++it){
+            dict.erase(it);
+        }
+    }
+
+int main(){
+    std::map<std::string, std::string> dict;
+
+    dict["phil"] = "6954 de Lanaudiere";
+    dict["paul"] = "12264 de Poutrincourt";
+
+    print_map(dict);
+    clear_map(dict);
+    print_map(dict);
+
+    return 0;
+}

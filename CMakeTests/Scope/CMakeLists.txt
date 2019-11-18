@@ -1,0 +1,8 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 2.0)
+project(scope_test CXX)
+
+set(MY_VARIABLE "TOPLEVEL")
+
+message(STATUS "TOPLEVEL: MY_VARIABLE=${MY_VARIABLE}")
+add_subdirectory(subdir)
+message(STATUS "TOPLEVEL: MY_VARIABLE=${MY_VARIABLE}")

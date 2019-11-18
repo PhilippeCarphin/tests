@@ -1,0 +1,3 @@
+
+set(MY_VARIABLE "${MY_VARIABLE}::subdir")
+message(STATUS "SUBDIR  : MY_VARIABLE=${MY_VARIABLE}")

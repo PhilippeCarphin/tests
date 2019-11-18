@@ -13,7 +13,7 @@ public:
 
 
 // LoggerCreator lc;
-OtherClass g_oc;
+OtherClass oc;
 int main(void){
 
     std::cout << "start of main, first use of PhilSingleton::instance() ..." << std::endl;

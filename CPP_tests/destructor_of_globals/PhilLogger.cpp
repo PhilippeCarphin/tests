@@ -14,7 +14,8 @@ PhilLogger::~PhilLogger(){
     }
 }
 void PhilLogger::log_special(std::string m){
-    special_messages.push_back(m);
+    std::cout << __PRETTY_FUNCTION__ << std::endl;
+    // special_messages.push_back(m);
 }
 const std::unique_ptr<PhilLogger> & PhilLogger::instance(){
     static bool called = false;

@@ -1,0 +1,18 @@
+variables:
+  build_dir: /home/spst900/build_dir
+  source_dir: /home/spst900/source_dir
+  major_version: a
+  minor_version: b
+  patch_level: c
+
+stages:
+  - build
+before_script:
+  - touch /home/phc001/public/gitlab_ci_before_script.txt
+
+build:
+  tags:
+    - runner_tag
+  stage: build
+  script:
+    - touch /home/phc001/public/gitlab_ci_build.txt

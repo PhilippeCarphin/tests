@@ -11,8 +11,6 @@ before_script:
   - echo "Before Script"
 
 build:
-  tags:
-    - runner_tag
   stage: build
   script:
     - echo "Build script"

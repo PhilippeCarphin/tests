@@ -8,11 +8,11 @@ variables:
 stages:
   - build
 before_script:
-  - touch /home/phc001/public/gitlab_ci_before_script.txt
+  - echo "Before Script"
 
 build:
   tags:
     - runner_tag
   stage: build
   script:
-    - touch /home/phc001/public/gitlab_ci_build.txt
+    - echo "Build script"

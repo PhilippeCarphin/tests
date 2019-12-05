@@ -67,5 +67,25 @@ else
     this_dir=$(cd -P $(dirname $this_file) > /dev/null && pwd)
 fi
 
+performance(){
+    echo "================================="
+    echo "checking timing for $1 link chain"
+    start_num=$((999-$1))
+    start_link=${this_example_dir}/performance/link_${start_num}
+    time follow_links ${start_link}
+    time python3 -c "import os,sys; print(os.path.realpath(sys.argv[1]))" ${start_link}
+    if which true_path 1>/dev/null 2>&1 ; then
+        time true_path ${start_link}
+    fi
+}
+performance 150
+performance 10
+performance 1
+performance 2
+performance 3
+performance 4
+performance 5
+performance 6
+
 echo " this_dir = $this_dir"
 echo "this_file = $this_file"

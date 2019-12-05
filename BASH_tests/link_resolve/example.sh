@@ -72,9 +72,12 @@ performance(){
     echo "checking timing for $1 link chain"
     start_num=$((999-$1))
     start_link=${this_example_dir}/performance/link_${start_num}
+    echo "----- bash function ------------"
     time follow_links ${start_link}
+    echo "----- python code ------------"
     time python3 -c "import os,sys; print(os.path.realpath(sys.argv[1]))" ${start_link}
     if which true_path 1>/dev/null 2>&1 ; then
+        echo "----- true_path program ------------"
         time true_path ${start_link}
     fi
 }
@@ -86,6 +89,7 @@ performance 3
 performance 4
 performance 5
 performance 6
+performance 998
 
 echo " this_dir = $this_dir"
 echo "this_file = $this_file"

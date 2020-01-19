@@ -1,0 +1,3 @@
+#!/bin/bash
+
+export SOURCED_FILE_VARIABLE="SOURCED VARIABLE VALUE"

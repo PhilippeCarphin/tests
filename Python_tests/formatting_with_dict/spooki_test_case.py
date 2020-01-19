@@ -56,33 +56,25 @@ class SpookiTestCase:
 
         self.expanded_config = self.configuration.format(**self.__dict__)
         self.complete_config = os.path.expandvars(self.expanded_config)
-
-        # here we should know that input_data was valid as far as
-        # the criteria for being a correct test object
-        # whether the paths exist should come after
-
-    def run_test(self):
         self.command = [
-            'echo',
             'spooki_run', self.complete_config,
             '--writeOptions', self.write_options,
         ]
 
-        result = subprocess.run(self.command, stdout=subprocess.PIPE)
+    def run_test(self):
+        # result = subprocess.run(self.command, stdout=subprocess.PIPE)
+        result = mock_shell_command(self.command, f'STDOUT of {self.configuration}')
+        print(result.stdout)
 
         fst_result = cmp_fst(self.output_file, self.file2compare)
-
         if fst_result.returncode != 0:
             self.report_fst_result(fst_result, self)
             raise SpookiTestFailedException()
 
         cmp_voir_result = cmp_voir(self.output_file, self.file2compare)
-
         if len(cmp_voir_result['different_lines']):
             self.report_cmp_voir_result(cmp_voir_result)
             raise SpookiTestFailedException()
-
-
 
     def report_fst_result(self, result):
         pass
@@ -92,33 +84,42 @@ class SpookiTestCase:
 
 
 def cmp_fst(file_a, file_b):
-    fst_result = subprocess.run([
-        'echo',
+    cmd = [
         'fstcomp', '-iment',
         '-A', file_a,
         '-B', file_b,
-    ], stdout=subprocess.PIPE)
+    ]
+    # fst_result = subprocess.run(cmd, stdout=subprocess.PIPE)
+    fst_result = mock_shell_command(cmd, f'STDOUT of {cmd}')
+
     return fst_result
 
 
+def mock_shell_command(cmd, desired_stdout):
+    print(f'running cmd = {cmd}')
+    r = subprocess.run(['true'])
+    if isinstance(desired_stdout, bytes):
+        r.stdout = desired_stdout
+    else:
+        r.stdout = bytes(desired_stdout, 'utf-8')
+    return r
+
 def voir(file):
-    result = subprocess.run([
-        'echo',
-        'voir\n',
+    shell_command = [
+        'voir',
         file
-    ], stdout=subprocess.PIPE)
-
-    result.stdout = result.stdout.decode('utf-8')
+    ]
+    result = mock_shell_command(shell_command, f'STDOUT of {shell_command}')
+    # result = subprocess.run(shell_command, stdout=subprocess.PIPE)
     return result
-
 
 
 def cmp_voir(file_a, file_b):
     voir_a_result = voir(file_a)
     voir_b_result = voir(file_b)
 
-    voir_a_filtered_output = filter_voir_output(voir_a_result.stdout)
-    voir_b_filtered_output = filter_voir_output(voir_b_result.stdout)
+    voir_a_filtered_output = filter_voir_output(voir_a_result.stdout.decode('utf-8'))
+    voir_b_filtered_output = filter_voir_output(voir_b_result.stdout.decode('utf-8'))
 
     different_lines = compare_filtered_voir_outputs(voir_a_filtered_output, voir_b_filtered_output)
 
@@ -128,25 +129,16 @@ def cmp_voir(file_a, file_b):
 
 
 def crazy_regex_filtering(lines):
-    # string perlCommand("
+    # from verification_utilities.cpp string perlCommand("
     # | egrep '^[ ]+[0-9]+[-][ ][A-Z0-9|\\*|\\!|\\^|\\>]+ '
-    r1 = r'^[ ]+[0-9]+[-][ ][A-Z0-9|\*|\!|\^|\>]+ '
-    re_1 = re.compile(r1)
-
     # | perl -pe 's/^[ ]+[0-9]+[-][ ](.*)/\\1/g'
-    get_good_stuff_re = r's/^[ ]+[0-9]+[-][ ](.*)/\\1/g'
-    re_2 = re.compile(get_good_stuff_re)
     # | sort >");
+    filter_re = re.compile(r'^[ ]+[0-9]+[-][ ][A-Z0-9*!|^>]+ ')
+    select_re = re.compile(r'[ ]+[0-9]+[-][ ](.*)')
 
-    def extract_good_stuff(line):
-        m = re_2.match(line)
-        if m:
-            return m.group(0)
+    new_lines = [select_re.match(l).group(0) for l in lines if filter_re.match(l)]
 
-    good_stuff_lines = [re_2.match(l).group(0) for l in lines if re_1.match(l)]
-
-    print(lines)
-    return lines
+    return sorted(new_lines)
 
 
 def filter_voir_output(voir_output):
@@ -168,6 +160,11 @@ def main():
     os.environ['SPOOKI_TMPDIR'] = '/tmp/spooki_tmp/'
     s = SpookiTestCase(data)
     s.run_test()
+
+
+def dollar_sign_parens(cmd):
+    assert(isinstance(cmd, list))
+    return subprocess.run(cmd, stdout=subprocess.PIPE).stdout
 
 
 if __name__ == "__main__":

@@ -1,4 +1,5 @@
 #include <iostream>
+#include <tbb/tbb.h>
 // template<typename Op, typename Arg1>
 // void transformLinear(Op op, Arg1 arg1, Arg1 arg1End)
 // {
@@ -60,6 +61,15 @@ void transform_paul(Op op, int N, T t, Ts ... ts)
     }
 }
 
+template<typename Op>
+void transform_TBB(Op op, int N){
+    std::cout << __PRETTY_FUNCTION__ << std::endl;
+    tbb::parallel_for(tbb::blocked_range<int>(0, N), [&](tbb::blocked_range<int> &r){
+        for(int i = r.begin(); i != r.end(); i++){
+            op(i);
+        }
+    });
+}
 
 
 template<typename T>

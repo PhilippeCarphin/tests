@@ -46,5 +46,15 @@ int main(void)
     check();
     std::cout << "Success with transform_paul" << std::endl;
 
+    std::cout << std::endl << "============= TBB ========================" << std::endl;
+    reset();
+    for(int i = 0; i < N; i++){c[i] = 0; d[i] = 0;}
+    auto op = [&](int i){
+        c[i] = a[i] + b[i];
+        d[i] = a[i] + b[i] + c[i];
+    };
+    transform_TBB(op, N);
+    check();
+    std::cout << "Success with Intel TBB" << std::endl;
     return 0;
 }

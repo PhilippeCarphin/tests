@@ -21,6 +21,7 @@
 //         op(*arg1,*std::forward<Args>(args)...);    
 //     }
 // }
+
 template<typename Op, typename T>
 void transform_phil(Op op, int N, T t)
 {
@@ -32,7 +33,6 @@ template<typename Op, typename T, typename ... Ts>
 void transform_phil(Op op, int N, T t, Ts ... ts)
 {
     std::cout << __PRETTY_FUNCTION__ << std::endl;
-    // op(N, t, std::forward<Ts>(ts)...);
     op(N, t, ts...);
 }
 
@@ -54,8 +54,6 @@ template<typename Op, typename T, typename ... Ts>
 void transform_paul(Op op, int N, T t, Ts ... ts)
 {
     std::cout << __PRETTY_FUNCTION__ << std::endl;
-    // op(N, t, std::forward<Ts>(ts)...);
-    // for(;arg1 != arg1End; ++arg1, noOp(std::forward<Args>(++args)...))
     for(int i = 0; i < N; i++, ++t, noOp(std::forward<Ts>(++ts)...)){
         op(N, t, ts...);
     }

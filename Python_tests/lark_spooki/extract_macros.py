@@ -22,43 +22,31 @@ def extract_macros(text):
             macros[r.group(1)] = r.group(2)
     return macros
 
-        
-
-# print(extract_macros(t))
-# r = macro_re.search(test_str)
-# print(r.group(1), r.group(2))
-# print(extract_macros(t))
-
 macros = extract_macros(t)
 parsed_macros = macro_parser(macros['OPTIONS_COLLECTION'])
 
-# for pm in parsed_macros:
-#     for i in range(len(pm)):
-#         if isinstance(pm[i], lark.Token):
-#             print("TOKEN : ", pm[i])
-#             pm[i] = str(pm[i])
+def reformat_define_choices(choices_sequence):
+    return '[' + choices_sequence.replace(')(', '|').strip('()') + ']'
+
+def resolve_create_define_choices(macro):
+    r = re.search(r'([a-zA-Z_]+) *\( *([a-zA-Z_]+).*', macro)
+    if r:
+        return reformat_define_choices(macros[r.group(2)])
+
+def evaluate_macro(macro):
+    evaluated = macros[macro]
+    if 'CREATE_DEFINE_CHOICES' in evaluated:
+        evaluated = resolve_create_define_choices(evaluated)
+    return evaluated.strip('"\'')
+
 def eval_and_concatenate(help, macros):
     out_list = []
-    # print(help)
     for elem in help:
-        # print(f'elem {elem}, type {type(elem)}')
         if isinstance(elem, lark.lexer.Token):
-            # print("TOKEN")
-            new_elem = macros[elem]
-            if 'CREATE_DEFINE_CHOICES' in new_elem:
-                # print(f'new_elem = {new_elem}')
-                r = re.search(r'([a-zA-Z_]+) *\( *([a-zA-Z_]+).*', new_elem)
-                # print(f'r.group(1) = {r.group(1)}')
-                # print(f'r.group(2) = {r.group(2)}')
-                if r:
-                    new_elem = macros[r.group(2)]
-                    # print(f'new_elem = {new_elem}')
-            out_list.append(new_elem)
+            out_list.append(evaluate_macro(elem))
         elif isinstance(elem, str):
             out_list.append(elem)
-
-    # print(type(help))
-    return ''.join(out_list)
+    return ' '.join(out_list).replace('\\n', '\n')
 
 def macro_array_to_dict(macro_array, macros):
     return {
@@ -74,10 +62,13 @@ def macro_array_to_dict(macro_array, macros):
 def process_macros(parsed_macros, macros):
     macro_dicts = map(lambda m: macro_array_to_dict(m, macros), parsed_macros)
     for md in macro_dicts:
-        print(md)
+        print(md['name'])
+        print(md['help'])
+        print('-------------------------')
+
         pass
-# if isinstance(parsed_macros, list):
-#     for macro in parsed_macros:
 
 process_macros(parsed_macros, macros)
+
+
 

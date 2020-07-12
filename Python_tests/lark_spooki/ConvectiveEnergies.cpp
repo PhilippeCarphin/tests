@@ -1,0 +1,25 @@
+#define LIFTEDFROM "[SURFACE|MEAN_LAYER|MOST_UNSTABLE]"
+#define CAPETYPE "[UNBOUNDED|BOUNDED|BOTH]"
+#define VIRTUALTEMPERATURE_CHOICES (YES)(NO)
+#define VIRTUALTEMPERATURE CREATE_DEFINE_CHOICES ( VIRTUALTEMPERATURE_CHOICES )
+CREATE_ENUM ( VIRTUALTEMPERATURE_ENUM, VIRTUALTEMPERATURE_CHOICES )
+#define VALID_UNITS_BASEMEANLAYER     "[mb|Pa|hPa|kPa]"
+#define VALID_UNITS_DELTAMEANLAYER    "[mb|Pa|hPa|kPa]"
+#define VALID_UNITS_DELTAMOSTUNSTABLE "[mb|Pa|hPa|kPa]"
+#define VALID_UNITS_ENDLEVEL  "[mb|Pa|hPa|kPa]"
+#define VALID_UNITS_INCREMENT "[mb|Pa|hPa|kPa]"
+#define VALID_UNITS_FOR_BOUNDS "[m|dam|km|C]"
+#define OUTPUTCONVLEVELS      "[LFC_PRESSURE|LFC_HEIGHT|EL_PRESSURE|EL_HEIGHT]"
+#define SELECTCRITERIA_CHOICES (TEMPERATURE)(HEIGHT)
+#define SELECTCRITERIA  CREATE_DEFINE_CHOICES ( SELECTCRITERIA_CHOICES )
+CREATE_ENUM ( SELECTCRITERIA_ENUM, SELECTCRITERIA_CHOICES )
+
+#define OPTIONS_COLLECTION \
+((liftedFrom, "", string, TRUE,  FALSE, "", \
+    "Level from which parcel is lifted. \n  " \
+    "Supported types: [STRING" LIFTEDFROM "] \n  " \
+    "Ex: --liftedFrom SURFACE \n")) \
+((virtualTemperature, "", VIRTUALTEMPERATURE_ENUM_t, TRUE,  FALSE, "", \
+    "Specify if the virtual temperature correction should be applied. \n  " \
+    "Supported types: [STRING" VIRTUALTEMPERATURE "] \n  " \
+    "Ex: --virtualTemperature YES \n"))

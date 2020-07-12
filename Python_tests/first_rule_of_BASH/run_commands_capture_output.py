@@ -31,7 +31,7 @@ print(f'stderr={stderr}')
 
 # Can also output to files...
 with open('./ls-output.txt', 'w+') as f:
-    subprocess.run(['ls', '-l', os.environ['HOME']], stdout=f)
+    subprocess.run(['ls', '-l', os.environ['HOME']], stdout=f, stderr=subprocess.DEVNULL)
 
 # But for me, it is more common to do this:
 result_object = subprocess.run(['ls', '-l', os.environ['HOME']], stdout=subprocess.PIPE, stderr=subprocess.PIPE)

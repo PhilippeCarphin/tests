@@ -37,7 +37,7 @@ macro_grammar = """
 class TreeToArray(Transformer):
     @v_args(inline=True)
     def name(self, s):
-        return str(s)
+        return s
     @v_args(inline=True)
     def string(self, args):
         return args[1:-1]

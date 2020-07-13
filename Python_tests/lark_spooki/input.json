@@ -1,0 +1,26 @@
+[
+    {
+        "name": "liftedFrom",
+        "sname": "",
+        "type": "string",
+        "mandatory": true,
+        "has_default": true,
+        "default_value": "AIRDENSITY_ENUM::ACTUAL",
+        "help": "Level from which parcel is lifted. \n   Supported types: [STRING [SURFACE|MEAN_LAYER|MOST_UNSTABLE] ] \n   Ex: --liftedFrom SURFACE \n",
+        "enum": [
+            "ACTUAL",
+            "FICTITIOUS",
+            "NOMINAL"
+        ]
+    },
+    {
+        "name": "virtualTemperature",
+        "sname": "",
+        "type": "VIRTUALTEMPERATURE_ENUM_t",
+        "mandatory": false,
+        "has_default": true,
+        "default_value": "VIRTUAL_TEMPERATURE_ENUM::BONJOUR",
+        "help": "Specify if the virtual temperature correction should be applied. \n   Supported types: [STRING [YES|NO] ] \n   Ex: --virtualTemperature YES \n"
+    }
+]
+

@@ -1,3 +1,4 @@
+import json
 import lark
 import os
 import re
@@ -6,24 +7,18 @@ from lark_macro_sequence import macro_parser
 
 macro_re = re.compile(r'#define ([a-zA-Z0-9_]*) *(.*)')
 test_str = '#define MACRO_NAME asdf asdf asdf'
-with open('ConvectiveEnergies.cpp', 'r', encoding='iso8859-1') as f:
-    t = f.read()
 
 def remove_escaped_newlines(text):
     return text.replace("\\\n", " ")
 
 def extract_macros(text):
     lines = remove_escaped_newlines(text).splitlines()
-    # pprint.pprint(lines) 
     macros = {}
     for l in lines:
         r = macro_re.search(l)
         if r:
             macros[r.group(1)] = r.group(2)
     return macros
-
-macros = extract_macros(t)
-parsed_macros = macro_parser(macros['OPTIONS_COLLECTION'])
 
 def reformat_define_choices(choices_sequence):
     return '[' + choices_sequence.replace(')(', '|').strip('()') + ']'
@@ -59,16 +54,24 @@ def macro_array_to_dict(macro_array, macros):
         'help': eval_and_concatenate(macro_array[6], macros)
     }
 
-def process_macros(parsed_macros, macros):
-    macro_dicts = map(lambda m: macro_array_to_dict(m, macros), parsed_macros)
-    for md in macro_dicts:
-        print(md['name'])
-        print(md['help'])
-        print('-------------------------')
+def process_parsed_options(parsed_macros, macros):
+    return [macro_array_to_dict(m, macros) for m in parsed_macros]
 
-        pass
+with open('ConvectiveEnergies.cpp', 'r', encoding='iso8859-1') as f:
+    t = f.read()
 
-process_macros(parsed_macros, macros)
+macros = extract_macros(t)
+parsed_options = macro_parser(macros['OPTIONS_COLLECTION'])
+options = process_parsed_options(parsed_options, macros)
+for opt in options:
+    print(f"name: {opt['name']}, type: {opt['type']}, mandatory: {opt['mandatory']}, has_default: {opt['has_default']}, default: {opt['default_value']}")
+    print(opt['help'])
+    print('-------------------------')
+
+    pass
+
+with open('convective_energies_option.json', 'w+') as f:
+    json.dump(options, f, indent=4)
 
 
 

@@ -6,10 +6,9 @@ true  = \x y -> x
 false = \x y -> y
 
 not_op = \b   -> b false true
--- a compléter --
+-- a compléter, remplacer "true" par la réponse --
 and_op = \x y -> true -- hint : if x is false, return false without checking y, otherwise return whatever y is.
 or_op  = \x y -> true -- hint : if x is true, return true without checking y, otherwise, return whatever y is.
-<<<<<<< Updated upstream
 
 
 -- Lambda calculus-y definition of the integer

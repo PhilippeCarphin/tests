@@ -70,7 +70,7 @@ for opt in options:
 
     pass
 
-with open('convective_energies_option.json', 'w+') as f:
+with open('convective_energies_option.out.json', 'w+') as f:
     json.dump(options, f, indent=4)
 
 

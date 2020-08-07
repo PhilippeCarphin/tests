@@ -17,15 +17,15 @@ from lark.reconstruct import Reconstructor
 #     "Ex: --virtualTemperature YES \n"))
 macro_grammar = """
     ?start:value
-    ?value: macro
+    ?value: option_collection
     
-    macro : array (array)*
-    array  : "((" name "," string "," name "," name "," name "," string "," item "))"
+    option_collection : option+
+    option  : "((" name "," string "," name "," name "," name "," string "," help "))"
 
     string: ESCAPED_STRING
     name : CNAME
 
-    item : (name | string)*
+    help : (name | string)*
 
     %import common.CNAME
     %import common.ESCAPED_STRING
@@ -46,13 +46,13 @@ class TreeToArray(Transformer):
     macro = list
     pass
 
-macro_parser_obj = Lark(macro_grammar, parser='lalr', lexer='standard', propagate_positions=False, maybe_placeholders=False, transformer=TreeToArray())
-# macro_parser_obj = Lark(macro_grammar, parser='lalr', lexer='standard')
+macro_parser_obj = Lark(
+    macro_grammar,
+    parser='lalr',
+    lexer='standard',
+    propagate_positions=False,
+    maybe_placeholders=False,
+    transformer=TreeToArray()
+)
 
 macro_parser = macro_parser_obj.parse
-# parsed = macro_parser.parse(macro)
-
-# import pprint
-
-
-# print(parsed.pretty())

@@ -9,6 +9,7 @@
 //        OPTIONS(OPTIONS_COLLECTION);
 //        HIDDEN_OPTIONS(HIDDEN_OPTIONS_COLLECTION);
 //    END
+
     void addBasicOptions() {
           for (::boost::log::record _boost_log_record_1131 = ((pst::spooki_logging::Instance()->_boost_severity_logger)). open_record((::boost::log::keywords::severity = (pst::log_severity_level::debug))); ! !_boost_log_record_1131;)
                ::boost::log::aux::make_record_pump(((pst::spooki_logging::Instance()->_boost_severity_logger)), _boost_log_record_1131).stream() << __PRETTY_FUNCTION__ << " : " << 1131 << "] " << std::endl;

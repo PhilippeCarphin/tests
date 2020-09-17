@@ -11,7 +11,7 @@ import sys
 
 # Root will start with the initial directory and traverse the directory tree.
 # At each iteration, we are given the regular files (non-directories)
-# in root, 
+# in root,
 
 # The dirs variable is somewhat unnecessary since the {root}/{d} for d in dirs
 # will eventually be hit by root
@@ -21,7 +21,7 @@ for root, dirs, files in os.walk(os.getcwd()):
         print(os.path.join(root, f))
     for d in dirs:
         print(os.path.join(root, d))
-    
+
 def get_json_files(dir):
     for root, _, files in os.walk(dir):
         for f in files:

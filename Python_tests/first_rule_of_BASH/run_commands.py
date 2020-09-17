@@ -1,11 +1,13 @@
 import os
 import subprocess
 
+def block():
+    input("Press any key to continue")
 # TL;DR:
 # os.system(cmd) will pass your cmd to '/bin/sh'
 # it will expand dollar-signs
 # subprocess.run([program, arg1, arg2, ...]) takes a list and doesn't do
-# dollar-sign expansion.  
+# dollar-sign expansion.
 # It is the preferred way of running commands in Python
 # especially if we want to get the output back.
 
@@ -15,51 +17,61 @@ import subprocess
 # binary files that one might want to run.
 
 # Run shell commands
+print( """os.system(cmd) will pass your cmd to '/bin/sh' it will expand dollar-signs subprocess.run([program, arg1, arg2, ...]) takes a list and doesn't do dollar-sign expansion.  subprocess is the preferred way of running commands in Python especially if we want to get the output back.""")
 print("PYTHON: os.system('echo $USER')")
 os.system('echo $USER')
+block()
 
-# obviously this is not a substitute for a shell session
-print("\nPYTHON: multiple os.system() do not form a shell session")
+print("\nMultiple os.system() do not form a shell session")
+print("PYTHON: os.system('NEW_VAR=ALLO')")
 os.system('NEW_VAR=ALLO')
+print("PYTHON: os.system('echo $NEW_VAR')")
 os.system('echo "NEW_VAR=${NEW_VAR}"')
+block()
 
-# But Python has variables, they're much better!
-print("\nPYTHON: But Python has variables")
-new_var = "allo"
-os.system(f'echo "new_var={new_var}"')
+print("\nBut Python has variables and they're muche better!")
+print("PYTHON: new_var = 'allo'")
+new_var = 'allo'
+print('PYTHON: print(f"new_var = \'{new_var}\'"))')
+print(f"new_var = '{new_var}'")
+block()
 
-# We shouldn't be using os.system() to run shell builtins
-print(f'PYTHON: new_var = {new_var}')
-
-# And to run commands, (scripts or binaries), we should be using
-# the subprocess module
-print(f'\nPYTHON: subprocess.run()')
+print(f'\nWe should use subprocess.run() to run commands inside of python')
+print("PYTHON: subprocess.run(['echo', 'This is a subprocess'])")
 subprocess.run(['echo', 'This is a subprocess'])
+block()
 
 # But what if I want to user environment variables in my command?
-print(f'\nPYTHON: subprocess.run() does not pass through a shell so no $VAR expansion')
+print(f'\nsubprocess.run() does not pass through a shell so no $VAR expansion')
+print("PYTHON: subprocess.run(['ls', '$SPOOKI_DIR'])")
 subprocess.run(['ls', '$SPOOKI_DIR'])
+block()
 # That didn't work, subprocess doesn't pass things through a shell
 # so our program just gets argv[1] = '$SPOOKI_DIR'
-print(f'\nPYTHON: os.system() does $VAR expansion, but is that a good thing?')
+print(f'\nos.system() does $VAR expansion, but is that a good thing?')
+print("PYTHON: os.system('ls $SPOOKI_DIR')")
 os.system('ls $SPOOKI_DIR')
-print(f'PYTHON: No, because we wanted the content of $SPOOKI_DIR, this should fail but instead it just did something else than what we wanted')
+print(f'No, because we wanted the content of $SPOOKI_DIR, this should fail but instead it just did something else than what we wanted')
 # Well that worked ... but only because the variable SPOOKI_DIR
 # was unset, and this just did an 'ls' of PWD.
 # But we, as programmers, prefer when things blow up when the program
 # can't do what we want.
+block()
 
-print(f'\nPYTHON: If we use Python to do our things, the command will fail instead of doing something else than what we want')
+print(f'\nIf we use Python to do our things, the command will fail instead of doing something else than what we want')
 try:
+    print("PYTHON: subprocess.run(['ls', os.environ['SPOOKI_DIR']])")
     subprocess.run(['ls', os.environ['SPOOKI_DIR']])
 except KeyError as e:
     print(f'KeyError {e}')
     print("Oh, there is no SPOOKI_DIR environment variable, cool, thanks for letting me know instead of doing an ls of PWD!")
-
+block()
 # APPENDIX ABOUT LS:
 # Since I was using 'ls', I should mention how to
 # actually do it in Python:
-print(f'\nPYTHON: Listing HOME directory')
+print("\nNOTE: We should simply have been using os.listdir()")
+print(f"PYTHON: home_contents = os.listdir(os.environ['HOME'])")
+print("print(home_contents)")
 print(os.listdir(os.environ['HOME']))
 # Different behavior from BASH, I know, BASH wouldn't have
 # shown the hidden files...

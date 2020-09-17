@@ -33,3 +33,4 @@ exec
 cmake-build*
 build
 .vscode
+**/lark_spooki

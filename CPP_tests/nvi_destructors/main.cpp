@@ -1,8 +1,13 @@
 #include <iostream>
+#include <memory>
+
 
 class NviBase
 {
     public:
+        virtual ~NviBase(){
+            std::cerr << __PRETTY_FUNCTION__ << std::endl;
+        }
         void nvi_destroy(){
             std::cerr << __PRETTY_FUNCTION__ << std::endl;
             if(_normal_termination){
@@ -25,7 +30,7 @@ class NviBase
 class NviDerived : public NviBase
 {
     public:
-        ~NviDerived(){
+        virtual ~NviDerived(){
             std::cerr << __PRETTY_FUNCTION__ << std::endl;
             nvi_destroy();
         }
@@ -63,13 +68,21 @@ void do_demos(){
     demo_abnormal();
 }
 
+void demo_smart_ptr(){
+    std::shared_ptr<NviBase> nvi_derived = std::make_shared<NviDerived>();
+    nvi_derived->_normal_termination = true;
+}
+
+
 int main(void){
 
+    demo_smart_ptr();
     try{
         do_demos();
     } catch (...) {
         throw;
     }
+
 
     return 0;
 }

@@ -3,6 +3,7 @@ from contextlib import contextmanager
 class DemoError(BaseException):
     pass
 
+
 @contextmanager
 def SimpleContextManager(id):
     thing_I_keep = 2*id
@@ -27,14 +28,18 @@ def test_simple_context_manager_catch():
 
 def test_simple_context_manager_no_catch():
     print("USING ValueError")
-    with SimpleContextManager(21) as thing_I_got:
+    with SimpleContextManager(22) as thing_I_got:
         print(f'    thing_I_got in test function : {thing_I_got}')
         print('    The context manager can catch exceptions thrown here')
         raise ValueError("thing_I_got is not what I wanted")
         print('    The exception still takes us out of the block')
+
+def test_without_context():
+    a = SimpleContextManager(23)
 
 test_simple_context_manager_catch()
 try:
     test_simple_context_manager_no_catch()
 except ValueError as e:
     print("This time nobody caught the exception. BUT THE FILE ALWAYS GOT CLOSED")
+test_without_context()

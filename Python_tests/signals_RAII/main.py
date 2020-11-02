@@ -3,34 +3,107 @@ import os
 import tempfile
 import atexit
 
+
+# Remember name
+tmpdir_path = None
+
 class Donesies(Exception):
     pass
 
-def donesies(signum, stackframe, string):
-    print(f'string = {string}')
-    print(f'signum = {signum}')
-    print(stackframe)
-    raise Donesies
+class SuperDone(Exception):
+    pass
 
-def exit_func():
-    print("Exit function registered with atexit.register()")
+def donesies(signum, stackframe):
+    print(f'Handling signal {signal.Signals(signum).name}')
+    raise Donesies("DONESIES")
+
+def super_done(signum, stackframe):
+    print(f'SUPERDONE signal handler')
+    raise SuperDone
+
+
+def atexit_func():
+    print("atexit_func() called")
 
 def cleanup_func():
-    print("Cleanup done through RAII, tempdir will delete itself")
+    print("Cleanup done through RAII, tmpdir will delete itself")
+
+def loop():
+    d = dict()
+    print("Looping ...")
+    while(True):
+        pass
+
+class MyTmpDir(tempfile.TemporaryDirectory):
+    def __init__(self, *args, **kwargs):
+        prefix = kwargs['prefix'] + 'deriv_'
+        super().__init__(dir=kwargs['dir'], prefix=prefix)
+    def __del__(self):
+        print(f'Deleting {self.name}')
+
+def main():
+    global tmpdir_path
+    print(f"PID = {os.getpid()}")
+    if RAII:
+        # mtd = MyTmpDir(dir=os.getcwd(), prefix='tmpdir_')
+        tmpdir = tempfile.TemporaryDirectory(dir=os.getcwd(), prefix='tmpdir_')
+        tmpdir_path = tmpdir.name
+        tmpdir_extra_ref = tmpdir
+        print(f'TemporaryDirectory object {tmpdir} created')
+    else:
+        tmpdir = tempfile.mkdtemp(dir=os.getcwd(), prefix='tmpdir_')
+        tmpdir_path = tmpdir
+        print(tmpdir)
+    try:
+        loop()
+    except Donesies:
+        pass
+    finally:
+        cleanup_func()
+
+def set_signal_handlers():
+    signal.signal(signal.SIGINT,  donesies)
+    signal.signal(signal.SIGQUIT, donesies)
+    signal.signal(signal.SIGTERM, super_done)
+
 
 if __name__ == "__main__":
-    tmpdir = tempfile.TemporaryDirectory(dir=os.getcwd(), prefix='tmpdir_')
-    signal.signal(signal.SIGTERM, lambda n,s: donesies(n,s,"SIGTERM"))
-    signal.signal(signal.SIGINT,  lambda n,s: donesies(n,s,"SIGINT"))
-    signal.signal(signal.SIGQUIT, lambda n,s: donesies(n,s,"SIGQUIT"))
-    atexit.register(lambda : print("piss bucket"))
+
+    RAII = True
+
+    set_signal_handlers()
+    atexit.register(atexit_func)
+
     try:
-        print("Try Block")
-        d = dict()
-        while(True):
+
+        #
+        # Main function has an RAII class that manages a temporary directory
+        # The goal of this is to show that after this function is finished,
+        # then our temporary directory has disappeared.
+        #
+        main()
+        print("BACK FROM MAIN()")
+
+        #
+        # Programmatically check for the existence of tmpdir
+        # after main function.  This is a CPython property
+        #
+        if tmpdir_path:
+            if os.path.exists(tmpdir_path):
+                print(f'{tmpdir_path} still exists and was not cleaned up')
+            else:
+                print(f"'{tmpdir_path} doesn't exist")
+
+        #
+        # Wait for second SIGINT to check that exiting main has
+        # really removed the tmpdir instead of the removal happening when we
+        # exit the script itself.
+        #
+        try:
+            while True:
+                pass
+        except Donesies:
             pass
-    except Donesies as e:
-        cleanup_func()
-    # finally:
-        # cleanup_func()
-        # No finall
+    except SuperDone:
+        pass
+

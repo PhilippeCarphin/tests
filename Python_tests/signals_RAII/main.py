@@ -7,15 +7,15 @@ import atexit
 # Remember name
 tmpdir_path = None
 
-class Donesies(Exception):
+class MediumStoppage(Exception):
     pass
 
 class SuperDone(Exception):
     pass
 
-def donesies(signum, stackframe):
+def medium_stoppage(signum, stackframe):
     print(f'Handling signal {signal.Signals(signum).name}')
-    raise Donesies("DONESIES")
+    raise MediumStoppage("DONESIES")
 
 def super_done(signum, stackframe):
     print(f'SUPERDONE signal handler')
@@ -62,8 +62,8 @@ def main():
         cleanup_func()
 
 def set_signal_handlers():
-    signal.signal(signal.SIGINT,  donesies)
-    signal.signal(signal.SIGQUIT, donesies)
+    signal.signal(signal.SIGINT,  medium_stoppage)
+    signal.signal(signal.SIGQUIT, medium_stoppage)
     signal.signal(signal.SIGTERM, super_done)
 
 
@@ -102,7 +102,7 @@ if __name__ == "__main__":
         try:
             while True:
                 pass
-        except Donesies:
+        except MediumStoppage:
             pass
     except SuperDone:
         pass

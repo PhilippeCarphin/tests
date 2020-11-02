@@ -4,3 +4,6 @@
 [submodule "GNU_stow_tests"]
 	path = GNU_stow_tests
 	url = ../GNU_stow_tests/
+[submodule "git_tests/multi_level_submodule_test"]
+	path = git_tests/multi_level_submodule_test
+	url = https://github.com/philippecarphin/super_repo

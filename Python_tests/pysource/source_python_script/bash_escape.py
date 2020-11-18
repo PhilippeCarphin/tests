@@ -42,16 +42,23 @@ def esc_quote(v):
 def esc_single_quote(v):
     return re.sub(r"'", r"\'", v)
 
-def export_env_with_extra_escaping(env):
-        out = io.StringIO()
+def export_env_with_extra_escaping(env, shell='bash'):
+    out = io.StringIO()
+    if shell == "bash":
         out.write(''.join(f'declare -x {key}="{esc_quote(value)}"\n' for key, value in env.items()))
-        # out.write(''.join(f"declare -x {key}='{esc_single_quote(value)}'\n" for key, value in env.items()))
-        sys.stdout.write(out.getvalue())
+    else:
+        out.write(''.join(f'set -x {key} "{esc_quote(value)}"\n' for key, value in env.items()))
+    # out.write(''.join(f"declare -x {key}='{esc_single_quote(value)}'\n" for key, value in env.items()))
+    return out.getvalue()
 
 def export(env):
     if env:
         out = io.StringIO()
         out.write(''.join(f'declare -x {key}="{value}"\n' for key, value in env.items()))
-        sys.stdout.write(out.getvalue())
+        return out.getvalue()
+    else:
+        return None
 
-export_env_with_extra_escaping(new_environment)
+if __name__ == "__main__":
+    sys.stdout.write(export_env_with_extra_escaping(new_environment))
+    # print(sys.argv)

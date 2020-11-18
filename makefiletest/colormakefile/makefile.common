@@ -1,0 +1,25 @@
+################################################################################
+# Color codes for terminal output
+################################################################################
+red=9
+green=10
+yellow=11
+blue=12
+magenta=13
+cyan=14
+white=7
+grey=8
+black=0
+none=-1
+background=$(shell tput setab $($3))
+foreground=$(shell tput setaf $($2))
+cl=$(shell tput sgr0)
+define color_print
+	@echo "$(foreground)$(background)$1$(cl)"
+endef
+
+
+
+
+
+

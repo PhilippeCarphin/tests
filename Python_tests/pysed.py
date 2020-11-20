@@ -54,7 +54,7 @@ def all_matches(pattern, string):
         if match:
             yield match
         else:
-            raise StopIteration
+            return
 
 def get_nth_match(pattern, string, n):
     """ Get a match object for the nth match of pattern in string """

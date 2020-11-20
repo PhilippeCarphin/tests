@@ -18,7 +18,6 @@ def pysed_gen(sed_expr, line_list):
 
 def parse_sed_expr(sed_expr):
     tokens = re.split(r'(?<!\\)/', sed_expr)
-    print(f'tokens = {tokens}')
     if len(tokens) < 4:
         raise PysedError("Invalid expression must be 's/expr/string/[x]'")
     if tokens[0] != 's':
@@ -26,11 +25,14 @@ def parse_sed_expr(sed_expr):
     in_re = re.compile(tokens[1])
     substitution=tokens[2]
     last_part = tokens[3] if tokens[3] != '' else None
+    return get_mapping(in_re, substitution, last_part)
+
+def get_mapping(in_re, substitution, last_part):
     if last_part:
         if last_part == 'g':
             count = 0
         elif last_part.isnumeric():
-            count = int(tokens[3])
+            count = int(last_part)
             return lambda l: replace_nth_match(in_re, substitution, l, count-1)
         else:
             raise PysedError("Don't know what to do with last_part='{last_part}'")
@@ -39,13 +41,10 @@ def parse_sed_expr(sed_expr):
     return lambda l: in_re.sub(substitution, l, count=count)
 
 def nth_value(generator, n):
-    """ Advance a generator n-1 times then return next(generator) """
-    try:
-        for i in range(n):
-            next(generator)
-        return next(generator)
-    except StopIteration:
-        return None
+    """ Advance the generator to the nth element and return it """
+    for i, v in enumerate(generator):
+        if i == n:
+            return v
 
 def all_matches(pattern, string):
     """ Generator of all match objects obtained by using a scanner """
@@ -69,6 +68,7 @@ def replace_nth_match(pattern, substitution, string, n):
         return f'{string[:m.start()]}{m.expand(substitution)}{string[m.end():]}'
     else:
         return string
+
 import subprocess
 def compare_with_shell_sed(sed_expr, string):
     expected = get_shell_sed_result(sed_expr, string)
@@ -139,4 +139,8 @@ if __name__ == '__main__':
                 sed_expr=r's/pysed/PYSED/3',
                 string='pysed pysed pysed pysed',
                 expected='pysed pysed PYSED pysed')
+            self.run_test_case(
+                sed_expr=r's/pysed/PYSED/8',
+                string='pysed pysed pysed pysed',
+                expected='pysed pysed pysed pysed')
     unittest.main()

@@ -48,40 +48,65 @@ int progress_callback(int percent)
   return 0;
 }
 
+/*
+ * Function to print messages in the context of a progress bar.
+ * It simply prints the users message but clears the line first
+ * and adds a newline */
+int progress_message(char *message){
+  /*
+   * This prints a control char that clears the line.
+   * clearline EL2         Clear entire line                      ^[[2K
+   * From http://www.climagic.org/mirrors/VT100_Escape_Codes.html
+   */
+  fprintf(stderr, "[2K%s\n", message);
+  return 0;
+}
+
 int main(int argc, char **argv){
   (void) argc;
   (void) argv;
 
   /*
    * A for loop that represents a long running calculation
+   * does its thing but also calls the progress callback
+   * at every iteration.  Inside the loop, it uses progress_message()
+   * to print messages that clear the line.
+   *
+   * This loop calls the callback, demonstrates why the
+   * progress_message function is useful by printing without
+   * it.
+   *
+   * Also you want to print your messages right before the
+   * bar is about to be redrawn. This way it will look like
+   * the messages are appearing above the bar.
    */
-  for(int i = 0; i < 100; i++){
+  for(int i = 0; i < 100; i++, progress_callback(i)){
+
 
     /*
-     * Periodically, we print the progress bar
+     * Iterations of this loop are long hence the progress bar
      */
-    progress_callback(i);
+    sleep_ms(100);
 
     /*
      * Every 8 iterations, print a message.
      * This demonstrates the use of \33[2K which clears the line
      * that the cursor is on
      */
-    if(i % 8 == 0){
-      fprintf(stderr, "\33[2KThis is a print statement with the 'clear-line' char\n");
+    if(i % 9 == 0){
+        progress_message("This is a print statement with the 'clear-line' char");
     }
 
     /*
-     * Every 13, print but without clearing.  We can see that
+     * Every 21, print but without clearing.  We can see that
      * although the progress bar returns the cursor to the front
      * of the line, it doesn't erase the '#' that are on it
      * so when we print, only the ones we print over are erased
      * and the rest stay there.
      */
-    if(i % 13 == 0){
+    if(i % 23 == 0){
       fprintf(stderr, "This is a message without the clear\n");
     }
-    sleep_ms(100);
   }
   return 0;
 }

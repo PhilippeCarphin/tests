@@ -31,7 +31,7 @@ export ORDENV_GROUP_PROFILE=eccc/cmc/1.8
 . /fs/ssm/main/env/ordenv-boot-20200204.sh
 """
 
-def create_temp_script(content, prefix='temp_script_', suffix='.sh' , mode=0o644):
+de fcreate_temp_script(content, prefix='temp_script_', suffix='.sh' , mode=0o644):
     temp_script = tempfile.mkstemp(dir=TEMP_DIR, prefix=prefix)
     filename = temp_script[1]
 
@@ -61,40 +61,20 @@ def generate_user_script():
     {sys.stdin.read()}
     '''
     return create_temp_script(
-        input_user_script,
-        prefix='user_script',
-        suffix='.jgen',
-        mode=0o755
+            input_user_script,
+            prefix='user_script',
+            suffix='.jgen',
+            mode=0o755
     )
 
 def generate_job_stopper_script():
-    job_stopper_script=f"""
-echo "JOBSTOPPER SCRIPT"
-{ordenv_setup}
-jobdel $1
-"""
-    return create_temp_script(
-        job_stopper_script,
-        prefix='jobstopper_script_',
-        suffix='.sh',
-        mode=0o755
-    )
+    content="""
+    echo "JOBSTOPPER SCRIPT"
+    {ordenv_setup}
+    . ssmuse-sh -x main/opt/jobgen/jobgen-0.6 -x main/opt/jobsetup/jobsetup-0.3
+    jobdel $1
 
-def generate_jobsub_script():
-    jobsub_script=f"""#!/bin/bash
-{ordenv_setup}
-jobsub $1
-"""
-    return create_temp_script(
-        jobsub_script,
-        prefix='jobsub_script_',
-        suffix='.sh',
-        mode=0o755
-    )
-
-
-
-
+    
 
 
 

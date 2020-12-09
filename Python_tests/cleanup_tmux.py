@@ -27,7 +27,11 @@ def is_public_socket(f):
 def check_dir(d):
     for f in public_sockets(d):
         print(f'We got one: {f}\a')
+        # return True
+    return False
 
+
+sys.exit(check_dir(sys.argv[1]))
 
 while True:
     print('checking ...')

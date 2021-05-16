@@ -35,4 +35,8 @@ print(human.temperature)
 
 print(human.to_fahrenheit())
 
-coldest_thing = Celsius(-300)
+try:
+    coldest_thing = Celsius(-300)
+except ValueError as v:
+    print(f"Caught ValueError '{v}' as expected")
+

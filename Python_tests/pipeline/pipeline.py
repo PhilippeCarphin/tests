@@ -1,7 +1,6 @@
 import time
-import asyncio
 
-duration = 0.5
+duration = 1.0
 
 def first(a):
     b = 2 * a
@@ -25,7 +24,11 @@ def pipeline(number):
 
     return d
 
+def main():
+    for i in range(10):
+        out = pipeline(i)
+        print(out)
 
-for i in range(10):
-    out = pipeline(i)
-    print(out)
+main()
+
+

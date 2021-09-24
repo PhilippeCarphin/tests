@@ -34,3 +34,5 @@ cmake-build*
 build
 .vscode
 **/lark_spooki
+*.mod
+main

@@ -1,5 +1,5 @@
 module triangle_mod
-    use_shape_mod
+    use shape_mod
     implicit none
     type, extends(shape_m), public :: triangle_m
     contains

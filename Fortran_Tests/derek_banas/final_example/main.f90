@@ -10,6 +10,6 @@ program fortrantut
 
     print "(a3, f5.2)", "x: ", tri%x
     print "(a3, f5.2)", "y: ", tri%y
-    print "(a3, f5.2)", "y: ", tri%y
+    print "(a3, f6.2)", "y: ", tri%get_area()
 
 end program fortrantut

@@ -1,36 +1,36 @@
-import os
+
 import subprocess
 import time
 
+p = subprocess.Popen(['bash'], stdin=subprocess.PIPE)
 
-#Kinda sourceing a script
-def sourcing_demo():
-    script = os.path.join(os.path.dirname(__file__), 'sourced_guy.sh')
-    q = subprocess.Popen(['bash'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    with open(script, 'r') as s:
-        script_text = s.read()
+p.stdin.write('echo "ALLO"'.encode('utf-8'))
 
-    q.stdin.write(script_text.encode('utf-8'))
-    q.stdin.write(b'env\n')
-    stdout = q.communicate()
-    print(stdout)
+time.sleep(1)
+# m = bytes([0, 1,2,3,4,5,6,7,8,9,10])
+m = '\n'.encode('utf-8')
 
-def process_wrapper_demo():
-    p = subprocess.Popen(['bash'], stdin=subprocess.PIPE)
-    try:
-        while True:
-            host = os.uname().nodename
-            user = os.environ['USER']
-            cmd = input(f'{user}@{host} {os.getcwd()} $ ')
-            p.stdin.write(cmd.encode('utf-8') + b'\n')
-            p.stdin.flush()
-            time.sleep(0.1)
-    except EOFError:
-        pass
-    # If I wanted my script to have access to stdout
-    # The sleep is like making sure that we empty stdout before printing the prompt because we don't read stdout
-    # You need a separate thread that reads things and puts them in a queue
-    # as in https://github.com/PhilippeCarphin/leela_interface/blob/master/src/pipelistener.py
+p.stdin.write(m)
 
-sourcing_demo()
-process_wrapper_demo()
+
+p.stdin.flush()
+time.sleep(0.1)
+
+q = subprocess.Popen(['bash'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+with open(script, 'r') as s:
+    script_text = s.read()
+
+q.stdin.write(script_text.encode('utf-8'))
+q.stdin.flush()
+# time.sleep(1)
+# lines = q.stdout.readlines() # print(lines)
+q.stdout.flush()
+q.stdin.write(b'\nenv ; echo "\\n\\n"\n')
+# stdout = q.communicate()
+# print(stdout)
+q.stdin.flush()
+while True:
+    l = q.stdout.readline()
+    print(l)
+    if "THREE_EYED_RAVEN" in l.decode('utf-8'):
+        break

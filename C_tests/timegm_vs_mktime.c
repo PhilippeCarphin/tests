@@ -14,8 +14,6 @@
  * not, it's always the first call that is really long.  Which means that there
  * is some kind of global memory that needs to be initialized the first time.
  */
-#define _BSD_SOURCE
-#define _POSIX_C_SOURCE 200809L
 
 #include <time.h>
 #include <stdlib.h>

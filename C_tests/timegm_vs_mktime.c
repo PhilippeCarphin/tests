@@ -13,9 +13,13 @@
  * the first call to mktime is a bit long too.  Whether I switch the order or
  * not, it's always the first call that is really long.  Which means that there
  * is some kind of global memory that needs to be initialized the first time.
+ *
+ * NOTE: Tried on a linux machine where mktime was about 800 ns after the first
+ * two calls, then timegm at about 100ns including the first call.
+ *
+ * On MacOS, it was about 8000-9000 per call for both timegm and mktime so the
+ * implementation is clearly different.
  */
-#define _BSD_SOURCE
-#define _POSIX_C_SOURCE 200809L
 
 #include <time.h>
 #include <stdlib.h>

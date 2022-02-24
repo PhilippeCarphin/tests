@@ -1,0 +1,13 @@
+Run this command
+
+#+begin_src shell
+./outputter.sh 2> >(./stderr-command.sh STDERR) | ./a-prepender.sh STDOUT
+#+end_src
+
+And what outputter outputs to STDERR will get STDERR prepended
+and the output going to STDOUT will have STDOUT prepended.
+
+
+#+begin_src shell
+./outputter.sh 2> >(./a-prepender.sh STDERR >&2) | ./a-prepender.sh STDOUT
+#+end_src

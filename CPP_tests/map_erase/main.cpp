@@ -4,19 +4,15 @@
 
 void print_map(std::map<std::string, std::string> &dict){
     for(auto it : dict){
-        std::cout << it.first << std::endl;
+        std::cout << it.first << ": " << it.second << std::endl;
     }
 }
 
-    void clear_map(std::map<std::string, std::string> &dict){
-        // for(auto it : dict){
-        //     dict.erase(it);
-        // }
-        auto it = dict.begin();
-        for(;it != dict.end(); ++it){
-            dict.erase(it);
-        }
+void clear_map(std::map<std::string, std::string> &dict){
+    for(auto it = dict.begin();it != dict.end(); ++it){
+        dict.erase(it);
     }
+}
 
 int main(){
     std::map<std::string, std::string> dict;

@@ -1,6 +1,0 @@
-command=$( basename $0)
-if [ $command = "cgrep" ]; then
-   grep "$1" *.c --color=always -n 
-elif [ $command = "lcgrep" ]; then
-   grep "$1" *.c --color=always -n | less -R
-fi

@@ -1,8 +1,0 @@
-
-installDir=$0
-
-installDir="$( cd "$( dirname $0 )" && pwd)"
-
-echo $installDir
-
-

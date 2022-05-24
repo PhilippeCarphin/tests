@@ -1,0 +1,5 @@
+#+TITLE: Config files and arguments
+
+Various methods of getting input from config file and command line.
+
+My favorite way is in =best_way.py=.

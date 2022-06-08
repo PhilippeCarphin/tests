@@ -1,6 +1,42 @@
 #include <stdio.h>
 #include <Python.h>
 
+/*
+ * This test demonstrates how to use Python code from C.
+ *
+ * This shows how already existing C code can leverage the power of Python
+ * by implementing a function in Python and calling it from C using the
+ * Python C API.
+ *
+ * When Python is used, Py_Initialize() must be called and Py_Finalize() at
+ * the end.
+ *
+ * The function PyImport_ImportModule(char *module) is used to import the
+ * python module.
+ *
+ * PyObject_GetAttrString(PyObject *obj, char *attr) is used to get a function
+ * from the module object returned by PyImport_ImportModule().
+ *
+ * To call the function we create python objects for the arguments.  In this
+ * case, the arguments are all C-strings so we use
+ *
+ *      PyObject *PyUnicode_FromString(char *string);
+ *
+ * We then use args = PyTuple_New(nargs) and PyTuple_SetItem(args, i, obj) to set
+ * our python objects as the components of the tuple.
+ *
+ * Finally, we use the function
+ *
+ *      PyObject *result = PyObject_CallObject(func, args);
+ *
+ * We can then use
+ *
+ *      PyBytes_AsString(PyUnicode_EncodeFSDefault(result));
+ *
+ * To get back a C-string from the Python string object result.
+ */
+
+
 struct PythonHelper {
     PyObject *pModule;
     PyObject *pyf_get_value;
@@ -79,3 +115,36 @@ char *cf_get_value(char *key)
 }
 
 
+/*
+ * Do we need a global struct?
+ *
+ * To keep the imported module and functions available for use
+ * in the wrappers, I have created a global struct where the
+ * PyObject* for the module and its two functions are stored
+ * as fields.
+ *
+ * I think you could do stuff using the static keyword inside function
+ * to keep the reference and not import at every call.
+ *
+ * cf_get_value(char *key){
+ *     static PyObject *pFunc = PyObject_GetAttrString(module, "get_value");
+ *     ...
+ * }
+ *
+ * But you still need the module, which I guess you could do
+ *
+ * cf_get_value(char *key){
+ *     static PyObject *pMod  = PyImport_ImportModule("philmodule");
+ *     static PyObject *pFunc = PyObject_GetAttrString(module, "get_value");
+ *     ...
+ * }
+ *
+ * The print('IMPORTING') in the python code allows us to show that calling
+ * PyImport_ImportModule("philmodule") multiple times only prints 'IMPORTING'
+ * once.  Therefore the static thing with an import in multiple functions
+ * would be OK.
+ *
+ * However it becomes inconvenient to handle importing errors in these wrapper
+ * functions so I prefer to import everything with proper error handling at
+ * the cost of having to store the python objects in some kind of global struct.
+ */

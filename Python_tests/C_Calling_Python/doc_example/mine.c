@@ -39,6 +39,8 @@ main(int argc, char *argv[])
         if (PyErr_Occurred())
             PyErr_Print();
         fprintf(stderr, "Cannot find function \"%s\"\n", argv[2]);
+        Py_XDECREF(pFunc);
+        Py_DECREF(pModule);
         return 1; // The only return that I needed to add
     }
 

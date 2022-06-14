@@ -35,12 +35,10 @@
  *
  * To get back a C-string from the Python string object result.
  */
-
-
 struct PythonHelper {
-    PyObject *pModule;
-    PyObject *pyf_get_value;
-    PyObject *pyf_set_value;
+    PyObject *pModule; // philmodule
+    PyObject *pyf_get_value; // philmodule.get_value
+    PyObject *pyf_set_value; // philmodule.set_value
 };
 
 struct PythonHelper python_helper;
@@ -52,6 +50,9 @@ int main(void){
 
     Py_Initialize();
 
+    /*
+     * import philmodule
+     */
     PyObject *pModule = PyImport_ImportModule("philmodule");
     if(pModule == NULL){
         PyErr_Print();
@@ -59,6 +60,9 @@ int main(void){
     }
     python_helper.pModule = pModule;
 
+    /*
+     * python_helper.pyf_get_value = philmodule.get_value
+     */
     PyObject *pyf_get_value = PyObject_GetAttrString(pModule, "get_value");
     if(pyf_get_value == NULL){
         PyErr_Print();
@@ -66,6 +70,9 @@ int main(void){
     }
     python_helper.pyf_get_value = pyf_get_value;
 
+    /*
+     * python_helper.pyf_set_value = philmodule.set_value
+     */
     PyObject *pyf_set_value = PyObject_GetAttrString(pModule, "set_value");
     if(pyf_set_value == NULL){
         PyErr_Print();
@@ -85,6 +92,9 @@ err:
 
 int cf_set_value(char *key, char *value)
 {
+    /*
+     * args = (key, value)
+     */
     PyObject *args = PyTuple_New(2);
     PyObject *pKey = PyUnicode_FromString(key);
     PyObject *pValue = PyUnicode_FromString(value);
@@ -92,6 +102,9 @@ int cf_set_value(char *key, char *value)
     PyTuple_SetItem(args, 0, pKey);
     PyTuple_SetItem(args, 1, pValue);
 
+    /*
+     * result = philmodule.set_value(*args)
+     */
     PyObject *result = PyObject_CallObject(python_helper.pyf_set_value, args);
     if(result == NULL){
         PyErr_Print();
@@ -101,11 +114,17 @@ int cf_set_value(char *key, char *value)
 
 char *cf_get_value(char *key)
 {
+    /*
+     * args = (key, )
+     */
     PyObject *pKey = PyUnicode_FromString(key);
     PyObject *args = PyTuple_New(1);
 
     PyTuple_SetItem(args, 0, pKey);
 
+    /*
+     * result = philmodule.get_value(*args)
+     */
     PyObject *result = PyObject_CallObject(python_helper.pyf_get_value, args);
     if(result == NULL){
         PyErr_Print();

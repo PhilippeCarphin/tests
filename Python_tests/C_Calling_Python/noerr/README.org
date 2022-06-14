@@ -1,0 +1,20 @@
+#+TITLE: Using Python in your C program
+
+* Intro
+
+We have something that is implemented in Python and we want to use it in
+another C project of ours.
+
+** The Python code
+
+The python code is =philmodule.py= which is a module that has a global
+dictionary and two functions that set and get values.
+
+** The C code
+
+The C code is what we would add to an existing C program:
+- Initialize Python at program start with =Py_Initialize()=
+- Finalize Python at program end with =Py_Finalize()=
+- Some code to import the module and store a reference to it somewhere
+- Some wrapper functions to convert between C values and Python objects.
+

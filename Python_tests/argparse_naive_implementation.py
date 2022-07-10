@@ -2,6 +2,7 @@
 import sys
 
 """
+USE ARGPARSE INSTEAD
 
 This file was to show a friend how to do basic option parsing in python.  It
 should be noted that there is actually an option parsing module that does a

@@ -1,0 +1,33 @@
+import notify2
+
+# Package used to send OS notifications
+# Intel iMac:
+# python3 -m pip install notify2
+# brew install dbus
+# python3 -m pip install dbus-python
+# After these installs, I get this:
+#
+#     dbus[29597]: Dynamic session lookup supported but failed: launchd did not provide a socket path, verify that org.freedesktop.dbus-session.plist is loaded!
+#     Traceback (most recent call last):
+#       File "/Users/pcarphin/Repositories/github.com/philippecarphin/tests/Python_tests/pynotif.py", line 9, in <module>
+#         notify2.init('app name')
+#       File "/Users/pcarphin/.local/lib/python3.9/site-packages/notify2.py", line 100, in init
+#         bus = dbus.SessionBus(mainloop=mainloop)
+#       File "/Users/pcarphin/.local/lib/python3.9/site-packages/dbus/_dbus.py", line 212, in __new__
+#         return Bus.__new__(cls, Bus.TYPE_SESSION, private=private,
+#       File "/Users/pcarphin/.local/lib/python3.9/site-packages/dbus/_dbus.py", line 102, in __new__
+#         bus = BusConnection.__new__(subclass, bus_type, mainloop=mainloop)
+#       File "/Users/pcarphin/.local/lib/python3.9/site-packages/dbus/bus.py", line 124, in __new__
+#         bus = cls._new_for_bus(address_or_type, mainloop=mainloop)
+#     dbus.exceptions.DBusException: org.freedesktop.DBus.Error.NoMemory: Not enough memory
+#
+
+notify2.init('app name')
+n = notify2.Notification("Summary",
+                         "Some body text",
+                         "notification-message-im"   # Icon name
+                        )
+n.show()
+
+while 1:
+    pass

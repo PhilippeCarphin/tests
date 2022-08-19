@@ -1,0 +1,56 @@
+#+TITLE: Comparisons in BASH
+
+In the section on "Don't", they say a couple things that I thought needed
+testing.
+[[http://wiki.cmc.ec.gc.ca/wiki/Shell_Scripting_Reference_and_Best_Practices#Don.27t][Shell scripting reference and best practices : Don't]]
+
+They advocate the creation of variables ~readonly TRUE=1~ and ~readonly FALSE=0~
+and they say that this is better because integer comparisons are faster.
+
+I have two reasons why I three reasons why I think that is not a good idea:
+
+1. The idea that it is faster is false which is what the scripts demonstrate
+2. It's unconventional, I've never seen this in legit open source projects.
+3. It makes things more complicated, if I see an ~if [[ $something == ${TRUE} ]]~
+   It's readable, I can tell what it means but if I'm debugging, I have to
+   make sure that the variable =something= was set to one of =${TRUE}= or
+   =${FALSE}=
+4. If there was a difference in speed between integer comparison and string
+   it is not something people should worry about in BASH.
+
+** Tests:
+
+#+begin_src
+ $ time ./boolean_int.sh
+1000000
+
+real    0m4.113s
+user    0m4.098s
+sys     0m0.005s
+
+ $ time ./boolean_str.sh
+1000000
+
+real    0m3.847s
+user    0m3.833s
+sys     0m0.003s
+
+ $ time ./boolean_int.sh
+1000000
+
+real    0m3.982s
+user    0m3.969s
+sys     0m0.003s
+
+ $ time ./boolean_str.sh
+1000000
+
+real    0m3.884s
+user    0m3.871s
+sys     0m0.002s
+#+end_src
+
+I did not cherry-pick these runs, and I haven't had a run where =boolean_int.sh=
+did under 3.900 seconds even later as I kept testing.
+
+

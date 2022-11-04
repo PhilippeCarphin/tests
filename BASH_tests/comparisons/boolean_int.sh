@@ -1,5 +1,8 @@
 
-number=1000000
+if [[ "${number:-}" == "" ]] ; then
+    echo "Please define the environment variable 'number' as an integer"
+    exit 1
+fi
 
 a=0
 b=0

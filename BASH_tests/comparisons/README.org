@@ -1,15 +1,14 @@
 #+TITLE: Comparisons in BASH
 
-In the section on "Don't", they say a couple things that I thought needed
-testing.
-[[http://wiki.cmc.ec.gc.ca/wiki/Shell_Scripting_Reference_and_Best_Practices#Don.27t][Shell scripting reference and best practices : Don't]]
-
-They advocate the creation of variables ~readonly TRUE=1~ and ~readonly FALSE=0~
+In the section on "Don't" of
+[[http://wiki.cmc.ec.gc.ca/wiki/Shell_Scripting_Reference_and_Best_Practices#Don.27t][Shell scripting reference and best practices : Don't]] ,
+they advocate the creation of variables ~readonly TRUE=1~ and ~readonly FALSE=0~
 and they say that this is better because integer comparisons are faster.
 
-I have two reasons why I three reasons why I think that is not a good idea:
+I have four reasons why I three reasons why I think that is not a good idea:
 
 1. The idea that it is faster is false which is what the scripts demonstrate
+   in this directory will demonstrate.
 2. It's unconventional, I've never seen this in legit open source projects.
 3. It makes things more complicated, if I see an ~if [[ $something == ${TRUE} ]]~
    It's readable, I can tell what it means but if I'm debugging, I have to
@@ -53,4 +52,96 @@ sys     0m0.002s
 I did not cherry-pick these runs, and I haven't had a run where =boolean_int.sh=
 did under 3.900 seconds even later as I kept testing.
 
+Note that the =boolean_int.sh= script compares a variable =a= with a literal
+0.  If we do as suggested and compare with a variable =FALSE= whose value is
+0, then that test becomes the slowest of all.  This is shown in the
+=boolean_int_variable.sh= script
 
+#+begin_src
+ $ time boolean_int.sh
+1000000
+
+real    0m3.927s
+user    0m3.911s
+sys     0m0.003s
+
+ $ time boolean_int_variable.sh
+1000000
+
+real    0m4.312s
+user    0m4.301s
+sys     0m0.003s
+
+ $ time boolean_str.sh
+1000000
+
+real    0m3.916s
+user    0m3.855s
+sys     0m0.002s
+#+end_src
+
+My hypothesis is that the reason for this is that obtaining the value of a
+variable is the most impactful action in terms of time.  Since
+
+#+begin_src
+if [[ ${a} -eq ${TRUE} ]]
+#+end_src
+
+dereferences two variables instead of just one as in all the other tests, it
+is the slowest by a non-negligeable margin.
+
+** Notes
+
+I already spent about an hour trying different things and that is somewhat
+enough and although the results are documented, I did try other things and
+documenting but making more test scripts would not be worth it so in the
+interest of remembering certain results:
+
+- Declaring the variables as integers using =declare -i= did not make a
+  difference.
+- Using =[[ x -eq y ]]= vs =[[ x == y ]]= vs =(( x == y ))= did not make any
+  observable difference regardless of whether or not the variables were
+  declared as integers.
+- The =boolean_str_hardcoded.sh= compares ="true"= with ="true"= and is a bit
+  faster but not by much and =boolean_str_hardcoded_short.sh= compares ="t"=
+  to ="t"= and is the fastest of all.
+
+* Conclusion
+
+The tests show that the difference is about =(4.3 - 3.9)/3.9 ~ 10%=.
+
+Therefore the suggestion to define a variable ~declare -i TRUE=1~ for a speed
+gain is inaccurate.
+
+The speed differences between the various techniques are not significant
+enough in the context of BASH.  Yes 10% is quite big but in a BASH context,
+such comparisons should not be so frequent that they affect the running time
+of a script in a non-negligeable way.
+
+But since the slower technique is also less standard, then we should use more
+common ways of doing things but not because they are faster but because they
+are more common.for a speed gain is inaccurate.
+
+The speed differences between the various techniques are not significant
+enough in the context of BASH.  Yes 10% is quite big but in a BASH context,
+such comparisons should not be so frequent that they affect the running time
+of a script in a non-negligeable way.
+
+But since the slower technique is also less standard, then we should use more
+common ways of doing things but not because they are faster but because they
+are more common.
+
+** Suggestions
+
+*** Empty vs non-empty
+
+In many applications that use environment variables in a boolean way, we find
+text like "Set =GIT_PS1_SHOWUNTRACKEDFILES= to a non-empty value to show the
+presence of untracked files" or in CMake "Set CLICOLOR_FORCE to a non-empty
+value to force CMake to always output color even if stdout, stderr is not a
+tty".
+
+*** Compare to the string "true"
+
+Comparing to a litteral "true" using ~if [[ ${boolean_var} == "true" ]]~ is
+simple and does the job.  Note that I don't particularily like ~if ${boolean_var}~.

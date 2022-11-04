@@ -1,0 +1,11 @@
+* Introduction
+
+The idea is to figure out how to correctly create a package config file
+=FooConfig.cmake= for the upstream package so that the downstream package can
+use it.
+
+While =FooConfig.cmake= is the upstream package and is the focus of this
+test, it likely depends on some other packages (in this case =upstream_dep=)
+which slightly complicates the writing of its config file but makes this test
+more representative of real situations.
+

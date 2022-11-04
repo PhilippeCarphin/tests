@@ -26,5 +26,7 @@ int main(int argc, char **argv){
 
     printf("apple\napricot\nbananna\ncherry\n");
 
+    free(filepath);
+
     return 0;
 }

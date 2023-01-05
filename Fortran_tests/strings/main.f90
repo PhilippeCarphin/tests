@@ -1,16 +1,19 @@
 PROGRAM send_string
-      use iso_c_binding
+      use, intrinsic :: iso_c_binding
+      implicit none
 
       interface
-          subroutine print_string(str) bind(C, name="print_string")
-              use iso_c_binding
-              character(C_CHAR) :: str(*)
+          subroutine c_print_string(str) bind(C, name="print_string")
+              use, intrinsic :: iso_c_binding
+              implicit none
+              character(kind=C_CHAR), dimension(*), intent(in) :: str
           end subroutine
       end interface
 
-          character(len=50)          :: string
+
+          character(len=50, kind=C_CHAR)          :: string
           character(len=30), pointer :: string_ptr
-          integer                    :: len
+          integer                    ::       len
 
           allocate(string_ptr)
 
@@ -44,11 +47,43 @@ PROGRAM send_string
           ! a string litteral
           call print_string("And the last known survivor")
           call print_string("Stalks his prey in the night")
-          ! I don't understand why but this call prints
-          ! C: print_string(): string 'And he's watching us all with the EEEYYYEEE......of the tiger'
-          call print_string("And he's watching us all with the EEEYYYYEEE...")
-
+          call print_string("And he's watching us all with the EEEYYYYEEEAhh...")
           call print_string("...of the tiger")
+          call print_string("chika chika chika PIIINRRRR, PIN PIN PIIIIRRRRR")
+
+          write(*,*) "======================= straight call to C function ==============="
+          call c_print_string("It's the eye of the tiger")
+          call c_print_string("It's the thrill of the fight")
+          call c_print_string("Risin' up to the challenge of our rivals")
+          call c_print_string("And the last known survivor"//achar(0))
+          call c_print_string("Stalks his prey in the night")
+          call c_print_string("And he's watching us all with the EEEYYYYEEEAhh...")
+          call c_print_string("...of the tiger")
+          call c_print_string("chika chika chika PIIINRRRR, PIN PIN PIIIIRRRRR")
+
+contains
+    subroutine print_string(f_string)
+        !
+        ! From the prints done by the straight C calls to C function,
+        ! it is possible that the data for the string literals is
+        ! stored in consecutive memory.  Fortran handles this because
+        ! it has decriptors
+        !
+        use, intrinsic :: iso_c_binding
+        character(len=*) :: f_string
+        character(len=4097) :: c_string
+        character, dimension(:), ALLOCATABLE :: ac_string
+        integer :: len
+        len = len_trim(f_string)
+        allocate(ac_string(1:len+1))
+        c_string = f_string
+        c_string(len+1:len+1) = c_null_char
+        ac_string(1:len) = f_string(1:len)
+        ac_string(len+1:len+1) = c_null_char
+        call c_print_string(c_string)
+        call c_print_string(ac_string)
+        deallocate(ac_string)
+    end subroutine
 
 
 END PROGRAM

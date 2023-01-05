@@ -1,0 +1,2 @@
+
+print(sys.ps1)

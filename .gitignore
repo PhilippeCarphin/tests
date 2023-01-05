@@ -36,3 +36,4 @@ build
 **/lark_spooki
 *.mod
 main
+readdir_test

@@ -1,0 +1,23 @@
+
+      TYPE, BIND(C) :: TTile
+          INTEGER(C_INT) I0, I1
+          INTEGER(C_INT) J0, J1
+          INTEGER(C_INT) HI, HJ
+      END TYPE
+
+! typedef struct TGrid {
+!    char     Id[14];                       ///< Grid identifier
+!    TGeoRef *GRef;                         ///< Georeference structure
+!    int      NI,NJ,NK;                     ///< Global grid dimensions
+!    int      HI,HJ;                        ///< Global grid halo width
+!    int      NbTiles;                      ///< Number of tiles/PEs
+!    TTile   *Tiles;                        ///< Array of tiles definitions                     
+! } TGrid;
+      TYPE, BIND(C) :: TGrid
+          character(kind=C_CHAR), dimension(14) :: Id
+          ! type(C_PTR)                    :: GRef
+          integer(C_INT)                 :: NI, NJ, NK
+          integer(C_INT)                 :: HI, HJ
+          integer(C_INT)                 :: NbTiles
+          type(C_PTR)                    :: Tiles
+      END TYPE

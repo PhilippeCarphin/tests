@@ -11,7 +11,6 @@ typedef struct TTile {
 
 typedef struct TGrid {
    char     Id[14];                       ///< Grid identifier
-   // TGeoRef *GRef;                         ///< Georeference structure
    int      NI,NJ,NK;                     ///< Global grid dimensions
    int      HI,HJ;                        ///< Global grid halo width
    int      NbTiles;                      ///< Number of tiles

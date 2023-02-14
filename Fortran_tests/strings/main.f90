@@ -14,6 +14,7 @@ PROGRAM send_string
           character(len=50, kind=C_CHAR)          :: string
           character(len=30), pointer :: string_ptr
           integer                    ::       len
+          integer :: i
 
           allocate(string_ptr)
 
@@ -72,16 +73,36 @@ contains
         use, intrinsic :: iso_c_binding
         character(len=*) :: f_string
         character(len=4097) :: c_string
-        character, dimension(:), ALLOCATABLE :: ac_string
+        character(kind=C_CHAR), dimension(:), ALLOCATABLE :: ac_string
+        character(kind=C_CHAR,len=:), ALLOCATABLE :: ac_string_2
         integer :: len
         len = len_trim(f_string)
-        allocate(ac_string(1:len+1))
         c_string = f_string
         c_string(len+1:len+1) = c_null_char
-        ac_string(1:len) = f_string(1:len)
+
+        allocate(ac_string(1:len+1))
+        ! My attempt at not using an array of fixed really big
+        ! dimension and instead allocating one of the right
+        ! size.  However the following line repeats the first
+        ! char of f_string, so if f_string = "It's the eye",
+        ! then ac_string would be "IIIIIIIIIIII"
+        ac_string = f_string
+        ! Ugh... fine... I'll do a loop myself
+        ! do i = 1, len
+        !     ac_string(i:i) = f_string(i:i)
+        ! enddo
         ac_string(len+1:len+1) = c_null_char
-        call c_print_string(c_string)
-        call c_print_string(ac_string)
+        ! ac_string = "booggers"
+        ! call c_print_string(c_string)
+        ! call c_print_string(ac_string)
+
+        ! There's like a million ways to declare what to me looks
+        ! like the same thing.  What's the difference between
+        ! ac_string and ac_string_2, I don't see it.
+        allocate(character(len+1)::ac_string_2)
+        ac_string_2 = f_string
+        ac_string_2(len+1:len+1) = c_null_char
+        call c_print_string(ac_string_2)
         deallocate(ac_string)
     end subroutine
 

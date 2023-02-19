@@ -4,12 +4,9 @@ This project demonstrates how CMake package configuration files can be generated
 for exporting the targets of a project.
 
 The install directory will have a file `lib/cmake/climbingstats-3.14.15` which 
-will contain a file `climbingstats-config.cmake` using created from 
-`climbingstats-config.cmake.in`:
-
+will contain a file `climbingstats-config.cmake`:
 ```
-# climbingstats-config.cmake.in
-@PACKAGE_INIT@
+# climbingstats-config.cmake
 include(CMakeFindDependencyMacro)
 find_dependency(LibXml2 REQUIRED)
 include(${CMAKE_CURRENT_LIST_DIR}/ClimbingStatsTargets.cmake)
@@ -112,11 +109,8 @@ file.
   where I read this but this is not optionnal.  I read somewhere that `find_package()`
   should absolutely not be used in package config files.  Anyway, `find_dependency()`
   is a wrapper for `find_package()`
-- The `export(EXPORT ...)` creates a `ClimbingStatsTargets.cmake` in the build
-  tree to allow other cmake projects to directly use the targets from the build
-  tree instead of those from the install tree.  This is only useful for a
-  developer working on the climbingstats project while at the same time working
-  on a project that uses climbingstast.
+- We don't need to use `configure_package_config_file()` since the stuff that
+  `@PACKAGE_INIT@` gives us is is replaced by things in the generated files.
 
 # Usage example
 

@@ -5,7 +5,7 @@ for exporting the targets of a project.
 
 The install directory will have a file `lib/cmake/climbingstats-3.14.15` which 
 will contain a file `climbingstats-config.cmake`:
-```
+```cmake
 # climbingstats-config.cmake
 include(CMakeFindDependencyMacro)
 find_dependency(LibXml2 REQUIRED)
@@ -35,25 +35,29 @@ This project has a couple things to make it representative of other projects.
 We add the argument `EXPORT <export-name>` to the install commands that we
 already have for our targets.  This defines an "export" thing.
 
-```
+```cmake
 # src/climber/CMakeLists.txt
 install(
     TARGETS climber
-    EXPORT ClimbingStatsTargets)
+    EXPORT ClimbingStatsTargets
+    # ...
+)
 ```
 
-```
+```cmake
 # src/climber/CMakeLists.txt
 install(
     TARGETS climbingstats
-    EXPORT ClimbingStatsTargets)
+    EXPORT ClimbingStatsTargets
+    # ...
+)
 ```
 
 No files get created from this.
 
 ## Add an install command for the "export" thing
 
-```
+```cmake
 # CMakeLists.txt
 install(EXPORT ClimbingStatsTargets
     FILE ClimbingStatsTargets.cmake

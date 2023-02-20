@@ -123,3 +123,82 @@ file.
 
 See the companion project `../UseClimbingStats` for an example project that
 uses this project.
+
+# References
+
+## For `install(TARGETS ... EXPORT`)
+
+https://cmake.org/cmake/help/latest/command/install.html#targets
+
+```
+install(TARGETS targets... [EXPORT <export-name>]
+        [RUNTIME_DEPENDENCIES args...|RUNTIME_DEPENDENCY_SET <set-name>]
+        [[ARCHIVE|LIBRARY|RUNTIME|OBJECTS|FRAMEWORK|BUNDLE|
+          PRIVATE_HEADER|PUBLIC_HEADER|RESOURCE|FILE_SET <set-name>|CXX_MODULES_BMI]
+         [DESTINATION <dir>]
+         [PERMISSIONS permissions...]
+         [CONFIGURATIONS [Debug|Release|...]]
+         [COMPONENT <component>]
+         [NAMELINK_COMPONENT <component>]
+         [OPTIONAL] [EXCLUDE_FROM_ALL]
+         [NAMELINK_ONLY|NAMELINK_SKIP]
+        ] [...]
+        [INCLUDES DESTINATION [<dir> ...]]
+        )
+...
+EXPORT
+    This option associates the installed target files with an export called
+    <export-name>. It must appear before any target options. To actually install
+    the export file itself, call install(EXPORT), documented below. See
+    documentation of the EXPORT_NAME target property to change the name of the
+    exported target.
+
+    If EXPORT is used and the targets include PUBLIC or INTERFACE file sets, all
+    of them must be specified with FILE_SET arguments. All PUBLIC or INTERFACE
+    file sets associated with a target are included in the export.
+INCLUDES DESTINATION
+    This option specifies a list of directories which will be added to the
+    INTERFACE_INCLUDE_DIRECTORIES target property of the <targets> when exported
+    by the install(EXPORT) command. If a relative path is specified, it is
+    treated as relative to the $<INSTALL_PREFIX>.
+```
+
+## For `install(EXPORT`
+
+https://cmake.org/cmake/help/latest/command/install.html#installing-exports
+
+```
+install(EXPORT <export-name> DESTINATION <dir>
+        [NAMESPACE <namespace>] [FILE <name>.cmake]
+        [PERMISSIONS permissions...]
+        [CONFIGURATIONS [Debug|Release|...]
+        [CXX_MODULES_DIRECTORY <directory>]
+        [EXPORT_LINK_INTERFACE_LIBRARIES]
+        [COMPONENT <component>]
+        [EXCLUDE_FROM_ALL])
+install(EXPORT_ANDROID_MK <export-name> DESTINATION <dir> [...])
+
+The EXPORT form generates and installs a CMake file containing code to import
+targets from the installation tree into another project. Target installations
+are associated with the export <export-name> using the EXPORT option of the
+install(TARGETS) signature documented above. The NAMESPACE option will prepend
+<namespace> to the target names as they are written to the import file.
+```
+
+## Full explained example
+https://cmake.org/cmake/help/latest/guide/importing-exporting/index.html#exporting-targets
+
+> While IMPORTED targets on their own are useful, they still require that the project that imports them knows the locations of the target files on disk. The real power of IMPORTED targets is when the project providing the target files also provides a CMake file to help import them. A project can be setup to produce the necessary information so that it can easily be used by other CMake projects be it from a build directory, a local install or when packaged.
+>
+> In the remaining sections, we will walk through a set of example projects step-by-step. The first project will create and install a library and corresponding CMake configuration and package files. The second project will use the generated package.
+
+## Another explained example
+
+https://cmake.org/cmake/help/latest/manual/cmake-packages.7.html#creating-packages
+
+## Possible locations of config files
+
+https://cmake.org/cmake/help/latest/command/find_package.html#config-mode-search-procedure
+
+
+

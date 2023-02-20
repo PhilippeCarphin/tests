@@ -72,6 +72,9 @@ targets of our project.
 
 # Result
 
+For convenience, the config files generated after `make install` are tracked
+with this repo at [./install-dir/lib/cmake/climbingstats-3.14.15](./install-dir/lib/cmake/climbingstats-3.14.15)
+
 We build and install the project and look at what we find in the `lib/cmake/climbingstats-3.14.15`
 subdirectory of our install location.
 

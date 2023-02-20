@@ -11,7 +11,7 @@ add_subdirectory(src)
 
 include(CMakePackageConfigHelpers)
 
-set(CONFIG_INSTALL_DIR lib/cmake/climbing-stats-${PROJECT_VERSION})
+set(CONFIG_INSTALL_DIR lib/cmake/climbingstats-${PROJECT_VERSION})
 write_basic_package_version_file(
     climbingstats-version.cmake
     VERSION ${PROJECT_VERSION}

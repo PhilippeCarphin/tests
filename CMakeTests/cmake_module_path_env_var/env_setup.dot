@@ -1,0 +1,6 @@
+main(){
+    local this_dir=$(cd $(dirname ${BASH_SOURCE[0]}) && pwd)
+
+    export CMAKE_MODULE_PATH=${this_dir}/modules
+}
+main

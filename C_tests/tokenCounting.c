@@ -20,8 +20,8 @@ int SeqUtil_tokenCount( const char* source, const char* tokenSeparator )
    return count;
 }
 
-int isDelim( char c, char * delim){
-   char * d = delim;
+int isDelim( char c, const char * delim){
+   const char * d = delim;
    while ( *d != '\0')
       if ( c == *d++)
          return 1;
@@ -31,7 +31,7 @@ int isDelim( char c, char * delim){
 int phil_tokenCount( const char* source, const char* tokenSeparator )
 {
    int count = 0;
-   char * p = (char *)source;
+   char * p = strdup(source);
    while ( *p != '\0' ){
 
       /* Skip delimiters */
@@ -51,21 +51,47 @@ int phil_tokenCount( const char* source, const char* tokenSeparator )
  * Based on the implementation of strtok from Apple open source:
  * http://opensource.apple.com//source/Libc/Libc-167/string.subproj/strtok.c
 ********************************************************************************/
-int strtok_style__tokenCount( s, delim )
-   register const char * s;
-   register const char * delim;
+int strtok_style__tokenCount(
+   register const char * s,
+   register const char * delim)
 {
-   register char * spanp;
-   register int c, sc;
+   register const char * dp;
+   register int c, dc;
    int count = 0;
    register const char * p = s;
    /* if( s == NULL || *s == 0 ) return count; */
 
 cont:
-   /* Skip delimiters */
+   /*
+    * With the goto, this is like two nested loops but the condition for
+    * advancing is to go through the entire for loop without going in the if.
+    *
+    * If we make the for loop into a function, then it becomes easy:
+    *   while ( isDelim(*p, delim) ) p++;
+    * but if we want to do it without the overhead of a function call
+    * for either performance reasons or because we feel like we should
+    * be able to just write two nested loops, it becomes a bit clunky:
+    * 
+    *   is_delim = 1;
+    *   while(is_delim){
+    *     c = *s++;
+    *     is_delim = 0;
+    *     for(dp = delim; (dc = *dp++) != 0;){
+    *        if( c == dc )
+    *           is_delim = 1;
+    *        }
+    *     }
+    *   }
+    *
+    * but this is_delim state variable is kind of ugly whereas the goto
+    * version makes it very clear that the condition for advancing passed
+    * this step is going through the whole for loop without going through
+    * the if. I.E. we checked 'c' against every delim character and none
+    * of them matched.
+    */
    c = *s++;
-   for( spanp = (char *) delim; (sc = *spanp++) != 0;){
-      if( c == sc )
+   for(dp = delim; (dc = *dp++) != 0;){
+      if( c == dc )
          goto cont;
    }
 
@@ -78,15 +104,15 @@ cont:
     * delimiter ('/0' included */
    for(;;){
       c = *s++;
-      spanp = (char *)delim;
+      dp = (char *)delim;
       do{
-         if((sc = *spanp++) == c){
+         if((dc = *dp++) == c){
             if( c == 0 )
                return count;
             else
                goto cont;
          }
-      }while(sc != 0);
+      }while(dc != 0);
    }
 }
 

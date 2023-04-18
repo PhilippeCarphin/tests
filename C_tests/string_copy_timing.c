@@ -37,9 +37,7 @@ int copy_phil(struct Args *args)
    return 0;
 }
 
-unsigned long getCurrentTime(void);
 unsigned long time_lots_of(function f, struct Args *);
-typedef int word;
 int main ( int argc , char ** argv ) {
 
    unsigned long int time;
@@ -55,19 +53,8 @@ int main ( int argc , char ** argv ) {
    return 0;
 }
 
-
-
-
-
-
-
-
-
-
 unsigned long getCurrentTime(void)
 {
-   unsigned long ms;
-   time_t s;
    struct timespec spec;
 
    clock_gettime(CLOCK_MONOTONIC, &spec);

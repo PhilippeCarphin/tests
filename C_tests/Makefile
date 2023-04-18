@@ -1,9 +1,11 @@
-
 CFLAGS += -Wall -g -std=gnu99
+# Even if they're not needed for the particular test
+LDFLAGS += -lm -ldl
 
-.PHONY: all a.out
-all:a.out
+%:
+	gcc $(CFLAGS) $(LDFLAGS) $@.c -o $@
+	./$@
 
-a.out:$(FILE)
-	gcc $(CFLAGS) $^
-	./a.out
+clean:
+	find . -maxdepth 1 -perm -a=x -type f | xargs rm
+

@@ -1,0 +1,12 @@
+cmake_minimum_required(VERSION 3.20)
+
+project(fortran_io C Fortran)
+
+add_library(print_string STATIC print_string.f90)
+add_library(cprint_string STATIC cprint_string.c)
+
+add_executable(mainlc main.c)
+add_executable(mainlf main.c)
+target_link_libraries(mainlf PRIVATE print_string)
+target_link_libraries(mainlc PRIVATE cprint_string)
+

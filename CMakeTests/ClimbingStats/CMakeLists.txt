@@ -26,4 +26,5 @@ install(EXPORT ClimbingStatsTargets
     FILE ClimbingStatsTargets.cmake
     DESTINATION ${CONFIG_INSTALL_DIR}
     NAMESPACE climbingstats::
+    COMPONENT phil
 )

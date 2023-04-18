@@ -63,17 +63,17 @@ var MyMap = map[string]MyThing{
 }
 
 var MyPointerMap = map[string]*MyThing{
-	"A": &MyThing{
+	"A": {
 		Description: "desc a",
 		Name: "a",
 		Value: "value A",
 	},
-	"B": &MyThing{
+	"B": {
 		Description: "desc b",
 		Name: "b",
 		Value: "value B",
 	},
-	"C": &MyThing{
+	"C": {
 		Description: "desc c",
 		Name: "c",
 		Value: "value C",

@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <inttypes.h>
 #include <complex.h>
+#include <limits.h>
+#include <float.h>
 
 #define printsizeof(type) fprintf(stderr, "%28s = %-2lu (%-3lu bits)\n", "sizeof(" #type ")", sizeof(type), sizeof(type)*8)
 int main ( int argc , char ** argv ) {
@@ -54,6 +56,27 @@ int main ( int argc , char ** argv ) {
     printsizeof(float complex);
     printsizeof(double complex);
     printsizeof(long double complex);
+
+    /*
+     * Limit values and precision
+     */
+#define print_val(VAL,TYPE) fprintf(stderr, "%12s = " #TYPE "\n", #VAL, VAL)
+    fprintf(stderr, "========== Limit values and precision =====================\n");
+    print_val(UINT_MAX, %u);
+    print_val(ULONG_MAX, %lu);
+    print_val(INT_MAX, %11d);
+    print_val(INT_MIN, %11d);
+    print_val(LONG_MAX, %20ld);
+    print_val(LONG_MIN, %20ld);
+    print_val(FLT_MAX, %e);
+    print_val(FLT_MIN, %e);
+    print_val(FLT_EPSILON, %e);
+    print_val(DBL_MAX, %e);
+    print_val(DBL_MIN, %e);
+    print_val(DBL_EPSILON, %e);
+    print_val(LDBL_MAX, %Le);
+    print_val(LDBL_MIN, %Le);
+    print_val(LDBL_EPSILON, %Le);
 
     return 0;
 }

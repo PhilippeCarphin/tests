@@ -2,6 +2,8 @@
 
 #
 # This test demonstrates funky stuff that that BASH does with PIDs
+# - https://unix.stackexchange.com/a/484445/161630
+# - https://unix.stackexchange.com/a/138498/161630
 #
 echo "$0: THIS_PID is $$"
 echo "$0: PARENT_PID is ${PPID}"

@@ -6,7 +6,8 @@
 #include <string.h>
 #include <stdio.h>
 
-int main(void){
+int main(int argc, char **argv){
+    char *listener_path = (argc > 1 ? argv[1] : "/tmp/foo");
     int s = socket(AF_UNIX, SOCK_STREAM, 0);
     if(s == -1){
         fprintf(stderr, "Failed to create socket fd\n");
@@ -14,7 +15,7 @@ int main(void){
     }
     struct sockaddr_un server;
     server.sun_family = AF_UNIX;
-    strncpy(server.sun_path, "/tmp/foo", sizeof(server.sun_path));
+    strncpy(server.sun_path, listener_path, sizeof(server.sun_path));
 
     int err = connect(
         s,

@@ -22,24 +22,28 @@ void * handle_connection(void* conn){
 }
 
 
-int main(void){
-    int s = socket(AF_UNIX, SOCK_STREAM, 0);
+int main(int argc, char **argv){
+    char *listener_path = (argc > 1 ? argv[1] : "/tmp/phil-socket");
+    if(access(listener_path, F_OK) == 0){
+        fprintf(stderr, "Socket file '%s' already exists\n", listener_path);
+        exit(1);
+    }
+
+    int listener = socket(AF_UNIX, SOCK_STREAM, 0);
     struct sockaddr_un addr;
-    // memset(&addr,0,sizeof(addr));
     addr.sun_family = AF_UNIX;
-    remove("/tmp/foo");
     strncpy(addr.sun_path,"/tmp/foo", sizeof(addr.sun_path));
     int err = bind(
-        s,
+        listener,
         (const struct sockaddr*) &addr,
         strlen(addr.sun_path) + 1 + sizeof(addr.sun_family)
     );
     if(err){
-        perror("Bind s");
+        perror("Bind listener");
         exit(1);
     }
 
-    err = listen(s, 0);
+    err = listen(listener, 0);
     if(err) {
         perror("Error during listen");
         exit(1);
@@ -47,7 +51,7 @@ int main(void){
 
     for(;;){
         fprintf(stderr, "for loop\n");
-        long int conn = accept(s, NULL, NULL);
+        long int conn = accept(listener, NULL, NULL);
         fprintf(stderr, "Accepted connection : %ld\n", conn);
         pthread_t handle;
         int err = pthread_create(&handle, NULL, handle_connection, (void*)conn);
@@ -56,6 +60,6 @@ int main(void){
         }
     }
 
-    close(s);
-    remove("/tmp/foo");
+    close(listener);
+    remove(listener_path);
 }

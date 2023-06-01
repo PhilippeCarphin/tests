@@ -1,3 +1,4 @@
+#!/bin/bash
 
 #
 # This test demonstrates funky stuff that that BASH does with PIDs

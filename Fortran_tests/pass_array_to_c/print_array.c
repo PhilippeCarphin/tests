@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-void print_array_2d(float *array, size_t ni, size_t nj)
+void cprint_array_2d(float *array, size_t ni, size_t nj)
 {
     fprintf(stderr, "Printing array at %p with dimensions %lux%lu\n", array, ni, nj);
     float *elem_ptr = array;
@@ -14,7 +14,7 @@ void print_array_2d(float *array, size_t ni, size_t nj)
     }
 }
 
-void print_array_1d(float *array, size_t n)
+void cprint_array_1d(float *array, size_t n)
 {
     fprintf(stderr, "Printing array at %p with dimension %lu\n", array, n);
     float *elem_ptr = array;

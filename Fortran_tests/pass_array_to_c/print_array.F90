@@ -16,13 +16,13 @@ module cprintarray
         ! with array arguments, either do not give the non-Fortran procedures
         ! any explicit interface, or do not declare the corresponding dummy
         ! arguments as assumed-shape or pointers in the interface:
-        subroutine print_array_2d(array, ni, nj) bind(C, name="print_array_2d")
+        subroutine cprint_array_2d(array, ni, nj) bind(C, name="cprint_array_2d")
             use iso_c_binding
             real(C_FLOAT), intent(in), dimension(*) :: array
             integer(C_INT), intent(in), value       :: ni, nj
         end subroutine
 
-        subroutine print_array_1d(array, n) bind(C, name="print_array_1d")
+        subroutine cprint_array_1d(array, n) bind(C, name="cprint_array_1d")
             use iso_c_binding
             real(C_FLOAT), intent(in), dimension(*) :: array
             integer(C_INT), intent(in), value       :: n
@@ -41,14 +41,14 @@ module cprintarray
             use iso_fortran_env
             real(C_FLOAT), intent(in), dimension(:) :: array
             write(error_unit,*) "Shape of array: ", shape(array)
-            call print_array_1d(array, size(array,1))
+            call cprint_array_1d(array, size(array,1))
         end subroutine
         subroutine fprint_array_2d(array)
             use iso_c_binding
             use iso_fortran_env
             real(C_FLOAT), intent(in), dimension(:,:) :: array
             write(error_unit,*) "Shape of array: ", shape(array)
-            call print_array_2d(array, size(array,1), size(array,2))
+            call cprint_array_2d(array, size(array,1), size(array,2))
         end subroutine
 
 end module

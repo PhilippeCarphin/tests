@@ -35,7 +35,7 @@ source ./script.sh
 #
 echo ""
 echo "$0: Executing in subshell: (./script.sh)"
-( ./script.sh )
+( ./script.sh ; a=1)
 
 #
 # This is where it gets interesting: a process is created for the subshell, but

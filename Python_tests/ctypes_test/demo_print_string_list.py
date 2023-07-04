@@ -11,10 +11,14 @@ def list_of_str_to_char_star_star(l):
     to an array of len(l) char* from a list of python bytes
     objects.
     """
+    c_char_p_Array = ctypes.c_char_p * len(l)
+    print(f"c_char_p_Array = {c_char_p_Array}")
     return (ctypes.c_char_p * len(l))(*l)
 
 def py_print_string_list(bl):
-    return print_string_list(len(bl), list_of_str_to_char_star_star(bl))
+    cl = list_of_str_to_char_star_star(bl)
+    print(f"PYTHON: clist: {cl}")
+    return print_string_list(len(bl), cl)
 
 def pypy_print_string_list(l, encoding='ASCII'):
     bl = [e.encode('ASCII') for e in l]

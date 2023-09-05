@@ -14,6 +14,17 @@ test-gcc: main-gcc
 clean:
 	rm -f main-*
 
+.PHONY: main_iso_c99 main_xopen_source-400 main_strict_ansi
+test-macros: main_iso_c99 main_xopen_source-400 main_strict_ansi
+main_iso_c99: main.c
+	gcc -MMD  $< -o $@ -DJUST_AFTER -D_ISOC99_SOURCE && ./$@
+
+main_xopen_source-400: main.c
+	gcc -MMD  $< -o $@ -DJUST_AFTER -D_XOPEN_SOURCE=400 && ./$@
+
+main_strict_ansi: main.c
+	gcc -MMD  $< -o $@ -DJUST_AFTER -D__STRICT_ANSI__ && ./$@
+
 ifneq ($(shell which icc 2>/dev/null),)
 all: test-intel
 main-intel.i.c: main.c

@@ -3,58 +3,44 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-float sinus(float x){
-   size_t n=0,m;float t=1,s=0,c=0;
-l:
-   m=n%2;
-   fprintf(stderr, "m=%lu, !m=%d\n",m,!m);
-   s += t*m;
-   c += t*!m;
-   t *= (m?-1:1)*x/++n;
-   if(n<19)goto l;
-   return s;
-}
+int main (int argc, char **argv) {
 
-float get_float()
-{
-   char * r = 0;
-   size_t s = 8;
-   getline(&r,&s,stdin);
-   /* printf("line read = %s\n",r);  */
-   float d;
-   sscanf(r,"%f",&d);
-   /* printf("float read = %f\n",d); */
-   return d;
-}
+    double original_x;
+    /*
+     * Obtain original_x from argv[1]
+     */
+    if(argc <= 1 || sscanf(argv[1], "%lf", &original_x) != 1){
+        fprintf(stderr, "ERROR first argument must be doubleing point value\n");
+        return 1;
+    }
 
-int main ( int argc , char ** argv ) {
+    /*
+     * Bring x into the interval [0, tau]
+     */
+    double tau = 2*3.14159265359;
+    double x = original_x;
+    if(x > 0){ while (x >  tau){ x -= tau; } }
+    else     { while (x < 0){ x += tau; } }
+    printf("Original x = %f, x = %f\n", original_x, x);
 
-   /* fprintf(stderr, "Size of int = %d, sizeof size_t = %lu\n", sizeof(int), sizeof(size_t)); */
-   size_t N,n,m;float t,s,c,x;char*l;
-   /* Read number of values */
-   getline(&l,&s,stdin);
-   sscanf(l,"%lu",&N);
-      fprintf(stderr, "number of values to read N = %lu\n",N);
-d:
-   /* Read a value */
-   getline(&l,&s,stdin);
-   sscanf(l,"%f",&x);
-      printf("float read = %f\n",x);
+    /*
+     * Do the power series
+     */
+    double sin = 0;
+    double cos = 1;
+    double abs_term = 1; // (x^n)/(n!)
+    for(int n = 1 ; n < 40; n++){
+        int m = n%2;
+        int sign = ((n/2)%2 ? -1 : 1);
+        abs_term *= x/n;
+        sin +=  m * sign * abs_term;  // If n is odd, add sign*x^n/n!
+        cos += !m * sign * abs_term; // if n is even, add sign*x^n/n!
+    }
 
-   /* Calculate sine and cosine */
-l:
-   m=n%2;
-   fprintf(stderr, "m=%lu, !m=%d\n",m,!m);
-   s += t*m;
-   c += t*!m;
-   t *= (m?-1:1)*x/++n;
-   if(n<19)goto l;
+    /*
+     * output sine and cosine
+     */
+    printf("sin(%f)=%.16f, cos(%f)=%.16f\n",original_x,sin,original_x,cos);
 
-   /* output sine and cosine */
-   printf("%f\n%f\n",s,c);
-
-   /* goto d if number of values read is smaller than N */
-   if(N--)goto d;
-
-   return 0;
+    return 0;
 }

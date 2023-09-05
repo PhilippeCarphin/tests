@@ -37,3 +37,5 @@ build
 *.mod
 main
 readdir_test
+*.d
+*.s

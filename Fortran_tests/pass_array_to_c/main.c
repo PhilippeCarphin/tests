@@ -32,14 +32,14 @@ int main(void){
         }
     }
 
-    cprint_array_2d(&carray[0][0], ni, nj);
+    cprint_array_2d_memory(&carray[0][0], ni, nj);
 
     float *elem_ptr = &carray[0][0];
     for(int e = 0; e < ni*nj; e++){
         *elem_ptr++ = e+1;
     }
 
-    cprint_array_2d(&carray[0][0], ni, nj);
+    cprint_array_2d_memory(&carray[0][0], ni, nj);
     return 0;
 }
 

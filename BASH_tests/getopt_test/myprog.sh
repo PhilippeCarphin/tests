@@ -27,6 +27,10 @@ echo "Arguments before: $@" # -yf apple posarg1 --vegetable='baby carrot' posarg
 echo "Normalized arguments: ${normalized_arguments}"
 eval set -- "${normalized_arguments}"
 echo "Arguments after : $@" # -y -f apple --vegetable 'baby carrot' -- posarg1 posarg2
+eval normalized_arguments_array=(${normalized_arguments})
+for a in "${normalized_arguments_array[@]}" ; do
+    echo "a='${a}'"
+done
 
 while : ; do
     case $1 in
@@ -38,5 +42,6 @@ while : ; do
     esac
 done
 
-echo "Fruit = ${fruit}, vegetable = ${vegetable}"
+echo "Fruit = '${fruit}'"
+echo "Vegetable = ${vegetable}"
 echo "posargs = $@"

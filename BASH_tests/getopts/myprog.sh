@@ -11,8 +11,10 @@ while getopts "yf:v:" the_opt "$@" ; do
             ;;
         v)  echo "Vegetable = ${OPTARG}"
             ;;
+        y)  echo "Flag yes present"
+            ;;
         ?)
-            echo "Unknown option"
+            echo "Unknown option ${the_opt}"
             exit 12
             ;;
     esac

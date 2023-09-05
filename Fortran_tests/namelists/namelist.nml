@@ -1,0 +1,20 @@
+&EXAMPLE
+X=100
+Y=500
+R(1)=10.5
+R(2)=20.25
+PERSON%ID=1
+PERSON%NAME='Alice'
+PERSON%AGE=27
+/
+
+! type(phil_t) :: foo
+! namelist /PHIL/ FOO
+! open(action='read', file=filepath)
+! read(nml=PHIL)
+&PHIL
+FOO%color='red'
+FOO%bool=.true.
+FOO%int=82
+/
+

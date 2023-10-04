@@ -41,7 +41,40 @@
 
 #define ARRAY_SIZE 1000
 #define HALF_ARRAY_SIZE 500
+#define nb_elem(a) (sizeof(a)/sizeof(*(a)))
 
+int printSize(int []);
+int print_struct_sizeof();
+int printSize_sizeDeclared(int [ARRAY_SIZE]);
+int printSize_oldSchool(int [ARRAY_SIZE]);
+int var_sized_array(size_t);
+
+
+int main ( int argc , char ** argv ) {
+   (void) argc;
+   (void) argv;
+
+   int my_array[ARRAY_SIZE];
+   int half_my_array[HALF_ARRAY_SIZE];
+
+   printf("                In scope : sizeof my_array : %lu\n", sizeof my_array);
+   printf("sizeof(my_array): %lu, nb_elem(my_array): %lu\n", sizeof(my_array), nb_elem(my_array));
+
+   printf("\n");
+
+   printSize(my_array);
+   printf("\n");
+   printSize_sizeDeclared(my_array);
+   printSize_sizeDeclared(half_my_array);
+   printf("\n");
+   printSize_oldSchool(my_array);
+   var_sized_array(1234);
+   char c = getchar();
+   var_sized_array((size_t)c);
+   print_struct_sizeof();
+
+   return 0;
+}
 /*******************************************************************************
  * For variable sized arrays, as long as the declaration is in the same scope,
  * the sizeof operator will give the right value.
@@ -106,27 +139,4 @@ int print_struct_sizeof()
 	printf("%s(): Sizeof struct member array is %lu\n",
 			                                 __func__, sizeof(ma.inner_array));
 	return 0;
-}
-
-int main ( int argc , char ** argv ) {
-
-   int my_array[ARRAY_SIZE];
-   int half_my_array[HALF_ARRAY_SIZE];
-
-   printf("                In scope : sizeof my_array : %lu\n", sizeof my_array);
-
-   printf("\n");
-
-   printSize(my_array);
-   printf("\n");
-   printSize_sizeDeclared(my_array);
-   printSize_sizeDeclared(half_my_array);
-   printf("\n");
-   printSize_oldSchool(my_array);
-   var_sized_array(1234);
-   char c = getchar();
-   var_sized_array((size_t)c);
-   print_struct_sizeof();
-
-   return 0;
 }

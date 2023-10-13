@@ -8,7 +8,7 @@ _complete_func(){
     _log "\$2 = $2" # CURRENT WORD
     _log "\$3 = $3" # PREVIOUS WORD
     _log "\$4 = $4" # NOTHING
-    _log "\$COMP_WORDS[@] = ${COMP_WORDS[@]}"
+    _log "\$COMP_WORDS[@] = ${COMP_WORDS[*]}"
     _log "\$COMP_CWORD = ${COMP_CWORD}"
     _log "\$COMP_LINE = ${COMP_LINE}"
     _log "\$COMP_POINT = ${COMP_POINT}"

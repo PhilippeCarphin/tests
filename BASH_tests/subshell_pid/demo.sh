@@ -8,6 +8,7 @@
 echo "$0: THIS_PID is $$"
 echo "$0: PARENT_PID is ${PPID}"
 echo -n "$0: PSTREE is "
+export MAIN_PID=$$
 pstree -p ${PPID}
 
 #
@@ -36,8 +37,19 @@ source ./script.sh
 # CHILD, and ${PPID} expands to THIS_PID
 #
 echo ""
-echo "$0: Executing in subshell: (./script.sh)"
+echo "$0: Executing in subshell: (./script.sh; a=1)"
 ( ./script.sh ; a=1)
+
+#
+# BASH does not always fork for the subshell.  In this situation, we are creating
+# a subshell that is going to fork-exec immediately to run the script so instead
+# of forking for the subshell and doing fork-exec in the subshell, we can just
+# do fork-exec and save one fork.  As we can see, script prints THIS_PID as its
+# parent while in the previous case, the parent is something else (the subshell).
+#
+echo ""
+echo "$0: Executing in subshell: (./script.sh)"
+( ./script.sh)
 
 #
 # This is where it gets interesting: a process is created for the subshell, but

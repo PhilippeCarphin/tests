@@ -1,0 +1,17 @@
+cmake_minimum_required(VERSION 3.16)
+
+project(use_blas C Fortran)
+
+# set(BLA_VENDOR Intel10_64lp) # See 'cmake --help-module FindBLAS
+find_package(BLAS REQUIRED)
+
+find_package(LAPACK REQUIRED)
+
+list(APPEND CMAKE_MODULE_PATH $ENV{EC_CMAKE_MODULE_PATH})
+find_package(FFTW)
+
+include(CMakePrintHelpers)
+cmake_print_properties(TARGETS BLAS::BLAS LAPACK::LAPACK PROPERTIES INTERFACE_COMPILE_OPTIONS INTERFACE_LINK_OPTIONS INTERFACE_LINK_LIBRARIES INTERFACE_LINK_LANGUAGES INTERFACE_INCLUDE_DIRECTORIES IMPORTED_CONFIGURATIONS IMPORTED_LOCATION)
+cmake_print_variables(BLAS_LIBRARIES)
+cmake_print_variables(FFTW_LIBRARIES)
+cmake_print_variables(FFTW_DOUBLE_LIBRARIES)

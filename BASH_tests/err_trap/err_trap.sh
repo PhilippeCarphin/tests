@@ -116,10 +116,10 @@ function keep_going(){
 
 function generate_list(){
     echo "1 2 3 4"
-    return 27
+    if true ; then
+        ls noexist
+    fi
 }
 
 
-
-
-# philmain
+philmain

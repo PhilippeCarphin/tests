@@ -1,0 +1,6 @@
+#: localized.sh:4
+msgid "Please enter a value"
+msgstr "Veuillez entrer une valeur"
+#: localized.sh:5
+msgid "You have entered the value ${value}"
+msgstr "Vous avez entré la valeur ${value}"

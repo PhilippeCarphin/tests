@@ -1,0 +1,23 @@
+#: localized.sh:11
+msgid "Please enter a value"
+msgstr "Entre uen valeur"
+
+#: localized.sh:12
+msgid "You have entered the value ${value}"
+msgstr "T'as entre ${value}"
+
+#: localized.sh:15
+msgid "Your value is even"
+msgstr "Ta valeur est paire"
+
+#: localized.sh:17
+msgid "Your value is odd"
+msgstr "Ta valeur est impaire"
+
+#: localized.sh:20
+msgid "Another message to translate"
+msgstr "Un autre message a traduire"
+
+#: localized.sh:22
+msgid "Again another message"
+msgstr "Encore un autre message a traduire"

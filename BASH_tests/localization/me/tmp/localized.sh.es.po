@@ -1,0 +1,12 @@
+#: localized.sh:11
+msgid "Please enter a value"
+msgstr ""
+#: localized.sh:12
+msgid "You have entered the value ${value}"
+msgstr ""
+#: localized.sh:15
+msgid "Your value is even"
+msgstr ""
+#: localized.sh:17
+msgid "Your value is odd"
+msgstr ""

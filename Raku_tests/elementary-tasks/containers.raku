@@ -18,10 +18,9 @@ sub MAIN()
     say @arr;
 
     my @typed-array of Int = [1,2,3];
-    my $len = @typed-array.elems;
-    say "My array has $len elements";
-    for 0..$len-1 -> $i {
-        say "Index is $i";
+    say "My array has length {@typed-array.elems}";
+    for 0..@typed-array.elems-1 -> $i {
+        say "\@typed-array[$i] = @typed-array[$i]";
     }
 
     my %my-hash = 1 => 2, "bag of" => "marbles";

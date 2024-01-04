@@ -13,7 +13,7 @@ all:$(exec)
 $(exec):$(obj)
 	gcc -o $@ $^ $(LDLIBS)
 clean:
-	$(RM) $(obj) $(exec)
+	rm -f $(obj) $(exec)
 vars:
 	@echo "src = $(src)"
 	@echo "obj = $(obj)"

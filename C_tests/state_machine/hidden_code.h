@@ -1,6 +1,7 @@
 #ifndef _HIDDEN_CODE_H_
 #define _HIDDEN_CODE_H_
 #include <pthread.h>
+#include <stdio.h>
 /*
  * Bouts de code que qui ne sont pas propres à la conception d'une machine à
  * état.
@@ -10,11 +11,14 @@
  * Worker de thread qui consomme les caractères du terminal.
 *******************************************************************************/
 void *check_input(){
-	char c;
 	while(1){
 		input = getchar();
 		transition_a_faire = 1;
-		if(input == 'q') exit(0);
+		if(input == 'q'){
+            printf("input = %c\n", input);
+            finished = 1;
+            break;
+        }
 	}
 	return NULL;
 }
@@ -27,7 +31,6 @@ void *check_input(){
 static struct termios oldt, newt;
 void set_terminal_mode()
 {
-
 	/*
 	 * Save current terminal attributs
 	 */

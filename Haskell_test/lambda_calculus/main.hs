@@ -1,12 +1,32 @@
 -- DOWNLOAD : https://www.haskell.org/platform/
 -- BUILD : See Makefile
+-- We start by defining the constants "true" and "false".
+-- Since all we have are functions, they need to be defined as functions.  they
+-- will both be functions that take two arguments and return one of them.  In an
+-- arbitrary choice, we decide that "true" is the function that returns its first
+-- argument and false is the function that returns its second argument.
+
 -- true : λx.λy.y
 true  = \x y -> x
+
 -- false: λx.λy.x
 false = \x y -> y
 
-not_op = \b   -> b false true
--- a compléter, remplacer "true" par la réponse --
+-- Given a fucntion f that is one of these two functions, we can know which once
+-- it is by passing it the the strings "true" and "false" and printing the result
+-- of the evaluation. f "true" "false" will return the string "true" if f is the
+-- function true, and "false" if f is the function "false".
+
+-- Let 'b' be one of these two functions, we can construct the 'negation' operation
+-- which takes 'b' and returns one of the true or false functions, the one that
+-- 'b' isn't.  The operation not_op evaluates 'b' with the arguments false true
+-- and we can see that if 'b' is true, the result of 'b false true' will be false
+-- and if b is false, the result of 'b false true' will be true.
+not_op = \b -> b false true
+
+
+-- Following this logic, we can do the 'and' and 'or' operations by asking
+-- what 'x' is.  Replace 'true' by something
 and_op = \x y -> true -- hint : if x is false, return false without checking y, otherwise return whatever y is.
 or_op  = \x y -> true -- hint : if x is true, return true without checking y, otherwise, return whatever y is.
 

@@ -32,11 +32,6 @@ class Derived : public Base {
     virtual void do_other_stuff(){ std::cout << "Doig other stuff derived" << std::endl; }
 };
 
-class Phil{
-
-    int a;
-};
-
 int main(void){
     Derived d;
 
@@ -47,9 +42,4 @@ int main(void){
     b_ptr->do_stuff();
     b_ptr->do_other_stuff();
     delete b_ptr;
-
-
-    Phil *p = new Phil;
-
-    delete p;
 }

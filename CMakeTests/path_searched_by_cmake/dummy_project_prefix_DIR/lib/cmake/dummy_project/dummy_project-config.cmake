@@ -1,0 +1,5 @@
+set(prefix ${CMAKE_CURRENT_LIST_DIR}) # prefix = <prefix>/lib/cmake/dummy_project/ (3 tokens to remove)
+get_filename_component(prefix ${prefix} DIRECTORY) # prefix = <prefix>/lib/cmake (2 tokens left to remove)
+get_filename_component(prefix ${prefix} DIRECTORY) # prefix = <prefix>/lib       (1 token left to remove)
+get_filename_component(prefix ${prefix} DIRECTORY) # prefix = <prefix>           (done)
+message("Dummy project found in ${prefix}")

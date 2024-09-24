@@ -22,10 +22,14 @@ with open(os.path.expanduser('~/.log.txt'), 'a') as f:
     # '?' normal completion
     # '!' listing completion like after double tab
     # '@' listing alternatives...
-    print(f"os.environ['COMP_TYPE'] = {os.environ['COMP_TYPE']}", file=f)
+    comp_type = os.environ['COMP_TYPE']
+    comp_type_bytes = bytes(chr(int(comp_type)), encoding='UTF-8')
+    print(f"os.environ['COMP_TYPE'] = {comp_type} ({comp_type_bytes})", file=f)
 
     # The key (or final key of a key sequence) used to invoke the current completion function.
-    print(f"os.environ['COMP_KEY'] = {os.environ['COMP_KEY']}", file=f)
+    comp_key = os.environ['COMP_KEY']
+    comp_key_bytes = bytes(chr(int(comp_key)), encoding='UTF-8')
+    print(f"os.environ['COMP_KEY'] = {comp_key} ({comp_key_bytes})", file=f)
 
     comp = {k:v for k,v in os.environ.items() if k.startswith('COMP_')}
     pprint(comp, stream=f)

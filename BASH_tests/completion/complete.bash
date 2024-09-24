@@ -22,3 +22,4 @@ _complete_func(){
 
 complete -F _complete_func cmd
 complete -C $PWD/complete.py cm
+complete -C $PWD/a.out c

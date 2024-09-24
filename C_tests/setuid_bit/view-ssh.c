@@ -3,13 +3,26 @@
 #include <stdlib.h>
 #include <string.h>
 
-int main(void)
+int main(int argc, char **argv)
 {
-    char *config_file="/home/phc001/.ssh/config";
+    char *config_dir="/home/phc001/.ssh";
+    if(argc != 2){
+        fprintf(stderr, "Must supply an argument 'config' or 'id_rsa.pub'\n");
+        exit(1);
+    }
+    char filepath[1024];
+    if(strncmp("config", argv[1], 10) == 0){
+        snprintf(filepath, sizeof(filepath), "%s/config", config_dir);
+    } else if (strncmp("id_rsa.pub", argv[1], 10) == 0) {
+        snprintf(filepath, sizeof(filepath), "%s/id_rsa.pub", config_dir);
+    } else {
+        fprintf(stderr, "Invalid argument: %s.  Must be either 'config' or 'id_rsa.pub'\n", argv[1]);
+        exit(1);
+    }
 
-    FILE *f = fopen(config_file, "r");
+    FILE *f = fopen(filepath, "r");
     if(f == NULL){
-        perror(config_file);
+        perror(filepath);
         return 1;
     }
 

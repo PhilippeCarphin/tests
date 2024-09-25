@@ -16,53 +16,93 @@ module cprintarray
         ! with array arguments, either do not give the non-Fortran procedures
         ! any explicit interface, or do not declare the corresponding dummy
         ! arguments as assumed-shape or pointers in the interface:
-        subroutine cprint_array_2d_memory(array, ni, nj) bind(C, name="cprint_array_2d_memory")
+        subroutine cprint_array_2d_memory(array, n_rows, n_cols) bind(C, name="cprint_array_2d_memory")
             use iso_c_binding
             real(C_FLOAT), intent(in), dimension(*) :: array
-            integer(C_INT), intent(in), value       :: ni, nj
+            integer(C_INT), intent(in), value       :: n_rows, n_cols
         end subroutine
 
-        subroutine cprint_array_2d_indexing(array, ni, nj) bind(C, name="cprint_array_2d_indexing")
-            use iso_c_binding
-            real(C_FLOAT), intent(in), dimension(*) :: array
-            integer(C_INT), intent(in), value       :: ni, nj
-        end subroutine
-
-        subroutine cprint_array_2d_array_yuck(ni, nj, array) bind(C, name="cprint_array_2d_array_yuck")
-            use iso_c_binding
-            real(C_FLOAT), intent(in), dimension(*) :: array
-            integer(C_INT), intent(in), value       :: ni, nj
-        end subroutine
-
-        subroutine cprint_array_1d(array, n) bind(C, name="cprint_array_1d")
+        subroutine cprint_array_1d_memory(array, n) bind(C, name="cprint_array_1d_memory")
             use iso_c_binding
             real(C_FLOAT), intent(in), dimension(*) :: array
             integer(C_INT), intent(in), value       :: n
         end subroutine
+
+        subroutine cprint_array_2d_row_major_indexing(array, n_rows, n_cols) bind(C, name="cprint_array_2d_row_major_indexing")
+            use iso_c_binding
+            real(C_FLOAT), intent(in), dimension(*) :: array
+            integer(C_INT), intent(in), value       :: n_rows, n_cols
+        end subroutine
+
+        subroutine cprint_array_2d_column_major_indexing(array, n_rows, n_cols) bind(C, name="cprint_array_2d_column_major_indexing")
+            use iso_c_binding
+            real(C_FLOAT), intent(in), dimension(*) :: array
+            integer(C_INT), intent(in), value       :: n_rows, n_cols
+        end subroutine
+
+        subroutine cprint_array_2d_row_major_forbidden_syntax(n_rows, n_cols, array) bind(C, name="cprint_array_2d_row_major_forbidden_syntax")
+            use iso_c_binding
+            real(C_FLOAT), intent(in), dimension(*) :: array
+            integer(C_INT), intent(in), value       :: n_rows, n_cols
+        end subroutine
+
+        subroutine cprint_array_2d_column_major_forbidden_syntax(n_rows, n_cols, array) bind(C, name="cprint_array_2d_column_major_forbidden_syntax")
+            use iso_c_binding
+            real(C_FLOAT), intent(in), dimension(*) :: array
+            integer(C_INT), intent(in), value       :: n_rows, n_cols
+        end subroutine
     end interface
 
-
-    interface fprint_array
-        module procedure fprint_array_1d
-        module procedure fprint_array_2d
-    end interface
 
     contains
-        subroutine fprint_array_1d(array)
-            use iso_c_binding
-            use iso_fortran_env
-            real(C_FLOAT), intent(in), dimension(:) :: array
-            write(error_unit,*) "fprint_array_1d(): Fortran adapter for cprint_array_1d"
-            write(error_unit,*) "Shape of array: ", shape(array)
-            call cprint_array_1d(array, size(array,1))
-        end subroutine
-        subroutine fprint_array_2d(array)
+        subroutine fprint_array_2d_memory(array)
             use iso_c_binding
             use iso_fortran_env
             real(C_FLOAT), intent(in), dimension(:,:) :: array
-            write(error_unit,*) "fprint_array_2d(): Fortran adapter for cprint_array_2d_memory"
+            write(error_unit,*) "fprint_2d_array_memory(): Fortran adapter for cprint_2d_array_memory()"
             write(error_unit,*) "Shape of array: ", shape(array)
             call cprint_array_2d_memory(array, size(array,1), size(array,2))
         end subroutine
+        subroutine fprint_array_1d_memory(array)
+            use iso_c_binding
+            use iso_fortran_env
+            real(C_FLOAT), intent(in), dimension(:) :: array
+            write(error_unit,*) "fprint_array_1d_memory(): Fortran adapter for cprint_array_1d_memory()"
+            write(error_unit,*) "Shape of array: ", shape(array)
+            call cprint_array_1d_memory(array, size(array,1))
+        end subroutine
+        subroutine fprint_array_2d_row_major_indexing(array)
+            use iso_c_binding
+            use iso_fortran_env
+            real(C_FLOAT), intent(in), dimension(:,:) :: array
+            write(error_unit,*) "fprint_array_2d_row_major_indexing(): Fortran adapter for cprint_array_2d_row_major_indexing()"
+            write(error_unit,*) "Shape of array: ", shape(array)
+            call cprint_array_2d_row_major_indexing(array, size(array,1), size(array,2))
+        end subroutine
+        subroutine fprint_array_2d_column_major_indexing(array)
+            use, intrinsic :: iso_c_binding
+            use, intrinsic :: iso_fortran_env
+            real(C_FLOAT), intent(in), dimension(:,:) :: array
+            write(error_unit,*) "fprint_array_2d_column_major_indexing(): Fortran adapter for cprint_array_2d_column_major_indexing()"
+            write(error_unit,*) "Shape of array: ", shape(array)
+            call cprint_array_2d_column_major_indexing(array, size(array,1), size(array,2))
+        end subroutine
+        subroutine fprint_array_2d_column_major_forbidden_syntax(array)
+            use, intrinsic :: iso_c_binding
+            use, intrinsic :: iso_fortran_env
+            real(C_FLOAT), intent(in), dimension(:,:) :: array
+            write(error_unit,*) "fprint_array_2d_column_major_forbidden_syntax(): Fortran adapter for cprint_array_2d_column_major_forbidden_syntax()"
+            write(error_unit,*) "Shape of array: ", shape(array)
+            call cprint_array_2d_column_major_forbidden_syntax(size(array,1), size(array,2), array)
+        end subroutine
+        subroutine fprint_array_2d_row_major_forbidden_syntax(array)
+            use, intrinsic :: iso_c_binding
+            use, intrinsic :: iso_fortran_env
+            real(C_FLOAT), intent(in), dimension(:,:) :: array
+            write(error_unit,*) "fprint_array_2d_row_major_forbidden_syntax(): Fortran adapter for cprint_array_2d_row_major_forbidden_syntax()"
+            write(error_unit,*) "Shape of array: ", shape(array)
+            call cprint_array_2d_row_major_forbidden_syntax(size(array,1), size(array,2), array)
+        end subroutine
+
 
 end module

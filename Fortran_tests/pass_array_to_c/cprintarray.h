@@ -1,6 +1,8 @@
 #include <stdlib.h>
 
-void cprint_array_2d_memory(float *array, size_t ni, size_t nj);
-void cprint_array_2d_indexing(float *array, size_t ni, size_t nj);
-void cprint_array_2d_array_yuck(size_t ni, size_t nj, float array[nj][ni]);
-void cprint_array_1d(float *array, size_t n);
+void cprint_array_2d_memory(float *array, int n_rows, int n_cols);
+void cprint_array_1d_memory(float *array, int n);
+void cprint_array_2d_row_major_indexing(float *array, int n_rows, int n_cols);
+void cprint_array_2d_column_major_indexing(float *array, int n_rows, int n_cols);
+void cprint_array_2d_column_major_forbidden_syntax(int n_rows, int n_cols, float array[n_cols][n_rows]);
+void cprint_array_2d_row_major_forbidden_syntax(int n_rows, int n_cols, float array[n_rows][n_cols]);

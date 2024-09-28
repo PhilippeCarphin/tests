@@ -15,21 +15,30 @@ bash_normpath(){
 
     local IFS='/'
     local new_tokens=()
-    local i=0
 
     for tok in ${1} ; do
+
         if [[ "${tok}" == '.' ]] || [[ "${tok}" == "" ]] ; then
             continue
         fi
-        if [[ "${tok}" != '..' ]] \
-            || ( [[ -z "${start_sep}" ]] && (( i == 0 )) ) \
-            || ( (( ${#new_tokens[@]} >= 1)) \
-                 && [[ ${new_tokens[i-1]} == '..' ]] ) ; then
-            new_tokens[i++]=${tok}
-        elif (( i >= 1 )) ; then
-            ((i--))
-            unset new_tokens[i]
+
+        if     ([[ "${tok}" != '..' ]]) \
+            || ( (( ${#new_tokens} == 0 )) && [[ -z "${start_sep}" ]] ) \
+            || ( (( ${#new_tokens[@]} > 0)) && [[ ${new_tokens[-1]} == '..' ]] ) ; then
+            # We add the token if either
+            # - It is not '..' or
+            # - It is '..' but one of the following exceptions are met
+            #   - No previous tokens to consume and path does not start with '/'
+            #     (Note if the path does start with '/', then we discard '..'
+            #      that come after: '/..' simply becomes '/').
+            #   - There is a previous token but it is also a '..'
+            new_tokens+=("${tok}")
+        elif (( ${#new_tokens[@]} > 0 )) ; then
+            # If the token is '..' and none of the exceptions above were met,
+            # then we the '..' will cancel out the previous token
+            unset new_tokens[-1]
         fi
+
     done
     # Note this works because IFS='/'.  the ${arr[*]} joins
     # the elements of the array 'arr' using the first char of IFS.
@@ -37,6 +46,14 @@ bash_normpath(){
     printf "${final:-.}"
 }
 
+#    initial_slashes = path.startswith(sep)
+#    # POSIX allows one or two initial slashes, but treats three or more
+#    # as single slash.
+#    if (initial_slashes and
+#        path.startswith(sep*2) and not path.startswith(sep*3)):
+#        initial_slashes = 2
+#    comps = path.split(sep)
+#    new_comps = []
 #    for comp in comps:
 #        if comp in (empty, dot):
 #            continue
@@ -65,29 +82,38 @@ assert_value_eq_expected(){
         return 1
     fi
 }
+
 test_pynormpath(){
     local value=$(bash_normpath "${1}")
-    local expected=$(python3 -c "import os; print(os.path.normpath('${1}'))")
-    if [[ "${value}" != "${expected}" ]] ; then
+    local expected=$2
+    local python=$(python3 -c "import os; print(os.path.normpath('${1}'))")
+    if [[ "${value}" != "${expected}" ]] || [[ "${value}" != "${python}" ]] ; then
         echo "value was different from expected:"
-        echo " input: '${1}'"
-        echo "  bash: '${value}'"
-        echo "python: '${expected}'"
+        echo "   input: '${1}'"
+        echo "    bash: '${value}'"
+        echo "expected: '${expected}'"
+        echo "  python: '${python}'"
         return 1;
     fi
 }
-main(){
+
+run_tests(){
     test_pynormpath src/../A A
     test_pynormpath /usr/bin/../etc/ /usr/etc
-    test_pynormpath //usr/bin/../etc/ /usr/etc
+    test_pynormpath //usr/bin/../etc/ //usr/etc # Two slashes is the only non-zero number of leading slashes that
+                                                # doesn't get converted to a single slash.
     test_pynormpath ////usr/bin/../etc/ /usr/etc
     test_pynormpath ///usr/bin/../etc/ /usr/etc
-    test_pynormpath "" ""
+    test_pynormpath "" .
     test_pynormpath / /
-    test_pynormpath ./ ""
-    test_pynormpath src/.. ""
-    test_pynormpath src/../../A
+    test_pynormpath ./ .
+    test_pynormpath src/.. .
+    test_pynormpath src/../../A ../A
+    test_pynormpath .. ..
+    test_pynormpath /.. /
+    test_pynormpath /../../.. /
+    test_pynormpath ../.. ../..
     # expect_fail src/../../A
     # expect_fail ../A
 }
-main "$@"
+run_tests "$@"

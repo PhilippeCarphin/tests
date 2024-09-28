@@ -39,3 +39,4 @@ main
 readdir_test
 *.d
 *.s
+core.*

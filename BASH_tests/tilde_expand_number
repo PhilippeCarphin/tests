@@ -1,0 +1,76 @@
+#!/bin/bash
+
+#
+# ref: https://stackoverflow.com/questions/3963716/how-to-manually-expand-a-special-variable-ex-tilde-in-bash/29310477#29310477
+#
+# This code comes from some code that I saw on stack overflow where someone
+# showed how we could get the tilde-expansion of a string without using eval
+# and it was overly complicated because tilde-expansion has a bunch of cases.
+#
+# However his answer was missing the case when we have things like ~-3/...
+# or ~+2/... which get elements at an offset from the end or start of DIRSTACK
+# (with possible additional tilde-expansion if DIRSTACK contained an element that
+# begins with '~' at that index).
+
+expand_tilde(){
+    tilde_prefix=${1%%/*}
+
+    case $tilde_prefix in
+        "~-")
+            dir=$OLDPWD ;;
+        "~-"*)
+            number=-$((${tilde_prefix##"~-"}+1))
+            dir=${DIRSTACK[${number:-0}]}
+            ;;
+        "~+"*)
+            number=${tilde_prefix##"~+"}
+            dir=${DIRSTACK[${number:-0}]}
+    esac
+
+    # echo ${dir}
+    # dirstack may contain paths that begin with '~'
+    # The BASH manual says that ~+ and ~- is replaced by the corresponding
+    # element from the directory stack as displayed by the dirs builtin invoked
+    # with the tilde-prefix.
+    #
+    # This is a bit inaccurate, first the tilde-prefix as defined in the bash
+    # manual includes the tilde but what we need to pass to the dirs builtin
+    # is the tilde-prefix without the '~'.
+    #
+    # Then there is the fact that DIRSTACK can contain elements that begin with
+    # '~'.
+    if [[ ${dir} == "~/"* ]] ; then
+        echo $HOME/${dir#"~/"}
+    else
+        echo ${dir}
+    fi
+}
+
+pushd /fs/site5/eccc/cmd/cmds/ >/dev/null 2>&1
+pushd /fs/site5/eccc/mrd/rpnenv >/dev/null 2>&1
+pushd ~/Documents 1>/dev/null 2>&1
+pushd ~/Repositories 1>/dev/null 2>&1
+pushd ~/Downloads 1>/dev/null 2>&1
+
+declare -p DIRSTACK
+
+test_against_eval(){
+    local input=$1
+    local expected=$(eval echo ${input})
+    local result=$(expand_tilde ${input})
+    if [[ ${expected} != ${result} ]] ; then
+        printf "input=\033[31m${input}\033[0m: Expected '${expected}', got '${result}'\n"
+    else
+        printf "input=\033[32m${input}\033[0m: Correct: '${result}'\n"
+    fi
+}
+
+test_against_eval "~-"
+test_against_eval "~-0"
+test_against_eval "~-1"
+test_against_eval "~-2"
+
+test_against_eval "~+"
+test_against_eval "~+1"
+test_against_eval "~+2"
+test_against_eval "~+3"

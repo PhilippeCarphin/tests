@@ -1,3 +1,4 @@
+#!/bin/bash
 #
 # This script demonstrates the use of the 'getopt' executable to parse
 # arguments in a bash script.  We could say that it does not actually

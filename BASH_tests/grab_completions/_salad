@@ -1,0 +1,14 @@
+#!/bin/bash
+#
+cur=$2
+prev=$3
+
+all_candidates=(apple apricot cherry bananna)
+
+if [[ ${prev} == -f ]] ; then
+    for x in "${all_candidates[@]}" ; do
+        if [[ $x == ${cur}* ]] ; then
+            echo $x
+        fi
+    done
+fi

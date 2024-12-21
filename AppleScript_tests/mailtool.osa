@@ -1,0 +1,7 @@
+tell application "Mail"
+    make new outgoing message with properties {visible:false, subject:"Happy Birthday!",content:"The big 60!", sender:"phil103@hotmail.com"}
+    tell result
+        make new to recipient with properties {address:"phil103@hotmail.com"}
+        send
+    end tell
+end tell

@@ -1,0 +1,185 @@
+#+TITLE: Tasks to become effective in a language
+
+In general programming is just combining different elementary tasks to solve
+new problems.  When I have a language I want to learn, I used to wait until
+I had some kind of small problem to solve, usually creating some kind of CLI
+tool to help me in my daily life.
+
+I usually don't learn the syntax of a language, then start using the
+language, I start by copy-pasting a hello world program and just get going.
+
+When I need to do something that I don't know how to do, I google it.  For
+example opening a file.  At the beginning the file I'm opening is hardcoded
+but at some point, the time comes when I want to specify it as a command line
+argument.  So I google that and so on.
+
+This somewhat works if I have a really good idea of how to solve the high
+level problem of the task I'm trying to accomplish.  But in reality, we often
+need to try different aproaches to our problem.
+
+The approach of leaning elementary programming tasks in a new language at the
+same time as we are experimenting at a higher level don't mix well.
+
+I might try solving the high level problem and be unsatisfied and tell myself
+"let me try this other way".  However if in doing that, I get sidetracked 10
+times by needing to learn elementary things about the language, then I find
+that.
+
+An alternative to this is to learn a set of elementary tasks right from the
+start without having a useful tool to write in the new language.  That way, I
+can make solid progress and have references for when I do want to actually
+make something.
+
+Over the course of having learned many languages in the first way I have
+described, I have identified common tasks that have come up very frequently.
+Here they are in an order in which I think they should be done.
+
+* Hello world program
+
+It's the most basic test because it allows us to confirm that we are able to
+compile or run our program or script.
+
+* Write a function
+
+We should write a function that takes at least one argument and returns
+something.
+
+I usually go with something like =greet(person) -> int=
+
+In the case of Rust, in the function that calls =greet=, we should try to
+print =person= after the call.  That's when we get introduced to the borrow
+checker.
+
+* If statements
+
+* Access command line arguments
+
+* For loops
+
+Opening a file is next and I always like to go through the content of the
+file in different ways, one of them being iterating over the lines of the
+file.  So might as well learn for loops before files.
+
+* Open a file and access its content
+
+Depending on the language, opening and reading files can be more complicated
+than expected.  Like in Go where you have to call =os.Open(FILENAME)= to get
+a file object, then create a =bufio.NewReader(FILE_OBJECT)= to read from with
+the method =ReadString(CHAR)= of the reader object only to find out later
+that =ioutil.ReadFile(FILENAME)= exists and returns a string with the file's
+contents.
+
+Reading a file line by line is nice for two reasons.
+1. Some files are too large to read into memory
+2. We want to traverse the lines of the file anyway
+
+The reason for learning line by line traversal is more for 2 since 1 is
+something that we can learn later.
+
+* Error handling
+
+Take the opening the file part of the preceding task and change the file to
+one that doesn't exist and check for the failure of the open call and handle
+it in the way the language wants you to.
+
+Some languages like Rust force you to do it so it would actually have been
+impossible to read the file in the last task without handling the error but
+if it had been possible, then do it here.
+
+* Access environment variables
+
+The three common ways to configure (change the behavior of) a program are
+command line arguments, environment variables, and configuration files.
+Where command line arguments take precedence over everything and environment
+variables and config files can be a mix.
+
+* Elementary containers: map-ish and list-ish
+
+Different languages have different names, Python has dictionnaries and lists
+other languages have maps and arrays.
+
+Just create one of each and iterate over it.
+
+* String manipulations
+
+String manipulation can be looked up as needed but it is still fundamental in
+that when writing any program in a new language, it is very useful to have
+lots of print statements like "my-variable = '${my-variable}' or in the error
+handling context to deliver an error message.
+
+* Running command
+
+Run a command and capture its output and get it's return code.
+
+Run the command asynchronously and wait for it to finish.
+
+* Classes or something
+
+Languages have their own words, in C, Go, and Rust, it's structs, in Fortran
+it's types, and in pretty much everything else it's classes.
+
+Fields and methods should be explored.  Some languages have something like
+=traits= or =interfaces=, look at that too.
+
+If the language has inheritance, learn the syntax so you can make sure you
+don't accidentally use it.
+
+* Reading JSON or YAML or XML
+
+Either for configuration or general storage of structured data, this is quite
+useful.
+
+You would probably want to use a database for anything really serious but you
+would also not be using a language you don't know for anything really
+serious.
+
+Also for many language, support for JSON is part of or almost part of the
+language.  For example Go and Rust whereas using a database in any language
+is just using a library so making function calls.
+
+** Note on JSON and BASH
+The usefulness of this task depends on the support that the language has.  In
+BASH pretty much the only thing you can do is use =jq= which is not great.
+
+So if you're doing anything non-trivial, you'll be better off using Python.  If
+you do have a BASH script and you don't want to have an extra file, you can still
+have
+python3 -c "...
+...
+"
+
+Having said that, knowing a bit of `jq` and how to do filters is somewhat useful.
+Like if BASH is the right choice for 99% of a task but that 1% is getting an
+attribute from the JSON returned from a web request, then doing
+#+BEGIN_SRC sh
+attrib=$(curl <request URL> <other stuff> | jq .attrib)
+#+END_SRC
+is easier than a =python -c ...= with multiple lines of code.
+
+If your script is all about making web requests and extracting bits from the
+returned JSON, then rewrite the whole thing in Python.
+
+* Concurrency, Threads or something
+
+Different languages have different concurrency models.  Go has goroutines and
+channels, C has pthreads, Rust has threads but also types that can be used
+with threads and types that can't.
+
+* Ancillary tasks
+
+These are some extra tasks that are handy to know how to do but not as
+important as the main tasks.
+
+** Filesystem manipulations
+
+- Getting the current working directory
+- Creating directories and files
+- Testing the existence of a file
+- Testing the type of a file (directory, link, regular file, socket (other?))
+- Testing the permissions of a file
+- Deleting directories and files
+
+** Networking
+
+- Making HTTP requests
+

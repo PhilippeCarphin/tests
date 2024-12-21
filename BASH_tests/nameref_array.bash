@@ -1,5 +1,10 @@
 #!/bin/bash
 
+#
+# This test demonstrates that we can use namerefs for arrays.  Just to check
+# because someone said someone said something that seemed contrary to that but
+# it's just that a variable cannot be both an array and a nameref.  We can
+# still use a nameref to refer to an array.
 
 main(){
     local arr=("a b c" "x y z")
@@ -12,6 +17,10 @@ main(){
 
 array_contains(){
     local -n array=${1}
+    if [[ ${array@a} != *a* ]] ; then
+        echo "${FUNCNAME[0]}: ERROR: First argument must be the name of an array variable"
+    fi
+    local x
     for x in "${array[@]}" ; do
         echo "x='${x}'"
         if [[ "${x}" == "${2}" ]] ; then
@@ -34,15 +43,8 @@ map[x]=y
 map[u]=v
 echo ${!map[@]}
 
+# Value of variable whose name is ${varname}
 echo ${!varname}
+
+# Keys of array
 echo ${!arr[@]}
-
-
-a=" x "
-b=" x"
-
-if [[ $a == $b ]] ; then
-    echo "YES"
-else
-    echo "NO"
-fi

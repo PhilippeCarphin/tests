@@ -77,6 +77,7 @@ int main ( int argc , char ** argv ) {
     print_val(LDBL_MAX, %Le);
     print_val(LDBL_MIN, %Le);
     print_val(LDBL_EPSILON, %Le);
+    print_val(SIZE_MAX, %lu);
 
     return 0;
 }

@@ -7,7 +7,7 @@ $(lib):$(src)
 	gcc -shared $(CFLAGS) $< -o $@
 
 test:$(lib)
-	python3 demo_print_string_list.py
+	LD_LIBRARY_PATH=${PWD}:${LD_LIBRARY_PATH} python3 demo_print_string_list.py
 
 clean:
 	rm $(lib)

@@ -1,0 +1,6 @@
+[31m⮕[0m [90m[0][0m [34m⬣ [0m [1mChange API to transfer information and client prints it appropriately[0m
+    ├─── [90m[1][0m [34m⬣ [0m [1mOn commands, server only returns response on success of cmd[0m
+    │    ├─── [90m[4][0m [32m⬣ [0m [0mDo the first part of the task[0m
+    │    └─── [90m[5][0m [35m⬣ [0m [1;37mdo the second part of the task[0m
+    ├─── [90m[2][0m [34m⬣ [0m [0mOn commands, client may subsequently query server for state[0m
+    └─── [90m[3][0m [34m⬣ [0m [0mClient is responsible for printing result of query in appropriate format[0m

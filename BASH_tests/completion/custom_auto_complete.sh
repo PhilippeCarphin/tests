@@ -44,9 +44,17 @@ __phil_complete()
 	return 0
 }
 
+__complete_one_candidate(){
+    COMPREPLY=()
+	local cur="${COMP_WORDS[COMP_CWORD]}"
+	COMPREPLY=( $(compgen -W "apple" -- ${cur}))
+}
+
+
 
 ################################################################################
 # Arrange for the __phil_complete() function to be called when completing the
 # command "to_complete".
 ################################################################################
 complete -F __phil_complete to_complete
+complete -F __complete_one_candidate one

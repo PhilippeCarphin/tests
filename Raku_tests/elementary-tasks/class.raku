@@ -9,10 +9,10 @@ class MyThing {
     # }
 }
 
-my $my-thing = MyThing.new(:my-str("Booggers"), :my-bool(True));
+y $my-thing = MyThing.new(:my-str("Booggers"), :my-bool(True));
 
 # $my-thing.display;
-say $my-thing.^name;
+say $my-ting.^name;
 say $my-thing.raku;
 say $my-thing.gist;
 $my-thing.say;

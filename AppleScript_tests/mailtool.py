@@ -42,6 +42,9 @@ def main():
         if not is_valid_for_mail(f):
             return 1
 
+    if sys.stdin.isatty():
+        print("Reading message from STDIN, hit C-d on an empty line when finished, C-c to abort")
+
     content = sys.stdin.read()
 
     script = make_apple_script(args, content)
@@ -135,4 +138,7 @@ def run_apple_script(script):
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    try:
+        sys.exit(main())
+    except KeyboardInterrupt:
+        sys.exit(130)

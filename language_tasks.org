@@ -34,12 +34,13 @@ Over the course of having learned many languages in the first way I have
 described, I have identified common tasks that have come up very frequently.
 Here they are in an order in which I think they should be done.
 
-* Hello world program
+* Common tutorial tasks
+** Hello world program
 
 It's the most basic test because it allows us to confirm that we are able to
 compile or run our program or script.
 
-* Write a function
+** Write a function
 
 We should write a function that takes at least one argument and returns
 something.
@@ -50,15 +51,36 @@ In the case of Rust, in the function that calls =greet=, we should try to
 print =person= after the call.  That's when we get introduced to the borrow
 checker.
 
-* If statements
+** If statements
 
-* Access command line arguments
+They are important obviously so we need to try 
 
-* For loops
+** For loops
 
 Opening a file is next and I always like to go through the content of the
 file in different ways, one of them being iterating over the lines of the
 file.  So might as well learn for loops before files.
+
+
+* Access command line arguments
+
+Accessing command line arguments is a must for any program that is going to be
+useful.
+
+You want to also look up what the language offers in terms of libraries that
+help with that.
+
+For example in Python we have =argparse=.  And we might as well start using
+argparse right away.
+
+We should start with
+#+begin_src python
+  import sys
+  sys.argv
+  for arg in sys.argv:
+      print(arg)
+#+end_src
+and have that be the last time we use =sys.argv= directly and start using =argparse=.
 
 * Open a file and access its content
 
@@ -107,11 +129,24 @@ that when writing any program in a new language, it is very useful to have
 lots of print statements like "my-variable = '${my-variable}' or in the error
 handling context to deliver an error message.
 
-* Running command
+* Running an external command
+
+** Synchronously
 
 Run a command and capture its output and get it's return code.
+#+begin_src python
+    result = subprocess.run(['/bin/bash', '-c', 'echo stdout-message ; echo stderr-message
+  >&2 ; exit 123'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+    print(f"stderr = '{result.stderr}'")
+    print(f"stdout = '{result.stdout}'")
+    print(f"exit code = {result.returncode}")
+#+end_src
 
-Run the command asynchronously and wait for it to finish.
+** Asynchronously
+
+This one is more advanced so it can be ommitted unless you foresee yourself
+needing to do it soon.
+
 
 * Classes or something
 
@@ -126,38 +161,12 @@ don't accidentally use it.
 
 * Reading JSON or YAML or XML
 
-Either for configuration or general storage of structured data, this is quite
-useful.
+Notice the use of the word 'or': as long as you learn one of them, you'll be
+able to persist structured data.  For Python and Javascript, the obvious choice
+is JSON.  For others it's going to depend.
 
-You would probably want to use a database for anything really serious but you
-would also not be using a language you don't know for anything really
-serious.
-
-Also for many language, support for JSON is part of or almost part of the
-language.  For example Go and Rust whereas using a database in any language
-is just using a library so making function calls.
-
-** Note on JSON and BASH
-The usefulness of this task depends on the support that the language has.  In
-BASH pretty much the only thing you can do is use =jq= which is not great.
-
-So if you're doing anything non-trivial, you'll be better off using Python.  If
-you do have a BASH script and you don't want to have an extra file, you can still
-have
-python3 -c "...
-...
-"
-
-Having said that, knowing a bit of `jq` and how to do filters is somewhat useful.
-Like if BASH is the right choice for 99% of a task but that 1% is getting an
-attribute from the JSON returned from a web request, then doing
-#+BEGIN_SRC sh
-attrib=$(curl <request URL> <other stuff> | jq .attrib)
-#+END_SRC
-is easier than a =python -c ...= with multiple lines of code.
-
-If your script is all about making web requests and extracting bits from the
-returned JSON, then rewrite the whole thing in Python.
+And for BASH, just skip this.  You shouldn't be using BASH for that kind of
+stuff although I do personally use JQ for quick querying of JSON files.
 
 * Concurrency, Threads or something
 
@@ -165,12 +174,7 @@ Different languages have different concurrency models.  Go has goroutines and
 channels, C has pthreads, Rust has threads but also types that can be used
 with threads and types that can't.
 
-* Ancillary tasks
-
-These are some extra tasks that are handy to know how to do but not as
-important as the main tasks.
-
-** Filesystem manipulations
+* Filesystem manipulations
 
 - Getting the current working directory
 - Creating directories and files
@@ -179,7 +183,10 @@ important as the main tasks.
 - Testing the permissions of a file
 - Deleting directories and files
 
-** Networking
+* Networking
 
-- Making HTTP requests
+Make a web request and print information about the response
+- Response code (200 for OK and so on)
+- Response headers
+- Response body
 

@@ -1,0 +1,5 @@
+#+TITLE: Tutorials on Cython
+
+Compiles Python code to C code for an equivalent extension module.
+
+[[https://conference.scipy.org/proceedings/SciPy2009/paper_1/full_text.pdf]]

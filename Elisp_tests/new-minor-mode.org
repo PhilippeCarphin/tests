@@ -1,0 +1,293 @@
+#+PROPERTY: header-args :results none
+
+Defining a minor mode and getting nuts with order of evaluation.
+
+The documentation gave an example but it was not obvious how to adapt it to a
+form using =(kbd "C-c . x")= to specify the key sequences.
+
+Using System Crafter's stuff, I was able to get a few working examples.  My
+favorite one is this one which demonstrates an understanding of what the
+macro requires and using =`= and =,= to provide the right things.
+
+#+begin_src emacs-lisp
+(define-minor-mode phil-mode-synthesis-1
+  "A minor mode by Phil"
+  nil
+  :keymap `((,(kbd "C-c . m")
+            . (lambda () (interactive) (message "The key 'C-c . m' was pressed asdf")))
+           ([3 ?. ?b]
+            . ,(lambda () (interactive) (message "The key 'C-c . b' was pressed")))))
+#+end_src
+
+* Note about =C-c C-c= vs =C-x C-e= to evaluate things
+NOTE: It seems like evaluating a source block with =C-c C-c= is not the same as
+doing it with =C-x C-e= on the expression it contains.
+
+What I have observed is if I change the message printed by a key in one of the
+modes, then doing the key sequence again prints the new message only if I
+evaluate the =(define-minor-mode ...)= expression with =C-x C-e=.
+
+However when I evaluate the block with =C-c C-c=, it does create the minor mode.
+It's just that further evaluations don't seem to have an effect.
+
+* Overview
+Initial attempts at defining a minor mode.  I started by following the documentation
+but this was hard to adapt and this whole file is me trying to fiddle with various
+quoting and whatnot to get it to work.
+
+I got it working (phil-mode) by following System Crafter's example using (list (cons (kbd...) <func>))
+as the argument for the :keymap keyword.
+
+No other combination of quoting and fiddling gave me ok results except for single key
+bindings.
+
+If I had just done System Crafter's thing first, I wouldn't have wasted any time
+trying to understand why my adaptation of the documetnation's example did not work.
+
+The example from the documentation adapted to make the
+key 'x' print a message.
+
+This only works without evil-mode.
+
+Redefining the mode does work and does not require turning the mode off and on:
+I can change what the message is in the thing below while the mode is on and
+do `C-x C-e` and what 'x' does will change.
+
+* First working attempt (works by coïncidence)
+
+It only works because "x" is a single character.
+#+begin_src emacs-lisp
+(define-minor-mode hungry-mode
+  "Toggle Hungry mode.
+...rest of documentation as before..."
+  :keymap '(
+	    ((kbd "x")
+             . (lambda ()
+                 (interactive)
+                 (message "The key 'x' has been pressed indeed")))))
+#+end_src
+
+* Works but the keybinding is completly wrong
+
+This one doesn't work.  Maybe the kbd thing doesn't produce the right type of
+object but this one has the effect that 'C' by itself becomes a prefix key.
+W can try it out and if we do 'C', '-', 'c', ' ', '.', ' ', 'u'
+- without evil mode
+- in evil-insert state
+we get the message... but in evil-normal-mode, 'C' does what it normally does.  Not sure
+how that works.
+#+begin_src emacs-lisp
+(define-minor-mode phil-mode-fail
+  "A minor mode by Phil"
+  :keymap '(
+            ((kbd "C-c . u")
+             . (lambda () (interactive) (message "The key 'C-c . u' was pressed")))))
+#+end_src
+
+* System Crafter's example
+
+This one from System Crafters works.  Notice that he uses (list (cons (kbd "...") <func>))
+I thought that '(a b c) was the same as (list a b c) but that is not the case.
+And I'm not sure about `((kbd "...") . <func>)` vs `(cons (kbd "...") <func>)`.
+anyway, this works!
+#+begin_src emacs-lisp
+(define-minor-mode dotcrafter-mode
+  "Toggles global dotcrafter-mode."
+  nil   ; Initial value, nil for disabled
+  :global t
+  :group 'dotfiles
+  :lighter " dotcrafter"
+  :keymap
+  (list (cons (kbd "C-c . t") (lambda ()
+                                (interactive)
+                                (message "dotcrafter key binding used!")))))
+(if dotcrafter-mode
+    (message "dotcrafter-basic-mode activated!")
+  (message "dotcrafter-basic-mode deactivated!"))
+
+(add-hook 'dotcrafter-mode-hook (lambda () (message "Hook was executed!")))
+(add-hook 'dotcrafter-mode-on-hook (lambda () (message "dotcrafter turned on!")))
+(add-hook 'dotcrafter-mode-off-hook (lambda () (message "dotcrafter turned off!")))
+#+end_src
+
+Using that syntax (list (cons (kbd "...") <func>) [(cons (kbd "...") <func>) ...]
+I can make something that works.  So basically, I don't understand quoting.
+I wonder if I could have used comma or backtick
+
+* Immitating System Crafters
+
+#+begin_src emacs-lisp
+(define-minor-mode phil-mode-new
+  "A minor mode by Phil"
+  :keymap (list
+           (cons (kbd "C-c . n")
+                 (lambda () (interactive) (message "The key 'C-c . n' was pressed")))))
+#+end_src
+
+* Another working example
+
+Well this one works
+#+begin_src emacs-lisp
+(define-minor-mode phil-mode-like-doc
+  "A minor mode by Phil"
+  nil
+  :keymap '(
+            ([3 46 118]
+             . (lambda () (interactive) (message "The key 'C-c . v' was pressed")))
+            ([3 ?. ?w]
+             . (lambda () (interactive) (message "The key 'C-c . w' was pressed")))
+
+	    ))
+#+end_src
+
+* Understanding what gets or doesn't get evaluated and why it matters.
+
+The key to why ='(((kbd "...") . <func>)))= doesn't work and =(list (cons (kbd
+"...") <func>))= does work has to do with understanding what gets evaluated and
+what doesn't.
+
+** Analysing the thing that gets passed to =:keymap=
+*** From the one that works
+
+#+begin_src emacs-lisp
+(list
+ (cons (kbd "C-c . n")
+       (lambda () (interactive) (message "The key 'C-c . n' was pressed"))))
+#+end_src
+
+#+RESULTS:
+((.n lambda nil (interactive) (message The key 'C-c . n' was pressed)))
+
+We see that the =(kbd "C-c . n")= form was evaluated to produce a plain sequence
+of keycodes.
+
+*** From the one that doesn't work
+
+
+#+begin_src emacs-lisp
+'(
+  ((kbd "C-c . u")
+   . (lambda () (interactive) (message "The key 'C-c . u' was pressed"))))
+#+end_src
+
+#+RESULTS:
+(((kbd C-c . u) lambda nil (interactive) (message The key 'C-c . u' was pressed)))
+
+*** Testing my understanding
+
+#+begin_src emacs-lisp
+`(
+  (,(kbd "C-c . u")
+   . (lambda () (interactive) (message "The key 'C-c . u' was pressed")))
+  ([3 ?. ?b]
+   . (lambda () (interactive) (message "The key 'C-c . b' was pressed"))))
+#+end_src
+
+#+RESULTS:
+((.u lambda nil (interactive) (message The key 'C-c . u' was pressed)))
+
+In the wrong examples we wanted to use =(kbd)= to create key sequences because
+it's more practical.  However, ='(( (kbd "...") . (lambda ...) ))= creates a
+list with one cons cell whose first elemnt is the list =(kbd "...")=.
+
+Somehow the =define-minor-mode= macro doesn't evaluate =(kbd "...")= and instead
+looks ends up using the "C-c . m" as an actual sequence of keys like =[?C ?-
+Space ?. Space ?m]=.  The macro passes the keyword argument to
+=easy-mmode-define-keymap= which then does
+
+#+begin_src emacs-lisp
+(define-minor-mode phil-mode-synthesis-1
+  "A minor mode by Phil"
+  nil
+  :keymap `(
+           (,(kbd "C-c . m")
+            . (lambda () (interactive) (message "The key 'C-c . m' was pressed asdf")))
+           ([3 ?. ?b]
+            . ,(lambda () (interactive) (message "The key 'C-c . b' was pressed")))
+))
+#+end_src
+
+#+begin_src emacs-lisp :results none
+(define-minor-mode phil-mode-synthesis
+  "A minor mode by Phil"
+  nil
+  :keymap (list
+           (cons (kbd "C-c . m") (lambda () (interactive) (message "The key 'C-c . m' was pressed piss ass")))
+           (cons [3 ?. ?b] (lambda () (interactive) (message "The key 'C-c . b' was pressed")))
+))
+#+end_src
+
+** Analyzing how =easy-mmode-define-keymap= processes the argument to =:keymap=
+In this excerp, =bs= is the list of cons-cells that we passed as the argument to
+=:keymap= in the =(define-minor-mode)= macro.
+#+begin_src emacs-lisp
+(dolist (b bs)
+  (let ((keys (car b))
+        (binding (cdr b)))
+    (dolist (key (if (consp keys) keys (list keys)))
+      (cond
+       ((symbolp key)
+        (substitute-key-definition key binding m global-map))
+       ((null binding)
+        (unless (keymapp (lookup-key m key)) (define-key m key binding)))
+       ((let ((o (lookup-key m key)))
+          (or (null o) (numberp o) (eq o 'undefined)))
+        (define-key m key binding))))))
+#+end_src
+In the following, the I have replaced some forms with =(message)= calls and in
+the third condition of the =cond=, I set the conditon to just be true so I could
+run the code without needing to provide a keymap to look into.
+
+*** Unevaluated ='(kbd "x y z")=
+We see that the =(kbd "C-c . C-u")= did not get evaluated.  When eventually
+=easy-mmode-define-keymap= uses it, there is some dynamic type checking
+#+begin_src emacs-lisp
+(let ((keys '(kbd "C-c . m"))
+      (binding '(lambda (x) (message "lambdax:%s" x))))
+  (dolist (key (if (consp keys) keys (list keys)))
+    (progn (message "Iteration: key=[%s]" key)
+    (cond
+     ((symbolp key)
+      (message "substitute-key-definition key[%s] binding m global-map" key))
+     ((null binding)
+      (message "unless (keymapp (lookup-key m key[%s])) (define-key m key[%s] binding))" key key))
+	   (t ;; (let ((o (lookup-key m key))) (or (null o) (numberp o) (eq o 'undefined)))
+	    (message "(define-key m key[%s] binding)" key)))))))
+#+end_src
+
+#+RESULTS:
+nil
+
+#+begin_example
+Executing Emacs-Lisp code block at position 5511...
+Iteration: key=[kbd]
+substitute-key-definition key[kbd] binding m global-map
+Iteration: key=[C-c . m]
+(define-key m key[C-c . m] binding)
+Code block evaluation complete.
+#+end_example
+
+*** Evaluated =(kbd "x y z")=
+If =easy-mmap-define-keymap= gets the result of evaluating the =(kbd ...)= form,
+we see that we only do one iteration where key has the value =.m=
+#+begin_src emacs-lisp
+(let ((keys (kbd "C-c . m"))
+      (binding '(lambda (x) (message "lambdax:%s" x))))
+  (dolist (key (if (consp keys) keys (list keys)))
+    (progn (message "Iteration: key=[%s]" key)
+    (cond
+     ((symbolp key)
+      (message "substitute-key-definition key[%s] binding m global-map" key))
+     ((null binding)
+      (message "unless (keymapp (lookup-key m key[%s])) (define-key m key[%s] binding))" key key))
+	   (t ;; (let ((o (lookup-key m key))) (or (null o) (numberp o) (eq o 'undefined)))
+	    (message "(define-key m key[%s] binding)" key)))))))
+#+end_src
+
+#+begin_example
+Executing Emacs-Lisp code block at position 6399...
+Iteration: key=[.m]
+(define-key m key[.m] binding)
+Code block evaluation complete.
+#+end_example
+

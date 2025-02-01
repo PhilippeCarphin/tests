@@ -1,0 +1,169 @@
+#+TITLE: Programming task: JSON
+
+I'm kind of only doing it because I do it for all other languages but for Elisp
+which has all this mindblowing code is data, data is code stuff, if we want to
+serialize some data, we ... just save it to a file.
+
+But anyway we still want to be able to read JSON to be able to read the response
+from a web request.
+
+The [[https://www.gnu.org/software/emacs/manual/html_node/elisp/Parsing-JSON.html][Emacs online documentation]] gives us =json-serialize=, and
+=json-parse-string= and =json-parse-buffer=.
+
+* Serializing
+
+The documentation gives a few possibilities for what OBJECT can be.
+
+- t
+- number
+- string
+- vector
+- hashtable
+- alist
+- plist
+- The Lisp equivalents to the JSON null and false values.
+ 
+Notice that =list= is not one of the types.  I think that's because when it gets
+a list, it tries to interpret it as a plist or as an alist.
+  
+It looks like whatever is going to become a JSON key, the function wants it to
+be a symbol (changing =a= to ="a"= in =alist-obj= makes it fail =symbolp "a"=).
+
+** Elementary examples
+#+begin_src emacs-lisp
+(setq plist-obj '(pine "cones" numbers [1 2 3 4] color "blue"))
+(setq list-obj  (list 'a 1 'b 2))
+(setq alist-obj '((a . "B") (c . "d")))
+#+end_src
+
+#+RESULTS:
+: ((a . B) (c . d))
+
+#+begin_src emacs-lisp
+(json-serialize alist-obj)
+#+end_src
+
+#+RESULTS:
+: {"a":"B","c":"d"}
+
+#+begin_src emacs-lisp
+(json-serialize plist-obj)
+#+end_src
+
+#+RESULTS:
+: {"pine":"cones","numbers":[1,2,3,4],"color":"blue"}
+
+#+begin_src emacs-lisp :results raw
+(json-serialize list-obj)
+#+end_src
+
+#+RESULTS:
+: {"a":1,"b":2}
+
+** More complex example using plist with keywords
+
+I think the easiest one is to have a plist whose keys are keywords
+
+#+begin_src emacs-lisp :results raw
+(setq klist-obj '(
+                  :hello "world"
+                  :numbers [1 2 3 4]
+                  :color "Blue"
+                  :nested (
+                           :sub-number [3 4 5]
+                           :sub-string "substring")
+                  :false :false
+                  ;; :null-1 :null ;; If :null-object nil, then :null fails json-value-p
+                  :null-2 nil
+                  :true t))
+#+end_src
+
+#+RESULTS:
+(:hello world :numbers [1 2 3 4] :color Blue :nested (:sub-number [3 4 5] :sub-string substring) :false :false :null-2 nil :true t)
+
+
+#+begin_src emacs-lisp
+(json-serialize klist-obj :null-object nil)
+#+end_src
+
+#+RESULTS:
+: {"hello":"world","numbers":[1,2,3,4],"color":"Blue","nested":{"sub-number":[3,4,5],"sub-string":"substring"},"false":false,"null-2":null,"true":true}
+
+* Parsing a JSON string
+
+#+begin_src emacs-lisp :results none
+(setq json-string "{
+            \"hello\": \"world\",
+            \"number\": 3.1415,
+            \"integer\": 8,
+            \"cities\": [
+                \"Montreal\",
+                \"Toronto\",
+                \"New-York\"
+            ] 
+}")
+#+end_src
+
+When we parse a JSON string, we get a hashtable.
+
+#+begin_src emacs-lisp
+(setq parsed-json (json-parse-string json-string))
+#+end_src
+
+#+RESULTS:
+: #s(hash-table size 4 test equal rehash-size 1.5 rehash-threshold 0.8125 data ("hello" "world" "number" 3.1415 "integer" 8 "cities" ["Montreal" "Toronto" "New-York"]))
+
+We can use =gethash= to get keys from the hashmap and =aref= to get elements
+from vectors:
+
+#+begin_src emacs-lisp
+(let ((cities (gethash "cities" parsed-json)))
+  (let ((first-city (aref cities 0)))
+    (message "Cities: %s, first-city: %s" cities first-city)))
+#+end_src
+
+#+RESULTS:
+: Cities: [Montreal Toronto New-York], first-city: Montreal
+
+It's a bit more tedious than =parsed_json['cities'][0]= in Python but it's not
+horrible either.
+
+#+begin_src emacs-lisp
+(json-serialize parsed-json)
+#+end_src
+
+#+RESULTS:
+: {"hello":"world","number":3.1415000000000002,"integer":8,"cities":["Montreal","Toronto","New-York"]}
+
+* From a file
+
+I don't know how to read the contents of a file but I know that the way to go is
+probably to read the contents of a file into a buffer and use
+=json-parse-buffer=.
+
+There is already a function =json-read-file= that does it so I'm just going to
+do it manually to get some buffer experience.
+
+This is a plainly bad implementation of that function.
+
+#+begin_src emacs-lisp
+(setq file-object
+      (let (( json-buf (generate-new-buffer "my-json-buffer"))
+            ( cur (current-buffer)))
+        (switch-to-buffer json-buf)
+        (insert-file "input.json")
+        (let (( obj (json-read)))
+          ;; (switch-to-buffer cur)
+          ;; (kill-buffer json-buf)
+          obj)))
+#+end_src
+
+#+RESULTS:
+: ((hello . world) (numbers . [1 2 3 4]) (color . Blue) (nested (sub-number . [3 4 5]) (sub-string . substring)) (false . :json-false) (null-2) (true . t))
+
+#+begin_src emacs-lisp
+file-object
+#+end_src
+
+#+RESULTS:
+: ((hello . world) (numbers . [1 2 3 4]) (color . Blue) (nested (sub-number . [3 4 5]) (sub-string . substring)) (false . :json-false) (null-2) (true . t))

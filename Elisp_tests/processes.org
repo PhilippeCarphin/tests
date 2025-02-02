@@ -1,0 +1,67 @@
+
+OMG!  call-process can use a pty for a process.
+
+#+begin_src emacs-lisp
+(defun my/ansi-colorize (buf) (interactive)
+       (with-current-buffer buf
+         (ansi-color-apply-on-region (point-min) (point-max))))
+#+end_src
+
+#+RESULTS:
+: my/ansi-colorize
+
+#+begin_src emacs-lisp
+(defun repos-overview () (interactive)
+ (let (( repos-out-buf (generate-new-buffer "repos-out-buf"))
+       ( repos-err-buf (generate-new-buffer "repos-err-buf"))
+       ( cur (current-buffer)))
+   (let ((proc (make-process
+                :name "REPOS"
+                :buffer repos-out-buf ;; Output goes in here
+                :command (list "repos")
+                :sentinel (lambda (x y) (my/ansi-colorize "repos-out-buf"))
+                :stderr repos-err-buf)))
+     (message "PROC: %s" proc)
+     (with-current-buffer repos-out-buf
+       (toggle-truncate-lines 1)
+       (evil-emacs-state)
+       (repos-mode))
+)))
+#+end_src
+
+#+RESULTS:
+: repos-overview
+
+#+begin_src emacs-lisp
+(let (( repos-out-buf (generate-new-buffer "repos-out-buf-sync"))
+      ( repos-err-buf (generate-new-buffer "repos-err-buf-sync"))
+      ( cur (current-buffer)))
+  (call-process "repos" nil (list repos-out-buf "repos-error") nil) "-j" "88")
+#+end_src
+
+#+RESULTS:
+: 88
+
+#+begin_src emacs-lisp
+(defun repos-goto-repo-at-point ()
+  (interactive)
+  (save-excursion
+    (beginning-of-line)
+    (let ((repo (thing-at-point 'filename)))
+      (message "You have clicked repo: '%s'" repo)
+      (let ((repo-dir 
+             (replace-regexp-in-string "\n" "/" (shell-command-to-string (concat "repos -get-dir " repo)))))
+        (magit-status (concat repo-dir "/"))))))
+#+end_src
+
+#+begin_src emacs-lisp
+(define-minor-mode repos-mode
+  "Mode for the repos-buffer"
+  nil
+  :keymap `((,(kbd "RET") . repos-goto-repo-at-point))
+  )
+#+end_src
+
+
+#+RESULTS:
+: repos-overview

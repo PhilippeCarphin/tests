@@ -1,60 +1,177 @@
+#+TITLE: Processes
 
-OMG!  call-process can use a pty for a process.
+This is an exploration of running processes in Emacs.
+
+The easiest part is getting the result of a
+command into a string which is useful
+
+However, something special about Emacs it it's buffer-centric.  So outputs of
+commands actually go into buffers and the first part where we get it into a
+string is actually a convenience functionadded on top of the main process
+launching functions.
+
+I used my repos tool for it. 
+
+Note too that =call-process= can use a pty for a process.
+
+* Getting output of a command into a string
+
+Open files from git repositories registered with my [[https://gitlab.com/philippecarphin/repos][repos tool]].
+
+The function is =shell-command-to-string= but it says to only use it if you need
+a shell, which I don't.  Otherwise it says to use =process-lines= or
+=call-process=.
+
+The =call-process= function is more complicated and doesn't have a nice
+=-to-string= convenience function.
+
+However the =process-lines= function is perfect!  It throws an error if the
+command fails and processes the output into lines.  And if we only want one
+line, using =car= gets it.
+
+The only drawback is that the error output seems to be ditched and
+=process-lines= doesn't have an argument to put it somewhere.
 
 #+begin_src emacs-lisp
-(defun my/ansi-colorize (buf) (interactive)
-       (with-current-buffer buf
-         (ansi-color-apply-on-region (point-min) (point-max))))
+(defun repos-get-dir (repo-name)
+  ;; (interactive "sRepo-name: ")
+  "Get the directory of a repo"
+  ;; Assume one element because processe-lines throws
+  ;; an error if the command exits non-zero.
+  (car (process-lines "repos" "-get-dir" repo-name)))
+(defun repos-list-names ()
+  (process-lines "repos" "-list-names"))
+(defun repos-find-files () (interactive)
+       (let ((repo-name (helm-comp-read "Select a repos (fuzzy): "
+                                        (sort (repos-list-names) 'string<)
+                                        :fuzzy t)))
+         (let ((repo-dir (repos-get-dir repo-name)))
+           (helm-find-files-1 (concat repo-dir "/")))))
 #+end_src
 
 #+RESULTS:
-: my/ansi-colorize
+: repos-find-files
+
+
+* Getting output of a command into a buffer
+** Creating the repos buffer
+*** Launching the repos process
 
 #+begin_src emacs-lisp
+(setq repos-buffer nil
+      repos-errors nil)
+(defun create-repos-buffer () (interactive)
+       (let (( repos-out-buf (generate-new-buffer "repos-out-buf"))
+             ( repos-err-buf (generate-new-buffer "repos-err-buf"))
+             ( cur (current-buffer)))
+         (setq repos-buffer repos-out-buf)
+         (setq repos-errors repos-err-buf)
+         (repos-update-buffer repos-buffer repos-errors)))
+(defun repos-update () (interactive)
+       (repos-update-buffer repos-buffer repos-errors))
+(defun repos-update-buffer (target-buffer errors-buffer)
+  (with-current-buffer target-buffer
+    (read-only-mode -1)
+    (erase-buffer))
+  (with-current-buffer errors-buffer
+    (erase-buffer))
+  (let ((proc (make-process
+               :name "REPOS"
+               :buffer target-buffer ;; Output goes in here
+               :command (list "repos")
+               :sentinel 'repos-process-sentinel
+               :stderr errors-buffer)))
+    (message "Constructing repos-buffer")
+    )
+  )
+
 (defun repos-overview () (interactive)
- (let (( repos-out-buf (generate-new-buffer "repos-out-buf"))
-       ( repos-err-buf (generate-new-buffer "repos-err-buf"))
-       ( cur (current-buffer)))
-   (let ((proc (make-process
-                :name "REPOS"
-                :buffer repos-out-buf ;; Output goes in here
-                :command (list "repos")
-                :sentinel (lambda (x y) (my/ansi-colorize "repos-out-buf"))
-                :stderr repos-err-buf)))
-     (message "PROC: %s" proc)
-     (with-current-buffer repos-out-buf
-       (toggle-truncate-lines 1)
-       (evil-emacs-state)
-       (repos-mode))
-)))
+       (if (buffer-live-p repos-buffer)
+           (progn (view-buffer repos-buffer)
+                  (message "Repos buffer already exists (run repos-update to update it)"))
+         (create-repos-buffer)))
 #+end_src
 
 #+RESULTS:
 : repos-overview
 
+**** TODO Have a single "repos buffer" and a command to update it
+by clearing it and re-launching repos
+**** TODO If there already is a repos-buffer, repos-overview should just visit it.
+*** Setting up the buffer after the command has completed
+
 #+begin_src emacs-lisp
-(let (( repos-out-buf (generate-new-buffer "repos-out-buf-sync"))
-      ( repos-err-buf (generate-new-buffer "repos-err-buf-sync"))
-      ( cur (current-buffer)))
-  (call-process "repos" nil (list repos-out-buf "repos-error") nil) "-j" "88")
+(defun repos-process-sentinel
+    (x y) ;; Process sentinel requires two arguments
+  (interactive) ;; Only interactive for testing
+  (with-current-buffer repos-buffer
+    (read-only-mode -1)
+    (ansi-color-apply-on-region (point-min) (point-max))
+    (read-only-mode)
+    (beginning-of-buffer)
+    (repos-mode))
+  (message "Repos buffer ready!"))
 #+end_src
 
 #+RESULTS:
-: 88
+: repos-process-sentinel
+
+**** TODO Probably don't switch to buffer
+
+It's weird if you have to wait 20 secondds and boom! you get taken to another
+buffer by surprise.
+
+Maybe just message and have a key to go to the buffer
+
+
+* Function to go to selected repo
 
 #+begin_src emacs-lisp
-(defun repos-goto-repo-at-point ()
+(defun repos-magit-repo-at-point ()
   (interactive)
-  (save-excursion
-    (beginning-of-line)
-    (let ((repo (thing-at-point 'filename)))
-      (message "You have clicked repo: '%s'" repo)
-      (let ((repo-dir 
-             (replace-regexp-in-string "\n" "/" (shell-command-to-string (concat "repos -get-dir " repo)))))
-        (magit-status (concat repo-dir "/"))))))
+  (unless (= (line-number-at-pos) 1)
+    (save-excursion
+      (beginning-of-line)
+      (let ((repo-name (thing-at-point 'filename)))
+        (message "You have clicked repo: '%s'" repo-name)
+        (magit-status (concat (repos-get-dir repo-name)))))))
+(defun repos-open-at-point ()
+  (interactive)
+  (unless (= (line-number-at-pos) 1)
+    (save-excursion
+      (beginning-of-line)
+      (let ((repo-name (thing-at-point 'filename)))
+        (message "You have clicked repo: '%s'" repo-name)
+        (dired (repos-get-dir repo-name))))))
+(defun repos-find-files-at-point ()
+  (interactive)
+  (unless (= (line-number-at-pos) 1)
+    (save-excursion
+      (beginning-of-line)
+      (let ((repo-name (thing-at-point 'filename)))
+        (message "You have clicked repo: '%s'" repo-name)
+        (helm-find-files-1 (concat (repos-get-dir repo-name) "/"))))))
+(defun repos-shell-at-point ()
+  (interactive)
+  (unless (= (line-number-at-pos) 1)
+    (save-excursion
+      (beginning-of-line)
+      (let ((repo-name (thing-at-point 'filename)))
+        (message "You have clicked repo: '%s'" repo-name)
+        (let ((default-directory (repos-get-dir repo-name)))
+          (message "default-directory: %s" default-directory)
+          (message "repo-directory: %s" (repos-get-dir repo-name)
+          (vterm (concat "Vterm repo: " repo-name))))))))
 #+end_src
 
-#+begin_src emacs-lisp
+#+RESULTS:
+: repos-shell-at-point
+
+* Repos minor mode
+
+Turns out this wasn't the right tool for the job.  Indeed, in the repos buffer,
+a major mode is more appropriate.
+#+begin_src emacs-lisp :tangle no
 (define-minor-mode repos-mode
   "Mode for the repos-buffer"
   nil
@@ -63,5 +180,83 @@ OMG!  call-process can use a pty for a process.
 #+end_src
 
 
+* Synchronous process
+
+#+begin_src emacs-lisp :tangle no
+(let (( repos-out-buf (generate-new-buffer "repos-out-buf-sync"))
+      ( repos-err-buf (generate-new-buffer "repos-err-buf-sync"))
+      ( cur (current-buffer)))
+  (call-process "repos" nil (list repos-out-buf "repos-error") nil) "-j" "88")
+#+end_src
+
+in [[info:elisp#Synchronous Processes]] it says this about the =DESTINATION= argument.
+#+begin_example
+You can’t directly specify a buffer to put the error output
+in; that is too difficult to implement.  But you can achieve
+this result by sending the error output to a temporary file
+and then inserting the file into a buffer when the subprocess
+finishes
+#+end_example
+
+* Repos major mode
+
+Define a keymap.
+
+#+begin_src emacs-lisp
+(defvar-keymap repos-mode-map
+  :doc "Keymap for `repos-mode'."
+  :parent nil
+  "RET" #'repos-magit-repo-at-point
+  "g" #'repos-open-at-point
+  "f" #'repos-find-files-at-point
+  "s" #'repos-shell-at-point
+  "q" #'quit-window)
+#+end_src
+
 #+RESULTS:
-: repos-overview
+: repos-mode-map
+
+Define a major mode.  The name of the keymap is associated to the major mode
+simply by the name it seems.
+
+I am deriving from =special-mode= because looking at what =magit= does, I found
+out that all its major modes end up deriving from this mode.  And the
+documentation for it says that it's the mode to view specifically formatted data
+rather than files.
+
+#+begin_src emacs-lisp
+(define-derived-mode repos-mode special-mode "Repos"
+  "This is my major mode"
+  :interactive t
+  :group 'repos)
+#+end_src
+
+I'm not sure how it works but it seems both of these hooks are necessary for my
+buffer to not have visually wrapped lines when I enter =repos-mode=.
+
+If I didn't have these hooks, I could visit the buffer and only enter =M-x
+toggle-truncate-lines RET= and have truncated lines.
+
+#+begin_src emacs-lisp
+(add-hook 'repos-mode-hook (lambda () (toggle-truncate-lines 1)))
+(add-hook 'repos-mode-hook (lambda () (visual-line-mode -1)))
+#+end_src
+
+For evil-mode, we have to do a bit of extra work because even if I have a major
+mode enabled that defines keybindings, the =evil-mode= bindings seem to take
+priority anyway.
+
+#+begin_src emacs-lisp
+(evil-define-key 'motion repos-mode-map
+  (kbd "RET") 'repos-magit-repo-at-point
+  (kbd "f") 'repos-find-files-at-point)
+(evil-define-key 'normal repos-mode-map
+  (kbd "g") 'repos-open-at-point
+  (kbd "s") 'repos-shell-at-point
+  (kbd "q") 'quit-window)
+(add-hook 'repos-mode-hook 'evil-normalize-keymaps)
+#+end_src
+
+#+RESULTS:
+| evil-normalize-keymaps | (lambda nil (visual-line-mode -1)) | (lambda nil (toggle-truncate-lines 1)) |
+  

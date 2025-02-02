@@ -13,8 +13,7 @@ launching functions.
 I used my repos tool for it. 
 
 Note too that =call-process= can use a pty for a process.
-
-* Getting output of a command into a string
+* Basic functions
 
 Open files from git repositories registered with my [[https://gitlab.com/philippecarphin/repos][repos tool]].
 
@@ -49,9 +48,49 @@ The only drawback is that the error output seems to be ditched and
            (helm-find-files-1 (concat repo-dir "/")))))
 #+end_src
 
-#+RESULTS:
-: repos-find-files
+* Shell in repos
 
+Apparently I'm supposed to be able to do
+#+begin_src emacs-lisp :tangle no
+(let ((default-directory "/tmp"))
+  (vterm "Vterm-in /tmp"))
+#+end_src
+to make a vterm in =/tmp= but it doesn't seem to work for me.
+
+This is why the following function launches a =vterm= and uses
+=vterm-send-string= to make it CD to the directory after it has launched.  It
+still sets =default-directory= even though it doesn't seem to do anything.
+#+begin_src emacs-lisp
+(defun repos--shell-in-directory (dir name)
+  (let ((default-directory dir)
+        (cmd (concat "cd " dir (kbd "RET")))
+        (vterm-buf (vterm name)))
+    ;; (message "default-directory: %s" default-directory)
+    (with-current-buffer vterm-buf
+      (vterm-send-string cmd))))
+#+end_src
+
+#+begin_src emacs-lisp
+(defun repos-shell-in-repo (repo-name)
+  "Open Vterm shell in repo named `repo-name'.
+
+The Vterm buffer gets the name `Vterm:repo: NAME' where `NAME' is the name of
+the repo.  If there is a buffer with this name, simply switch to it."
+  (let ((buf (get-buffer (concat "Vterm:repo: " repo-name))))
+    (if buf
+      (switch-to-buffer buf)
+      (let ((repo-dir (repos-get-dir repo-name)))
+        ;; (message "repo-directory: %s" (repos-get-dir repo-name))
+        (repos--shell-in-directory repo-dir (concat "Vterm:repo: " repo-name))))))
+
+(defun repos-shell () 
+  "Open a shell inside a repo selected with `helm-comp-read'."
+  (interactive)
+  (let ((repo-name (helm-comp-read "Select a repos (fuzzy): "
+                                   (sort (repos-list-names) 'string<)
+                                   :fuzzy t)))
+    (repos-shell-in-repo repo-name)))
+#+end_src
 
 * Getting output of a command into a buffer
 ** Creating the repos buffer
@@ -78,7 +117,7 @@ The only drawback is that the error output seems to be ditched and
   (let ((proc (make-process
                :name "REPOS"
                :buffer target-buffer ;; Output goes in here
-               :command (list "repos")
+               :command (list "repos" "-j" "8")
                :sentinel 'repos-process-sentinel
                :stderr errors-buffer)))
     (message "Constructing repos-buffer")
@@ -92,12 +131,6 @@ The only drawback is that the error output seems to be ditched and
          (create-repos-buffer)))
 #+end_src
 
-#+RESULTS:
-: repos-overview
-
-**** TODO Have a single "repos buffer" and a command to update it
-by clearing it and re-launching repos
-**** TODO If there already is a repos-buffer, repos-overview should just visit it.
 *** Setting up the buffer after the command has completed
 
 #+begin_src emacs-lisp
@@ -113,19 +146,8 @@ by clearing it and re-launching repos
   (message "Repos buffer ready!"))
 #+end_src
 
-#+RESULTS:
-: repos-process-sentinel
-
-**** TODO Probably don't switch to buffer
-
-It's weird if you have to wait 20 secondds and boom! you get taken to another
-buffer by surprise.
-
-Maybe just message and have a key to go to the buffer
-
-
-* Function to go to selected repo
-
+* Functions for the repos buffer
+** Magit on selected repo
 #+begin_src emacs-lisp
 (defun repos-magit-repo-at-point ()
   (interactive)
@@ -135,6 +157,9 @@ Maybe just message and have a key to go to the buffer
       (let ((repo-name (thing-at-point 'filename)))
         (message "You have clicked repo: '%s'" repo-name)
         (magit-status (concat (repos-get-dir repo-name)))))))
+#+end_src
+** Dired on selected repo
+#+begin_src emacs-lisp
 (defun repos-open-at-point ()
   (interactive)
   (unless (= (line-number-at-pos) 1)
@@ -143,6 +168,9 @@ Maybe just message and have a key to go to the buffer
       (let ((repo-name (thing-at-point 'filename)))
         (message "You have clicked repo: '%s'" repo-name)
         (dired (repos-get-dir repo-name))))))
+#+end_src
+** Helm find files on selected repo
+#+begin_src emacs-lisp
 (defun repos-find-files-at-point ()
   (interactive)
   (unless (= (line-number-at-pos) 1)
@@ -151,21 +179,85 @@ Maybe just message and have a key to go to the buffer
       (let ((repo-name (thing-at-point 'filename)))
         (message "You have clicked repo: '%s'" repo-name)
         (helm-find-files-1 (concat (repos-get-dir repo-name) "/"))))))
+#+end_src
+** VTerm on selected repo
+#+begin_src emacs-lisp
 (defun repos-shell-at-point ()
+  "Open Vterm shell in the directory of the repo of the current line in the
+repos-overview buffer"
   (interactive)
   (unless (= (line-number-at-pos) 1)
     (save-excursion
       (beginning-of-line)
       (let ((repo-name (thing-at-point 'filename)))
-        (message "You have clicked repo: '%s'" repo-name)
-        (let ((default-directory (repos-get-dir repo-name)))
-          (message "default-directory: %s" default-directory)
-          (message "repo-directory: %s" (repos-get-dir repo-name)
-          (vterm (concat "Vterm repo: " repo-name))))))))
+        ;; (message "You have clicked repo: '%s'" repo-name)
+        (repos-shell-in-repo repo-name)))))
 #+end_src
 
-#+RESULTS:
-: repos-shell-at-point
+* Repos major mode
+
+** Define a keymap
+
+#+begin_src emacs-lisp
+(defvar-keymap repos-mode-map
+  :doc "Keymap for `repos-mode'."
+  :parent nil
+  "RET" #'repos-magit-repo-at-point
+  "g" #'repos-open-at-point
+  "f" #'repos-find-files-at-point
+  "s" #'repos-shell-at-point
+  "q" #'quit-window)
+#+end_src
+
+
+The name of the keymap is associated to the major mode
+simply by the name it seems.
+
+** Define a major mode
+
+I am deriving from =special-mode= because looking at what =magit= does, I found
+out that all its major modes end up deriving from this mode.  And the
+documentation for it says that it's the mode to view specifically formatted data
+rather than files.
+
+#+begin_src emacs-lisp
+(define-derived-mode repos-mode special-mode "Repos"
+  "This is my major mode"
+  :interactive t
+  :group 'repos)
+#+end_src
+
+** Hooks to make lines not wrap
+
+I'm not sure how it works but it seems both of these hooks are necessary for my
+buffer to not have visually wrapped lines when I enter =repos-mode=.
+
+If I didn't have these hooks, I could visit the buffer and only enter =M-x
+toggle-truncate-lines RET= and have truncated lines.
+
+#+begin_src emacs-lisp
+(add-hook 'repos-mode-hook (lambda () (toggle-truncate-lines 1)))
+(add-hook 'repos-mode-hook (lambda () (visual-line-mode -1)))
+#+end_src
+
+For evil-mode, we have to do a bit of extra work because even if I have a major
+mode enabled that defines keybindings, the =evil-mode= bindings seem to take
+priority anyway.
+
+** Redo bindings for evil-normal-state
+
+#+begin_src emacs-lisp
+(evil-define-key 'motion repos-mode-map
+  (kbd "RET") 'repos-magit-repo-at-point
+  (kbd "f") 'repos-find-files-at-point)
+(evil-define-key 'normal repos-mode-map
+  (kbd "g") 'repos-open-at-point
+  (kbd "s") 'repos-shell-at-point
+  (kbd "q") 'quit-window)
+;; Magit does this, not sure what it does
+(add-hook 'repos-mode-hook 'evil-normalize-keymaps)
+#+end_src
+
 
 * Repos minor mode
 
@@ -178,7 +270,6 @@ a major mode is more appropriate.
   :keymap `((,(kbd "RET") . repos-goto-repo-at-point))
   )
 #+end_src
-
 
 * Synchronous process
 
@@ -197,66 +288,3 @@ this result by sending the error output to a temporary file
 and then inserting the file into a buffer when the subprocess
 finishes
 #+end_example
-
-* Repos major mode
-
-Define a keymap.
-
-#+begin_src emacs-lisp
-(defvar-keymap repos-mode-map
-  :doc "Keymap for `repos-mode'."
-  :parent nil
-  "RET" #'repos-magit-repo-at-point
-  "g" #'repos-open-at-point
-  "f" #'repos-find-files-at-point
-  "s" #'repos-shell-at-point
-  "q" #'quit-window)
-#+end_src
-
-#+RESULTS:
-: repos-mode-map
-
-Define a major mode.  The name of the keymap is associated to the major mode
-simply by the name it seems.
-
-I am deriving from =special-mode= because looking at what =magit= does, I found
-out that all its major modes end up deriving from this mode.  And the
-documentation for it says that it's the mode to view specifically formatted data
-rather than files.
-
-#+begin_src emacs-lisp
-(define-derived-mode repos-mode special-mode "Repos"
-  "This is my major mode"
-  :interactive t
-  :group 'repos)
-#+end_src
-
-I'm not sure how it works but it seems both of these hooks are necessary for my
-buffer to not have visually wrapped lines when I enter =repos-mode=.
-
-If I didn't have these hooks, I could visit the buffer and only enter =M-x
-toggle-truncate-lines RET= and have truncated lines.
-
-#+begin_src emacs-lisp
-(add-hook 'repos-mode-hook (lambda () (toggle-truncate-lines 1)))
-(add-hook 'repos-mode-hook (lambda () (visual-line-mode -1)))
-#+end_src
-
-For evil-mode, we have to do a bit of extra work because even if I have a major
-mode enabled that defines keybindings, the =evil-mode= bindings seem to take
-priority anyway.
-
-#+begin_src emacs-lisp
-(evil-define-key 'motion repos-mode-map
-  (kbd "RET") 'repos-magit-repo-at-point
-  (kbd "f") 'repos-find-files-at-point)
-(evil-define-key 'normal repos-mode-map
-  (kbd "g") 'repos-open-at-point
-  (kbd "s") 'repos-shell-at-point
-  (kbd "q") 'quit-window)
-(add-hook 'repos-mode-hook 'evil-normalize-keymaps)
-#+end_src
-
-#+RESULTS:
-| evil-normalize-keymaps | (lambda nil (visual-line-mode -1)) | (lambda nil (toggle-truncate-lines 1)) |
-  

@@ -203,7 +203,8 @@ repos-overview buffer"
   :doc "Keymap for `repos-mode'."
   :parent nil
   "RET" #'repos-magit-repo-at-point
-  "g" #'repos-open-at-point
+  "g" #'repos-magit-repo-at-point
+  "d" #'repos-open-at-point
   "f" #'repos-find-files-at-point
   "s" #'repos-shell-at-point
   "q" #'quit-window)
@@ -251,7 +252,8 @@ priority anyway.
   (kbd "RET") 'repos-magit-repo-at-point
   (kbd "f") 'repos-find-files-at-point)
 (evil-define-key 'normal repos-mode-map
-  (kbd "g") 'repos-open-at-point
+  (kbd "g") 'repos-magit-repo-at-point
+  (kbd "d") 'repos-open-at-point
   (kbd "s") 'repos-shell-at-point
   (kbd "q") 'quit-window)
 ;; Magit does this, not sure what it does

@@ -260,6 +260,15 @@ priority anyway.
 (add-hook 'repos-mode-hook 'evil-normalize-keymaps)
 #+end_src
 
+* TODO Handling errors
+
+- In repos-mode, a key to go to the error buffer
+- In repos buffer, show an indicator if error-buffer is non-empty
+
+* TODO Fix error buffer requirement
+
+If the error buffer is killed but the output one is not, doing =M-x repos-update
+RET= should not cause errors.  The buffer should be re-created.
 
 * Repos minor mode
 

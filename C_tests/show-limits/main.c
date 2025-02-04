@@ -62,10 +62,9 @@ int get_value(char *name, long long unsigned int *value){
         name_value(PATH_MAX, 0),
         name_value(PIPE_BUF, 0),
 
-#ifdef OTHERS
+#ifdef UBUNTU_22_OR_SOMETHING_IDK
         name_value(ARG_MAX, 0),
         name_value(LINK_MAX, 0),
-#ifndef __APPLE__
         name_value(NR_OPEN),
         name_value(XATTR_NAME_MAX),
         name_value(XATTR_SIZE_MAX),
@@ -87,7 +86,6 @@ int get_value(char *name, long long unsigned int *value){
         name_value(S64_MIN, 0)
         name_value(S64_MAX, 0),
         name_value(U64_MAX, 0),
-#endif
 #endif
     };
 

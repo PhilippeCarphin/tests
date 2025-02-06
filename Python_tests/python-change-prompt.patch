@@ -1,0 +1,39 @@
+ommit 0f5967f0c0d11c2abdc40d8bf7508a8e6811b831
+Author: Philippe Carphin <philippe.carphin@ec.gc.ca>
+Date:   Tue Jan 2 19:15
+
+    Change the interactive prompt to something nice
+
+diff --git a/Python/pythonrun.c b/Python/pythonrun.c
+index 91c2ad3a13..13e6def41a 100644
+--- a/Python/pythonrun.c
++++ b/Python/pythonrun.c
+@@ -27,6 +27,7 @@
+ #include "token.h"                // INDENT
+ #include "errcode.h"              // E_EOF
+ #include "marshal.h"              // PyMarshal_ReadLongFromFile()
++#include "string.h"
+ 
+ #ifdef MS_WINDOWS
+ #  include "malloc.h"             // alloca()
+@@ -118,13 +119,18 @@ _PyRun_InteractiveLoopObject(FILE *fp, PyObject *filename, PyCompilerFlags *flag
+ 
+     PyThreadState *tstate = _PyThreadState_GET();
+     PyObject *v = _PySys_GetAttr(tstate, &_Py_ID(ps1));
++    // char ps1[20];
++    // snprintf(ps1, 20, 
++    // __ps1_color = '255;212;59'
++    // sys.ps1 = f"\x01\033[38;2;255;212;59m\x02\u2588\u2588\ue0b0\x01\033[0m\x02 "
++    // sys.ps2 = f"\001\033[38;2;75;139;190m\002\u2588\u2588\ue0b0\001\033[0m\002 "
+     if (v == NULL) {
+-        _PySys_SetAttr(&_Py_ID(ps1), v = PyUnicode_FromString(">>> "));
++        _PySys_SetAttr(&_Py_ID(ps1), v = PyUnicode_FromString("\x01\033[38;2;255;212;59m\x02\u2588\u2588\ue0b0\x01\033[0m\x02 "));
+         Py_XDECREF(v);
+     }
+     v = _PySys_GetAttr(tstate, &_Py_ID(ps2));
+     if (v == NULL) {
+-        _PySys_SetAttr(&_Py_ID(ps2), v = PyUnicode_FromString("... "));
++        _PySys_SetAttr(&_Py_ID(ps2), v = PyUnicode_FromString("\001\033[38;2;75;139;190m\002\u2588\u2588\ue0b0\001\033[0m\002 "));
+         Py_XDECREF(v);
+     }
+ 

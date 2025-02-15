@@ -1,0 +1,52 @@
+Someone had a situation where they were doing
+
+#+begin_src cmake
+cmake_minimum_required(VERSION 3.16)
+
+project(hybrid C Fortran)
+
+add_executable(main main.c subroutines.F90)
+#+end_src
+
+Where the C source file had a =main= function and the Fortran source file just
+has subroutines
+
+With the Intel compiler we get
+#+begin_src
+[ 33%] Building C object CMakeFiles/main.dir/main.c.o
+[ 66%] Building Fortran object CMakeFiles/main.dir/subroutines.F90.o
+[100%] Linking Fortran executable main
+CMakeFiles/main.dir/main.c.o: In function `main':
+main.c:(.text+0x0): multiple definition of `main'
+/fs/ssm/main/opt/intelcomp/master/inteloneapi_2022.1.2_multi/oneapi/compiler/2022.0.2/linux/compiler/lib/intel64_lin/for_main.o:for_main.c:(.text+0x0): first defined here
+/fs/ssm/main/opt/intelcomp/master/inteloneapi_2022.1.2_multi/oneapi/compiler/2022.0.2/linux/compiler/lib/intel64_lin/for_main.o: In function `main':
+for_main.c:(.text+0x2e): undefined reference to `MAIN__'
+gmake[3]: *** [CMakeFiles/main.dir/build.make:112: main] Error 1
+gmake[2]: *** [CMakeFiles/Makefile2:85: CMakeFiles/main.dir/all] Error 2
+gmake[1]: *** [CMakeFiles/Makefile2:92: CMakeFiles/main.dir/rule] Error 2
+gmake: *** [Makefile:124: main] Error 2
+#+end_src
+
+And with the GCC compiler we get
+
+#+begin_src
+[ 33%] Building C object CMakeFiles/main.dir/main.c.o
+[ 66%] Building Fortran object CMakeFiles/main.dir/subroutines.F90.o
+[100%] Linking Fortran executable main
+#+end_src
+
+So it seems that the intel runtime has a function called =main= that wants to
+call =MAIN__=.
+
+The solution we came up with was to do
+#+begin_src cmake
+cmake_minimum_required(VERSION 3.16)
+
+project(hybrid C Fortran)
+
+add_library(subroutines STATIC subroutines.F90)
+add_executable(main main.c)
+target_link_libraries(main PRIVATE subroutines)
+#+end_src
+
+which ensures that the C linker will link the executable.

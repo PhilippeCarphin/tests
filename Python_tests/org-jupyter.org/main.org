@@ -1,0 +1,29 @@
+#+TITLE: Test
+#+PROPERTY: header-args :session paul :results both
+
+#+begin_src python
+def say_hello():
+    return "Hello"
+def print_bonjour():
+    print("bonjour")
+#+end_src
+
+#+RESULTS:
+
+#+begin_src python
+say_hello()
+#+end_src
+
+#+RESULTS:
+: Hello
+
+
+#+begin_src python :session paul
+print_bonjour()
+a += 1
+a
+#+end_src
+
+#+RESULTS:
+: 3
+

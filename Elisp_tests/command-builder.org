@@ -1,0 +1,132 @@
+This macro takes a list of pairs =(left right)= where =left= is a "boolean" to
+decide if =right= should be evaluated and put into the resulting list.
+
+The first =dolist= gives us a list of =right= expressions where =left= was true.
+
+The =right= expressions have not been evaluated yet.  THe next part creates a
+=let= expression that evaluates them and flattens the list.  This expression is
+returned by the macro and gets evaluated.
+
+#+begin_src emacs-lisp
+(defmacro build-list (&rest pairs)
+  "Build a list incrementally using pairs (CONDITION EXPR)
+For each pair, when CONDITION is non-nil, EXPR gets evaluated and added to the
+list in one of two ways.
+
+If the result of evaluating EXPR is a string, it gets added to the list.
+
+If the result of evaluating EXPR is a list, its elements get added to the list.
+"
+  (let ((result (list)))
+    (dolist (p pairs)
+      (when (eval (car p))
+        (push (cadr p) result)))
+    `(let ((true-result (list)))
+       (dolist (e ',result)
+         (let ((val (eval e)))
+           (cond ((listp val)
+                  (setq true-result (append val true-result)))
+                 ((stringp val)
+                  (push val true-result)))))
+       true-result)))
+#+end_src
+
+
+#+begin_src emacs-lisp
+(defmacro build-list (&rest pairs)
+  "Experimental version that prints intermediate result and returned expression"
+  (let ((result (list)))
+    (dolist (p pairs)
+      (when (eval (car p))
+        (push (cadr p) result)))
+    (message "Macro intermediate result: '%S'" result)
+    (let ((expr `(let ((true-result (list)))
+                   (dolist (e ',result)
+                     (let ((val (eval e)))
+                       (cond ((listp val)
+                              (setq true-result (append val true-result)))
+                             ((stringp val)
+                              (push val true-result)))))
+                   true-result)))
+      (message "Macro returned expression: '%S'" expr)
+      expr)))
+#+end_src
+
+Some settings to use in building commands
+#+begin_src emacs-lisp
+(setq x-config-file "~/.config/hello.yml")
+(setq x-n-jobs 80)
+(setq x-all t)
+(setq x-ignore t)
+(setq sky-color "blue")
+#+end_src
+
+#+RESULTS:
+: blue
+
+Building the command using the macro
+#+begin_src emacs-lisp
+(build-list (t "x")
+            ((eq 1 1)    (list "-F" "phil"))
+            (t           (concat "a" "b"))
+            (nil         (error "HELLO"))               ;; Never evaluated
+            ((eq 2 2)   `("-F" ,x-config-file))
+            (t           (cond ((string-equal sky-color "blue") '("--sky" "b")) (_ '("--sky" "g"))))
+            ((eq 3 3)   `("-k" ,(number-to-string 3)))
+            (x-n-jobs    (list "-j" (number-to-string x-n-jobs)))
+            (x-all       "--all"))
+#+end_src
+
+#+RESULTS:
+| x | -F | phil | ab | -F | ~/.config/hello.yml | --sky | b | -k | 3 | -j | 80 | --all |
+
+The =right= expressions for which =left= was true end up in =result= in reverse
+order.
+
+The combination of =`(let ... (dolist (e ',result)...))= creates this expression
+which is what the macro returns.
+
+#+begin_src emacs-lisp
+(let ((true-result (list)))
+  (dolist (e '("--all" (list "-j" (number-to-string x-n-jobs)) (cond ((string-equal sky-color "blue") '("--sky" "b")) (_ '("--sky" "g"))) `("-k" ,(number-to-string 3)) `("-F" ,x-config-file) (concat "a" "b") (list "-F" "phil") "x"))
+    (let ((val (eval e)))
+      (cond ((stringp val)
+             (push val true-result))
+            ((listp val)
+             (setq true-result (append val true-result))))))
+  true-result)
+#+end_src
+
+#+RESULTS:
+| x | -F | phil | ab | -F | ~/.config/hello.yml | -k | 3 | --sky | b | -j | 80 | --all |
+
+
+#+begin_src emacs-lisp
+(defun build-list-func ()
+  (let ((result (list)))
+    (push "x" result)
+    (when (eq 1 1)
+      (push "-F" result)
+      (push "phil" result))
+    (push (concat "a" "b") result)
+    (when nil
+      (error "HELLO"))
+    (when (eq 2 2)
+      (push "-F" result)
+      (push x-config-file result))
+    (push "--sky" result)
+    (push (cond ((string-equal sky-color "blue") "b") (_ "g")) result)
+    (when (eq 3 3)
+      (push "-k" result)
+      (push "3" result))
+    (when x-n-jobs
+      (push "-j" result)
+      (push x-n-jobs result))
+    (when x-all
+      (push "--all" result))
+    (reverse result)))
+(build-list-func)
+#+end_src
+
+#+RESULTS:
+| x | -F | phil | ab | -F | ~/.config/hello.yml | --sky | b | -k | 3 | -j | 80 | --all |

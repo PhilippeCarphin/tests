@@ -1,0 +1,17 @@
+#+TITLE: Reading from STDIN: Only using Cat does it right
+
+[[https://unix.stackexchange.com/a/716439/161630][This Unix Stack Exchange post]] explains why, despite my annoyance at the fact
+that BASH can't do it directly, we have to use =cat= to read STDIN into a variable.
+
+The file =read.sh= reads stdin using =cat= or =read= and outputs to a file.
+
+This script tests out a "pure bash" way to read stdin without using =cat= by
+doing =read= in a =while= loop.  The =run.sh= script tries both methods and
+diffs the results.
+
+Reading STDIN should be done with =cat=.  Doing it with =read= is only to check
+if it's possible to get the same result as =cat= but I mainly did it because I'm
+salty that the proper way in =BASH= to read =STDIN= is to use =cat.
+
+Anyway, the post is convincing that using =cat= is acceptable because it's the
+only way to get it right.

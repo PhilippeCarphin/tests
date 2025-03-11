@@ -22,12 +22,22 @@
 ;; the one in set-cookie-raw.  For multiple cookies, the above doesn't work
 ;; because map keys must be unique.  Also note: It seems that when your response
 ;; map has a :cookies key, it cannot have a 'Set-Cookie' in the headers.
+(defn cookies-html-table-middleware-with-attrs [cookies]
+  (str "<table><tr><th>Name</th><th>Value</th></tr>"
+       (join "\n" (for [[name value] cookies]
+                    (format "<tr><td>%s</td><td style=\"max-width:500px\">%s</td></tr>"
+                            name value)))
+       "</table>"))
 (defn set-cookies-middleware [request]
+  (let [cookies {"middleware-session" {:value "987654321" :path "/" :max-age 86400}
+                 "middleware-short" {:value "fedcba9876543210" :path "/" :max-age 20}
+                 "middleware-other" {:value "123456789abcdef" :path "/show-cookies-raw" :max-age 3600}}]
   {:status 200
    :headers {"Content-Type" "text/html"}
-   :cookies {"middleware-session" {:value "987654321" :path "/" :max-age 86400}
-             "middleware-other" {:value "123456789abcdef" :path "/show-cookies" :max-age 3600}}
-   :body "<p>I set two cookies: one named <tt>middleware-session</tt> and one named <tt>middleware-other</tt></p>"})
+   :cookies cookies
+   :body (str "<p>I set three cookies<p>"
+              (cookies-html-table-middleware-with-attrs cookies)
+)}))
 
 ;;
 ;; Accessing the values of cookies
@@ -53,7 +63,7 @@
     {:status 200
      :headers {"Content-Type" "text/html"}
      :body (str "<H1>Cookies sent by browser via 'Cookie' header</H1>"
-                (cookies-html-table-raw (:cookies request)))}))
+                (cookies-html-table-raw cookie))}))
 
 ;; Using ':cookies' in the request map (put there by the middleware) as
 ;; described in https://github.com/ring-clojure/ring/wiki/Cookies
@@ -83,11 +93,9 @@
                       (ring.middleware.cookies/wrap-cookies show-cookies-middleware))
   (compojure.core/ANY "*" request {:status 404
                                    :headers {"Content-Type" "text/html"}
-                                   :body (str "<H1>Not Found</H1>"
-                                              "<p>Routes are /set-cookie-raw,"
-                                              "/set-cookies-middleware, /show-cookies</p>")}))
+                                   :body (slurp "resources/html/index.html")}))
 
 (defn -main
   "Main function"
   [& args]
-  (ring.adapter.jetty/run-jetty my-routes {:port 8989}))
+  (ring.adapter.jetty/run-jetty my-routes {:port 9090}))

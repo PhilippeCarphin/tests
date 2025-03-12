@@ -1,0 +1,59 @@
+* Setup
+
+We have three cases for the return values of functions
+- The function returns a =ctypes.c_void_p=
+- The function returns a =ctypes.POINTER(X)= where =X= is one of the builtin
+  builtin primitive C compatible data types (ex: =ctypes.c_int=)
+- The function returns a =ctypes.POINTER(Y)= where =Y= is a type that inherits
+  from =ctypes.Structure=.
+
+** C functions
+
+*** =echo_void_star=
+
+This function returns a =void *=.  It takes a =long unsigned int= as the
+argument, casts it to =void *= and returns that.
+
+*** =echo_int=
+
+This function takes an =int=, allocates space on the heap to hold an =int=,
+copies the value of the argument there, and returns a pointer to that space.
+
+If the argument is =666=, the function aborts and returns =NULL=.
+
+*** =MyThing_New=
+
+Following the Go convention, this function is a constructor for a =struct
+MyThing=.
+
+It allocates space on the heap for a =struct MyThing=, sets its attributes from
+the arguments and returns a pointer to that space.
+
+If the int argument is =666=, the function aborts and returns =NULL=.
+* Test
+
+For each function we create =ctypes= wrappers.  We examine the object returned
+by each function in the case where the C function returns non-null and the case
+when it returns NULL.
+
+* Result
+
+Run =make test=.
+
+We see that for a =c_void_p=, when the underlying C function returns =NULL=, the
+object returned by the Python function wrapping it *is* None.
+
+However for functions that return pointers to other types, whether the function
+return NULL or not, we get some kind of =LP_something=.  In both cases this is
+not =None= so we can't check that way.  However these =ctypes= pointer objects
+do implement their own =__bool__= dunder method.
+
+| Return type        | Type                            | Value for NULL | Bool value | contents  |
+|--------------------+---------------------------------+----------------+------------+-----------|
+| =c_void_p=         | =<class 'int'>=                 | =None=         | =False=    | -         |
+| =POINTER(c_int)=   | =<class '__main__.LP_c_int'>=   | ?              | =False=    | Exception |
+| =POINTER(MyThing)= | =<class '__main__.LP_MyThing'>= | ?              | =False=    | Exception |
+
+Obviously =NoneType= does not have an attribute =contents= but the
+=LP_somethings= do.  And if we try to access it when the C function returned
+NULL, then we get a =ValueError= exception saying =NULL pointer access=.

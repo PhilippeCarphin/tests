@@ -1,13 +1,21 @@
 
-src = print_string_list.c
-lib = libprintlist.so
+src = $(wildcard *.c)
+obj = $(src:.c=.o)
+lib = libtest.so
 CFLAGS += -fpic
 
-$(lib):$(src)
-	gcc -shared $(CFLAGS) $< -o $@
+%.o:%.c
+	gcc -c -fPIC -o $@ $<
+
+$(lib):$(obj)
+	gcc -shared $(CFLAGS) $^ -o $@
 
 test:$(lib)
 	LD_LIBRARY_PATH=${PWD}:${LD_LIBRARY_PATH} python3 demo_print_string_list.py
 
 clean:
-	rm $(lib)
+	rm -f $(lib) *.o
+
+vars:
+	@echo "src = '$(src)'"
+	@echo "obj = '$(obj)'"

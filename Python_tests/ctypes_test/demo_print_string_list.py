@@ -1,8 +1,8 @@
 import ctypes
 
-libprintlist = ctypes.cdll.LoadLibrary("libprintlist.so")
+lib = ctypes.cdll.LoadLibrary("libtest.so")
 
-print_string_list = libprintlist.print_string_list
+print_string_list = lib.print_string_list
 print_string_list.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_char_p)]
 print_string_list.restype = ctypes.c_int
 
@@ -28,3 +28,14 @@ l = ['hello', 'world', 'asdf']
 bl = [e.encode('ASCII') for e in l]
 py_print_string_list(bl)
 pypy_print_string_list(l)
+
+
+string_or_null = lib.string_or_null
+string_or_null.argtypes = [ctypes.c_char_p]
+string_or_null.restype = ctypes.c_int32
+
+def string_or_null_test():
+    string_or_null(None)
+    string_or_null(b'')
+
+string_or_null_test()

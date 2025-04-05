@@ -1,3 +1,43 @@
+#+PROPERTY: header-args :exports both
+
+This describes how I created a macro to simplify code to build a list of strings
+by adding or not adding certain strings based on the values of some variables.
+
+There was a problem with that approach.  I describe how the macro works in terms
+of evaluation order etc.  Then I show the problem.  Finally I show the source of
+this endeavour and why I went back to original simple function.
+
+* Goal
+
+The macro was created to write a function like this one more conveniently:
+
+#+begin_src emacs-lisp
+(defun build-list-func ()
+  (let ((result (list)))
+    (push "x" result)
+    (push (concat "a" "b") result)
+    (when nil
+      (error "HELLO"))
+    (when (eq 2 2)
+      (push "-F" result)
+      (push x-config-file result))
+    (push sky-color result)
+    (when x-n-jobs
+      (push "-j" result)
+      (push x-n-jobs result))
+    (when x-all
+      (push "--all" result))
+    (reverse result)))
+(build-list-func)
+#+end_src
+
+#+RESULTS:
+| x | ab | -F | ~/.config/hello.yml | blue | -j | 80 | --all |
+
+* The macro
+
+** Definitions
+*** Simple definition
 This macro takes a list of pairs =(left right)= where =left= is a "boolean" to
 decide if =right= should be evaluated and put into the resulting list.
 
@@ -23,15 +63,14 @@ If the result of evaluating EXPR is a list, its elements get added to the list.
         (push (cadr p) result)))
     `(let ((true-result (list)))
        (dolist (e ',result)
-         (let ((val (eval e)))
-           (cond ((listp val)
-                  (setq true-result (append val true-result)))
-                 ((stringp val)
-                  (push val true-result)))))
+         (push (eval e) true-result))
        true-result)))
 #+end_src
 
+#+RESULTS:
+: build-list
 
+*** Same definition but it prints some intermediate results
 #+begin_src emacs-lisp
 (defmacro build-list (&rest pairs)
   "Experimental version that prints intermediate result and returned expression"
@@ -42,15 +81,17 @@ If the result of evaluating EXPR is a list, its elements get added to the list.
     (message "Macro intermediate result: '%S'" result)
     (let ((expr `(let ((true-result (list)))
                    (dolist (e ',result)
-                     (let ((val (eval e)))
-                       (cond ((listp val)
-                              (setq true-result (append val true-result)))
-                             ((stringp val)
-                              (push val true-result)))))
+                     (push (eval e) true-result))
                    true-result)))
       (message "Macro returned expression: '%S'" expr)
       expr)))
 #+end_src
+
+#+RESULTS:
+: build-list
+
+** Demonstration
+*** Variables to control the command we are building
 
 Some settings to use in building commands
 #+begin_src emacs-lisp
@@ -61,72 +102,336 @@ Some settings to use in building commands
 (setq sky-color "blue")
 #+end_src
 
-#+RESULTS:
-: blue
-
-Building the command using the macro
+*** Building the command using the macro
 #+begin_src emacs-lisp
 (build-list (t "x")
-            ((eq 1 1)    (list "-F" "phil"))
             (t           (concat "a" "b"))
             (nil         (error "HELLO"))               ;; Never evaluated
-            ((eq 2 2)   `("-F" ,x-config-file))
-            (t           (cond ((string-equal sky-color "blue") '("--sky" "b")) (_ '("--sky" "g"))))
-            ((eq 3 3)   `("-k" ,(number-to-string 3)))
-            (x-n-jobs    (list "-j" (number-to-string x-n-jobs)))
+            ((eq 2 2)    "-F")
+            ((eq 2 2)    x-config-file)
+            (t           sky-color)
+            (x-n-jobs    "-j")
+            (x-n-jobs    (number-to-string x-n-jobs))
             (x-all       "--all"))
 #+end_src
 
 #+RESULTS:
-| x | -F | phil | ab | -F | ~/.config/hello.yml | --sky | b | -k | 3 | -j | 80 | --all |
+| x | ab | -F | ~/.config/hello.yml | blue | -j | 80 | --all |
 
 The =right= expressions for which =left= was true end up in =result= in reverse
 order.
 
+*** Result of macro expansion
 The combination of =`(let ... (dolist (e ',result)...))= creates this expression
 which is what the macro returns.
 
 #+begin_src emacs-lisp
 (let ((true-result (list)))
-  (dolist (e '("--all" (list "-j" (number-to-string x-n-jobs)) (cond ((string-equal sky-color "blue") '("--sky" "b")) (_ '("--sky" "g"))) `("-k" ,(number-to-string 3)) `("-F" ,x-config-file) (concat "a" "b") (list "-F" "phil") "x"))
-    (let ((val (eval e)))
-      (cond ((stringp val)
-             (push val true-result))
-            ((listp val)
-             (setq true-result (append val true-result))))))
+  (dolist (e '("--all"
+               (number-to-string x-n-jobs)
+               "-j"
+               sky-color
+               x-config-file
+               "-F"
+               (concat "a" "b")
+               "x"))
+    (push (eval e) true-result))
   true-result)
 #+end_src
 
 #+RESULTS:
-| x | -F | phil | ab | -F | ~/.config/hello.yml | -k | 3 | --sky | b | -j | 80 | --all |
+| x | ab | -F | ~/.config/hello.yml | blue | -j | 80 | --all |
 
+* Caveat
+** The problem
+There's just one problem: when evaluating this macro
+#+begin_src emacs-lisp
+(defun my-thing ()
+  (build-list (t "x")
+              (t           (concat "a" "b"))
+              (nil         (error "HELLO"))               ;; Never evaluated
+              ((eq 2 2)    "-F")
+              ((eq 2 2)    x-config-file)
+              (t           sky-color)
+              (x-n-jobs    "-j")
+              (x-n-jobs    (number-to-string x-n-jobs))
+              (x-all       "--all")))
+#+end_src
+the expansion of the macro, i.e. this expression:
+#+begin_src emacs-lisp
+(let ((true-result (list)))
+  (dolist (e '("--all"
+               (number-to-string x-n-jobs)
+               "-j"
+               sky-color
+               x-config-file
+               "-F"
+               (concat "a" "b")
+               "x"))
+    (push (eval e) true-result))
+  true-result)
+#+end_src
+can /become/ the function definition as if we did:
 
 #+begin_src emacs-lisp
-(defun build-list-func ()
+(defun my-thing ()
+  (let ((true-result (list)))
+    (dolist (e '("--all"
+                 (number-to-string x-n-jobs)
+                 "-j"
+                 sky-color
+                 x-config-file
+                 "-F"
+                 (concat "a" "b")
+                 "x"))
+      (push (eval e) true-result))
+    true-result)
+#+end_src
+which would be equivalent to doing
+#+begin_src emacs-lisp
+(defun my-thing ()
   (let ((result (list)))
     (push "x" result)
-    (when (eq 1 1)
-      (push "-F" result)
-      (push "phil" result))
     (push (concat "a" "b") result)
-    (when nil
-      (error "HELLO"))
-    (when (eq 2 2)
-      (push "-F" result)
-      (push x-config-file result))
-    (push "--sky" result)
-    (push (cond ((string-equal sky-color "blue") "b") (_ "g")) result)
-    (when (eq 3 3)
-      (push "-k" result)
-      (push "3" result))
-    (when x-n-jobs
-      (push "-j" result)
-      (push x-n-jobs result))
-    (when x-all
-      (push "--all" result))
+    (push "-F" result)
+    (push x-config-file result)
+    (push sky-color result)
+    (push "-j" result)
+    (push x-n-jobs result)
+    (push "--all" result)
     (reverse result)))
 (build-list-func)
 #+end_src
 
+The problem is that macro can be expanded /when we define the function or when
+the function is called/!
+
+The first section shows that when =C-c C-c=-ing orgmode SRC blocks, the macro is
+expanded during function calls, the next section shows that when =C-x C-e=-ing
+the =(defun my-thing () ...)= expression, the macro is expanded while defining
+the function.  Finally we show that we can ensure that the macro not be expanded
+when defining the function (whether this is a good idea is debatable).
+
+** Evaluating with =C-c C-c= defers expansion
+
+First I =C-c C-c= this block
+#+begin_src emacs-lisp
+(setq x-all t)
+(setq x-n-jobs "80")
+(setq x-ignore nil)
+(defun my-thing ()
+  (build-list (x-all "all")
+              (x-n-jobs x-n-jobs)
+              (x-ignore "ignore")))
+(my-thing)
+#+end_src
+
 #+RESULTS:
-| x | -F | phil | ab | -F | ~/.config/hello.yml | --sky | b | -k | 3 | -j | 80 | --all |
+| all | 80 |
+
+Then I =C-c C-c= this one.
+#+begin_src emacs-lisp
+(setq x-all nil)
+(my-thing)
+#+end_src
+
+#+RESULTS:
+| 80 |
+
+I get what I intended.
+
+** Evaluating the =defun= with =C-x C-e= expands the macro
+
+First we reset our variables:
+#+begin_src elisp
+(setq x-all t)
+(setq x-n-jobs "80")
+(setq x-ignore nil)
+#+end_src
+
+Next we define =my-thing= but this time by =C-x C-e=-ing the expression:
+
+#+begin_example
+(defun my-thing ()
+  (build-list (x-all "all")
+              (x-n-jobs x-n-jobs)
+              (x-ignore "ignore")))
+#+end_example
+
+And then we can try it out by =C-c C-c=-ing the next blocks:
+
+#+begin_src emacs-lisp
+(my-thing)
+#+end_src
+
+#+RESULTS:
+| all | 80 |
+
+#+begin_src emacs-lisp
+(setq x-all nil)
+(setq x-n-jobs "80")
+(setq x-ignore nil)
+(my-thing)
+#+end_src
+
+#+RESULTS:
+| all | 80 |
+
+This would be because the macro is expanded in that case and we end up with this
+definition of the function:
+#+begin_src elisp
+(setq x-all t)
+(setq x-n-jobs "80")
+(setq x-ignore nil)
+(defun my-thing ()
+  (let ((true-result (list)))
+    (dolist (e '(x-n-jobs
+                 "all"))
+      (push (eval e) true-result))
+    true-result))
+#+end_src
+a function that just adds ="all"= and =x-n-jobs= to a list.
+
+** Forcing the macro expansion to be deferred
+
+Here we can defer the expansion of the macro.  We can now =C-x C-e= this
+expression and the function will evaluate the expansion of expand the macro
+during the call.
+#+begin_example
+(defun my-thing ()
+  (eval '(build-list (x-all "all")
+                     (x-n-jobs x-n-jobs)
+                     (x-ignore "ignore"))))
+#+end_example
+
+Now we can try our first case:
+#+begin_src emacs-lisp
+(setq x-all t)
+(setq x-n-jobs "80")
+(setq x-ignore nil)
+(my-thing)
+#+end_src
+
+#+RESULTS:
+| all | 80 |
+
+And we can change the variables and see that it has an effect:
+#+begin_src emacs-lisp
+(setq x-all nil)
+(setq x-n-jobs "80")
+(setq x-ignore nil)
+(my-thing)
+#+end_src
+
+#+RESULTS:
+| 80 |
+
+The string ="all"= is not there.
+
+** How I found out
+
+I was working one a macro similar to this one and to figure things out, I did it
+in an =org-mode= document since it's easy to do =C-c C-c= on blocks of code and
+to keep multiple versions, and have the results of evaluation saved in the text
+file itself.
+
+Once I got it working, I put it in my file and I was good to go.  It worked.  I
+could change the values of =repos-overview-all= and other variables and it had
+an effect.
+
+But then later, I restarted Emacs and this time, instead of =C-c C-c= on a
+source block behavior, the macro was expanded when the =defun= was evaluated and
+changing =repos-overview-all= had no effect from that point on.
+
+* Original plan
+
+I created this macro to build a command as a list of arguments.  I wanted to
+specify a list of pairs =(PRED EXPR)= and for each pair, if =PRED= evaluates
+to true the result of evaluating =EXPR= is added to the list of arguments.
+
+#+begin_src emacs-lisp
+(defmacro build-list (&rest pairs)
+  "Build a list incrementally using pairs (PRED EXPR) pairs.
+
+This macro produces a list of the EXPR's where PRED is true.
+
+EXPR is only evaluated if PRED is true.  Furthermore, if EXPR evaluates to a
+list, then its elements get added to the list, no the list itslef."
+  (let ((to-evaluate (list)))
+    (dolist (p pairs)
+      (when (eval (car p))
+        (push (cadr p) to-evaluate)))
+    `(let ((result (list)))
+       (dolist (e ',to-evaluate)
+         (let ((val (eval e)))
+           (cond ((listp val)
+                  (setq result (append val result)))
+                 ((stringp val)
+                  (push val result)))))
+       result)))
+#+end_src
+
+Which allows me to do
+
+#+begin_src emacs-lisp
+(defun repos--create-base-command ()
+  (build-list (t                           "repos")
+              (repos-overview-all          "-all")
+              (nil (error "Crash if this gets evaluated"))
+              (repos-overview-n-jobs       `("-j" ,(number-to-string repos-overview-n-jobs)))
+              ((not repos-overview-ignore) "-noignore")
+              ((not repos-overview-fetch)  "-no-fetch")))
+#+end_src
+
+I wanted the following things
+- =EXPR= is only evaluated if necessary (if =PRED= is true).  This is why I need
+  it to be a macro.
+- Since I'm building a list of arguments if =EXPR= evaluates to a list I want to
+  concatenate said list to my argument list instead of appending an element.
+
+The list part is because I may want to have a condition that controls the
+addition of multiple arguments and I don't want to have to do something like
+#+begin_src emacs-lisp
+(defun repos--create-base-command ()
+  (build-list ;; ...
+              (repos-overview-n-jobs       "-j")
+              (repos-overview-n-jobs       `(number-to-string repos-overview-n-jobs))
+              ;; ...
+              ))
+#+end_src
+
+which is what this part is for
+#+begin_src emacs-lisp
+(let ((val (eval e)))
+  (cond ((listp val)
+         (setq result (append val result)))
+        ((stringp val)
+         (push val result))))
+#+end_src
+
+but this makes the macro more complicated and because of the caveats, I decided
+to go back to a function written out more manually:
+
+#+begin_src emacs-lisp
+(defun repos--create-base-command ()
+  (let ((args (list)))
+    (if repos-bin-path
+        (push (concat repos-bin-path "/repos") args)
+      (push repos-command args))
+    (when repos-overview-n-jobs
+      (push "-j" args)
+      (push (number-to-string repos-overview-n-jobs) args))
+    (when repos-overview-all
+      (push "-all" args))
+    (unless repos-overview-ignore
+      (push "-noignore" args))
+    (unless repos-overview-fetch
+      (push "-no-fetch" args))
+    (push "-F" args)
+    (push (if (boundp 'other-config-file)
+              other-config-file
+            repos-config-file)
+          args)
+    (nreverse args)))
+#+end_src
+

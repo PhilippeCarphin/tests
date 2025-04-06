@@ -1,0 +1,65 @@
+* Documentation setup
+
+** Configuration
+
+*** Adding the extension
+
+Install the package
+
+#+begin_src shell
+python3 -m pip install sphinx-argparse
+#+end_src
+
+Add the extension to =conf.py=
+
+#+begin_src diff
+ extensions = [
+     'sphinx_rtd_theme',
++    'sphinxarg.ext'
+ ]
+#+end_src
+
+*** Adding directories for imports
+
+Use the =.. argparse::= directive as shown in the examples.
+
+Add the some directories to =PYTHONPATH= if the python scripts need to import
+any other files:
+
+#+begin_src python
+import sys
+import pathlib
+p = pathlib.Path(__file__).parents[2].joinpath('libexec', 'repos')
+sys.path.insert(0, str(p))
+#+end_src
+
+** Using =argparse= directive
+
+#+begin_src rst
+.. argparse::
+   :filename: ../libexec/repos/repos-find.py
+   :func: arg_parser
+   :prog: repos-find.py
+#+end_src
+
+The path is relative to the doc directory, not relative to directory containing
+=conf.py=.
+
+* Requirements on the python code being documented
+
+It is important that the executable python scripts have an
+#+begin_src python
+if __name__ == "__main__":
+#+end_src
+preventing the execution of the tool if the module is imported.  THis si because
+sphinx will import the file and call the function to return argparse parser.
+
+If importing causes execution of the tool, then the parsing of arguments will
+stop the program.
+
+The python code may need to be modified: sphinx expects a function that returns
+an =argparse.ArgumentParser= object.
+
+* References
+
+- [[https://sphinx-argparse.readthedocs.io/en/latest/usage.html][=sphinx-argparse= documentation]]

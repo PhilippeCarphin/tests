@@ -1,0 +1,68 @@
+
+* Start sphinx
+
+#+begin_src shell
+sphinx-quickstart
+#+end_src
+
+#+begin_src shell
+doc $ sphinx-quickstart
+Welcome to the Sphinx 8.2.3 quickstart utility.
+
+Selected root path: .
+
+> Separate source and build directories (y/n) [n]: y
+> Project name: docstring-demo
+> Author name(s): Philippe Carphin
+> Project release []:
+> Project language [en]:
+
+Creating file doc/source/conf.py.
+Creating file doc/source/index.rst.
+Creating file doc/Makefile.
+Creating file doc/make.bat.
+
+Finished: An initial directory structure has been created.
+#+end_src
+
+** Set Read The Docs theme
+#+begin_src shell
+python3 -m pip install sphinx sphinx_rtd_theme
+#+end_src
+
+#+begin_src diff
+-extensions = []
++extensions = [
++    'sphinx_rtd_theme'
++]
+#+end_src
+
+* Prepare for Autodoc
+
+** Add import paths in =conf.py=
+
+Since Sphinx will look at our code we need it to be importable by Sphinx so we
+add something like this to =conf.py=:
+
+#+begin_src python
+import pathlib
+import sys
+module_container = pathlib.Path(__file__).parents[2].joinpath("src")
+sys.path.insert(0, str(module_container))
+#+end_src
+
+
+** Add Sphinx Autodoc
+
+And we need to enable the autodoc extension.
+
+#+begin_src diff
+ extensions = [
+     'sphinx_rtd_theme',
++    'sphinx.ext.autodoc'
+ ]
+#+end_src
+
+* Use Autodoc
+
+See [[./doc/source/notes.rst]] and other files for examples.

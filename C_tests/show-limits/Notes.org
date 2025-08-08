@@ -1,0 +1,80 @@
+* Order of includes
+
+The order of includes matters!
+
+#+begin_src C
+/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
+#ifndef _LINUX_LIMITS_H
+#define _LINUX_LIMITS_H
+
+#define NR_OPEN         1024
+
+#define NGROUPS_MAX    65536	/* supplemental group IDs are available */
+#define ARG_MAX       131072	/* # bytes of args + environ for exec() */
+#define LINK_MAX         127	/* # links a file may have */
+#define MAX_CANON        255	/* size of the canonical input queue */
+#define MAX_INPUT        255	/* size of the type-ahead buffer */
+#define NAME_MAX         255	/* # chars in a file name */
+#define PATH_MAX        4096	/* # chars in a path name including nul */
+#define PIPE_BUF        4096	/* # bytes in atomic write to a pipe */
+#define XATTR_NAME_MAX   255	/* # chars in an extended attribute name */
+#define XATTR_SIZE_MAX 65536	/* size of an extended attribute value (64k) */
+#define XATTR_LIST_MAX 65536	/* size of extended attribute namelist (64k) */
+
+#define RTSIG_MAX	  32
+
+#endif
+#+end_src
+
+** Wrong order
+
+#+begin_src c
+#include <limits.h>
+#include <linux/limits.h>
+#+end_src
+
+The file =/usr/include/bits/param.h= included by =sys/param.h=
+somehow gets included when we do =#include <limits.h>= but since it does this
+manoeuver
+
+#+begin_src C
+#ifndef ARG_MAX
+# define __undef_ARG_MAX
+#endif
+
+#include <linux/limits.h>
+#include <linux/param.h>
+
+/* The kernel headers define ARG_MAX.  The value is wrong, though.  */
+#ifdef __undef_ARG_MAX
+# undef ARG_MAX
+# undef __undef_ARG_MAX
+#endif
+#+end_src
+
+The result is that
+- =_LINUX_LIMITS_H= is defined because =linux/limits.h= has been included.
+- =ARG_MAX= was defined for a short while but the undefined because it was not
+  defined before.
+- My =#include <linux/limits.h>= does nothing because =_LINUX_LIMITS_H= is
+  defined.
+
+I have not been able to find the trail of inclusions that leads from =limits.h=
+to =bits/param.h= but it's the only thing that makes sense.
+
+** Right order
+
+#+begin_src c
+#include <linux/limits.h>
+#include <limits.h>
+#+end_src
+
+With this order, the first include defines =ARG_MAX=.  Now when we get to
+including =limits.h= and we reach =bits/param.h=, =ARG_MAX= is defined, so we
+don't define =__undef_ARG_MAX=.
+
+Then we include =linux/limits.h= which does nothing because it has already been
+included.
+
+And finally because =__undef_ARG_MAX= is not defined, we do not undefine
+=ARG_MAX=.

@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <limits.h>
 #include <linux/limits.h>
+#include <sys/param.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -55,21 +56,25 @@ int get_value(char *name, long long unsigned int *value){
 
     fprintf(stderr, "Others -------\n");
     static struct name_int nv[] = {
-        name_value(NGROUPS_MAX, 0),
-        name_value(MAX_CANON, 0),
-        name_value(MAX_INPUT, 0),
-        name_value(NAME_MAX, 0),
-        name_value(PATH_MAX, 0),
-        name_value(PIPE_BUF, 0),
+        /* On Linux these are from /usr/include/linux/limits.h
+         * but the order of includes is super important because
+         * See notes
+         */
+        // name_value(NR_OPEN, 0),
+        name_value(NGROUPS_MAX, 0), /* supplemental group IDs are available */
+        // name_value(ARG_MAX, 0), /* # bytes of args + environ for exec() */
+        // name_value(LINK_MAX, 0), /* # links a file may have */
+        name_value(MAX_CANON, 0), /* size of the canonical input queue */
+        name_value(MAX_INPUT, 0), /* size of the type-ahead buffer */
+        name_value(NAME_MAX, 0), /* # chars in a file name */
+        name_value(PATH_MAX, 0), /* # chars in a path name including nul */
+        name_value(PIPE_BUF, 0), /* # bytes in atomic write to a pipe */
+        name_value(XATTR_NAME_MAX, 0), /* # chars in an extended attribute name */
+        name_value(XATTR_SIZE_MAX, 0), /* size of an extended attribute value (64k) */
+        name_value(XATTR_LIST_MAX, 0), /* size of extended attribute namelist (64k) */
 
-#ifdef UBUNTU_22_OR_SOMETHING_IDK
-        name_value(ARG_MAX, 0),
-        name_value(LINK_MAX, 0),
-        name_value(NR_OPEN),
-        name_value(XATTR_NAME_MAX),
-        name_value(XATTR_SIZE_MAX),
-        name_value(XATTR_LIST_MAX),
-        name_value(PHYS_ADDR_MAX),
+#ifdef EXTRA
+        name_value(PHYS_ADDR_MAX, 0),
         name_value(S8_MAX, 0),
         name_value(S8_MIN, 1),
         name_value(U8_MAX, 0),

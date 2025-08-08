@@ -53,9 +53,35 @@ def test_new_gen():
     print(f'--> send 0.4 got {ng.send(0.4)}')
 
 
+def rolling_average_gen():
+    average = 0
+    nb_elements = 0
+    total = 0
+    try:
+        while True:
+            value = yield average
+            total += value
+            nb_elements += 1
+            average = total / nb_elements
+    except GeneratorExit:
+        return "Averager retval"
+
+
+def test_rolling_average():
+    averager = rolling_average_gen()
+    next(averager)
+    for n in range(1,100):
+        current_average = averager.send(n)
+        print(f"current_average = {current_average}")
+    try:
+        averager.throw(GeneratorExit())
+    except StopIteration as e:
+        print(f"Return value of generator: '{e.value}' ({type(e.value)})")
+
 def main():
     test_my_gen()
     test_new_gen()
+    test_rolling_average()
 
 if __name__ == "__main__":
     main()

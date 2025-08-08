@@ -26,6 +26,9 @@ byref:$(lib)
 float:$(lib)
 	@printf "\033[35mLD_LIBRARY_PATH=\${PWD}:\${LD_LIBRARY_PATH} python3 -u float.py\033[0m\n"
 	@LD_LIBRARY_PATH=${PWD}:${LD_LIBRARY_PATH} python3 float.py
+array:$(lib)
+	@printf "\033[35mLD_LIBRARY_PATH=\${PWD}:\${LD_LIBRARY_PATH} python3 -u array.py\033[0m\n"
+	@LD_LIBRARY_PATH=${PWD}:${LD_LIBRARY_PATH} python3 array.py
 
 test: struct print bool
 

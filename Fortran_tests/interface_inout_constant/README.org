@@ -1,0 +1,3 @@
+#+TITLE: Interface inout constants
+
+I don't remember why I made this test.

@@ -1,14 +1,16 @@
+#!/usr/bin/env python3
 
 import os
 import pexpect
 import logging
 import argparse
+import time
 
 def get_args():
     p = argparse.ArgumentParser()
-    p.add_argument("-f", nargs='*')
-    p.add_argument("-d")
-    p.add_argument("cmd")
+    p.add_argument("-f", nargs='*', help="Files to source before attempting completion")
+    p.add_argument("-d", help="Working directory to be in")
+    p.add_argument("cmd", help="Command to complete")
     p.add_argument("--debug", action='store_true')
     return p.parse_args()
 
@@ -40,7 +42,13 @@ class CompletionRunner:
             # the command we want to test.
             for f in init_files:
                 self.run_command(f"source {f}")
+        if init_commands:
+            for c in init_commands:
+                self.run_command(c)
         self._setup_readline()
+
+    def __del__(self):
+        self.bash.send("exit")
 
     def _setup_readline(self):
         # Pagin could prevent us from getting a PS1 after hitting TAB
@@ -57,25 +65,58 @@ class CompletionRunner:
         self.run_command('bind "set colored-stats off"')
 
     def run_command(self, cmd, nl_after_command=False, nl_before_ps1=True):
-        logging.debug(f"{cmd}")
+        logging.debug(f"cmd='{cmd}'")
         self.bash.sendline(cmd)
         self.bash.expect_exact(cmd + ('\r\n' if nl_after_command else ''))
         self.bash.expect_exact(('\r\n' if nl_before_ps1 else '') + self.PS1)
         logging.debug(f"Found ps1 after command '{cmd}'")
         return self.bash.before
 
+    def expect_single_candidate(self, cmd, expected_completion, timeout=None):
+        logging.debug(f"sending '{cmd}\\t'")
+        self.bash.send(cmd + '\t')
+        time.sleep(0.5)
+        logging.debug(f"expect exact: '{cmd}'")
+        self.bash.expect_exact(cmd)
+        try:
+            self.bash.expect_exact(expected_completion, timeout=timeout)
+        except pexpect.exceptions.TIMEOUT as t:
+            logging.debug(f"Timeout reached")
+            self.bash.sendintr()
+            self.bash.expect_exact(self.PS1)
+            return False
+        logging.debug(f"before = '{self.bash.before}'")
+        if '\n' in self.bash.before:
+            logging.warning(f"newline in buffer between command and expected completion indicates more than one candidate either this indicates a failed test or that the test itself should be done with expect_multiple_candidates()")
+            self.bash.sendintr()
+            self.bash.expect_exact(self.PS1)
+            return False
+        logging.debug(f"after = '{self.bash.after}'")
+        self.bash.sendintr()
+        self.bash.expect_exact(self.PS1)
+        return True
+
+    def expect_multiple_candidates(self, cmd, expected_completions, timeout=None):
+        result = self.get_completion_candidates(cmd, timeout)
+        return (result == set(expected))
+
+
     def get_completion_candidates(self, cmd, timeout=None):
         # NOTE: bash-completion do something with 'MAGIC_MARK' which seems
         # to be some token that is super unlikely to arise in the ouput of
         # a command.
         logging.debug(f"Getting candidates for command {cmd}")
+        logging.debug(f"sending '{cmd}\\t'")
         self.bash.send(cmd + "\t")
-        self.bash.expect_exact(cmd)
+        logging.debug(f"expect exact: '{cmd}'")
+        g = self.bash.expect_exact(cmd)
+        logging.debug(f"got '{g}'")
         try:
-            self.bash.expect_exact(self.PS1, timeout=timeout)
+            g = self.bash.expect_exact(self.PS1, timeout=timeout)
+            logging.debug(f"got '{g}'")
         except pexpect.exceptions.TIMEOUT as t:
             logging.debug(f"Timeout reached")
-        result = self.bash.before.strip().splitlines()
+        result = set(self.bash.before.strip().splitlines())
         self.bash.sendintr()
         self.bash.expect_exact(self.PS1)
         return result

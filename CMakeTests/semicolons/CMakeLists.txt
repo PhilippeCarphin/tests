@@ -1,0 +1,10 @@
+cmake_minimum_required(VERSION 3.20)
+project(X C Fortran)
+set(code a b c d;e;f;;;g h i APPEND )
+set(codeq "a b c d;e;f;;;g h i" "" "" " APPEND")
+write_file(test "${code}")
+write_file(test_q "${codeq}")
+write_file(test_nq ${code})
+write_file(test_nq ${code})
+write_file(test_q_nq ${codeq})
+

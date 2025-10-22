@@ -67,6 +67,7 @@ _c(){
         -V)
             acquire_candidates_spinner_in_loop
             ;;
+        *) COMPREPLY=($(compgen -W "-f -F -c -v -C -Z -V" -- "${COMP_WORDS[COMP_CWORD]}"))
     esac
     if [[ ${COMP_TYPE} == 9 ]] && [[ ${comp_message_printed} == 1 ]] ; then
         printf "\n%s" "${PS1@P}"
@@ -122,7 +123,6 @@ acquire_candidates_spinner_in_loop(){
     printf "\033[?25h"
 }
 
-    
 comp_cached_vegetables=()
 acquire_candidates_dots_in_loop(){
     # Perhaps some other condidtion to detect that we need to re-get the candidates

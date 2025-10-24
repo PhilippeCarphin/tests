@@ -14,26 +14,30 @@ log(){
     printf "%s\n" "$*" >> ~/.log.txt
 }
 
-max_region_height=10
-max_region_width=80
-left_margin=9
-right_margin=4
-right_padding=3
-bottom_margin=1
-
 # source ~/.philconfig/shell_lib/bash_debug.sh
 # debug -f
-region=()
-region_x=()
-region_y=()
-model_data=()
-model_desc=()
-window=(-1 -1 -1)
-model_data_width=0
-model_desc_width=0
-region_size=()
+choice=""
+
+init_display(){
+    local lines=$1
+    local cols=$2
+    save-curpos
+    space ${lines}
+}
+
+finalize_display(){
+    local lines=$1
+    local cols=$2
+    clear_rectangle $lines $cols
+    restore-curpos
+}
 
 process_input(){
+    declare -ga model_data=()
+    declare -ga model_desc=()
+    declare -ga window=(-1 -1 -1)
+    declare -g  model_data_width=0
+    declare -g  model_desc_width=0
     while read datum desc ; do
         if (( ${#datum} > model_data_width )) ; then
             model_data_width=${#datum}
@@ -46,19 +50,21 @@ process_input(){
     done
     exec 0</dev/tty
 }
+source ~/.philconfig/shell_lib/functions.sh
 
 display-model(){
     local start=${1}
     local selected=${2}
     local end=${3}
-    local x0=${4}
-    local y0=${5}
+    local x0=${4:-8}
+    local y0=${5:-3}
     local x1=${6}
     local y1=${7}
+    local available_space=$((x1 - x0))
     buf_clear
     local j=0
     for((i=${start}; i<end; i++)) do
-        buf_cmove $x0 $((y0+j))
+        buf_cmove ${x0} $((y0+j))
         local marker=" "
         local color="48;5;246;30"
         local text
@@ -68,70 +74,73 @@ display-model(){
         fi
         printf -v text " %s %3d/${#model_data[@]}: %${model_data_width}s %-${model_desc_width}s" \
             "${marker}" "${i}" "${model_data[i]}" "${model_desc[i]}"
-        buf_printf "\033[2K\033[%sm%-${region_sizes[0]}s\033[0m" "${color}" "${text:0:${region_sizes[0]}}"
+        buf_printf "\033[2K\033[%sm%-${available_space}s\033[0m" "${color}" "${text:0:available_space}"
         j=$((j+1))
     done
     buf_send
 }
 
-
-hide-cursor(){ printf "\033[?25l" >&2 ; }
-show-cursor(){ printf "\033[?25h" >&2 ; }
-buf_cmove(){ _buf+=$'\033'"[${2:-};${1}H" ; }
-cmove()    { printf "\033[${2:-0};${1}H" >&2 ; }
-buf_clear(){ _buf="" ; }
-buf_clearline(){ _buf+=$'\033[2K' ; }
+buf_cmove(){
+    _buf+=$'\033'"[${2:-};${1}H"
+}
+cmove(){
+    printf "\033[${2:-0};${1}H" >&2
+}
+buf_clear(){
+    _buf=""
+}
+buf_send(){
+    printf "%s" "${_buf}" >&2
+}
 buf_printf(){
     local s=""
     printf -v s "$@"
     _buf+="$s"
 }
-buf_send() { printf "%s" "${_buf}" >&2 ; }
-
-
+buf_clearline(){
+    _buf+=$'\033[2K'
+}
 max(){
-    local m=$1
+    m=$1
     for x in "${@:1}" ; do
         if (( x > m )) ; then m=${x} ; fi
     done
     echo $m
 }
 min(){
-    local m=$1
+    m=$1
     for x in "${@:1}" ; do
         if (( x < m )) ; then m=${x} ; fi
     done
     echo $m
 }
 
-set-region(){
-    save-curpos
-    local x0=${left_margin}
-    local x1=$(min $((x0+max_region_width)) $((COLUMNS-right_margin))  $((x0 + 10 + model_data_width + 1 + model_desc_width + right_padding)) )
-    local y0=${saved_row}
-    local y1=$(min $((y0+max_region_height)) $((LINES-bottom_margin)) $((y0+${#model_data[@]})) )
-    region=($x0 $y0 $x1 $y1)
-    region_x=($x0 $x1)
-    region_y=($y0 $y1)
-    region_sizes=($((x1 - x0)) $((y1 - y0)))
-}
+region=()
 
 r(){
+    ####### Acquire input
+    process_input
+    ####### Init display
+    exec 0</dev/tty  # Important so we can get cursor position
+                     # Maybe doable using the save-restore ANSI sequences directly though
     shopt -s checkwinsize
     (:)
-
-    process_input
-    space $((${max_region_height}+bottom_margin))
-    set-region
     hide-cursor
-
-    selection=""
+    box_height=$(min 10 ${#model_data[@]})
+    space ${box_height}
+    save-curpos
     trap 'selection="" ; exit' INT
     trap 'clear-region "${region[@]}" ; restore-curpos; show-cursor; if [[ -n ${selection} ]] ; then echo "${model_data[${window[1]}]}" ; fi' EXIT
+    model_desc_width=40
+    window=(0 0 ${box_height})
+    x0=4
+    y0=${saved_row}
+    x1=$(max 80 $((COLUMNS - 4)) )
+    y1=$((y0 + window[2] - window[0]))
+    region=($x0 $y0 $x1 $y1)
+    selection=""
 
-    window=(0 0 ${region_sizes[1]})
-
-    display-model "${window[@]}" "${region[@]}"
+    display-model "${window[@]}" ${x0} ${y0} ${x1} ${y1}
     while IFS='' read -s -n 1 key ; do
         if (( ${#key} == 0 )) ; then
             break
@@ -140,20 +149,19 @@ r(){
             j) selection-down ;;
             k) selection-up ;;
         esac
-        display-model "${window[@]}" "${region[@]}"
+        display-model "${window[@]}" ${x0} ${y0} ${x1} ${y1}
     done
     clear-region "${region[@]}"
     restore-curpos
     show-cursor
 }
-
 selection-down(){
     window[1]=$((window[1] + 1))
     margin=1
     if ((window[1] >= ${#model_data[@]} )) ; then
         window[1]=0
         window[0]=0
-        window[2]=$((region_sizes[1]))
+        window[2]=$((box_height))
     elif ((window[1] >= window[2] - margin && window[2] < ${#model_data[@]} )) ; then
         window[0]=$((window[0] +1))
         window[2]=$((window[2] +1))
@@ -166,12 +174,19 @@ selection-up(){
     if (( window[1] < 0 )) ; then
         window[2]=${#model_data[@]}
         window[1]=$((window[2] - 1))
-        window[0]=$((window[2] - region_sizes[1]))
+        window[0]=$((window[2] - box_height))
     elif (( window[1] < window[0] + margin && window[0] > 0)) ; then
         window[0]=$((window[0] -1))
         window[2]=$((window[2] -1))
     fi
     selection=${model_data[window[1]]}
+}
+
+hide-cursor(){
+    printf "\033[?25l" >&2
+}
+show-cursor(){
+    printf "\033[?25h" >&2
 }
 
 clear-region(){

@@ -5,47 +5,103 @@
 # NOTE: Everything is printed to STDERR except the final choice so that
 # this can be used with `choice=$(this-file ${choices})`
 #
-# TODO: Handle window size
-# A) Bail if there are more choices that we can display
-#    The completion function can do something like
-#    `if ! result=$(square_choices ...) ; then COMPREPLY=($(compgen -W "${choices}" -- ${cur})) ; fi
-# B) Make a scrollable thing that fits in the window
-log(){
-    printf "%s\n" "$*" >> ~/.log.txt
-}
-
+### Configuration
 max_region_height=10
 max_region_width=80
 left_margin=9
 right_margin=4
 right_padding=3
 bottom_margin=1
+window_margin=1
 
-# source ~/.philconfig/shell_lib/bash_debug.sh
-# debug -f
+### Internal state
 region=()
-region_x=()
-region_y=()
+region_height=0  # Redundant but convenient
+region_width=0   # Redundant but convenient
 model_data=()
 model_desc=()
-window=(-1 -1 -1)
-model_data_width=0
-model_desc_width=0
-region_size=()
+
+main(){
+    shopt -s checkwinsize
+    (:)
+
+    process_input
+    space $((${max_region_height}+bottom_margin))
+    set-region
+
+    hide-cursor
+
+    selection=""
+    trap 'selection="" ; exit 130' INT
+    trap 'clear-region "${region[@]}" ; restore-curpos; show-cursor; if [[ -n ${selection} ]] ; then echo "$selection" ; fi' EXIT
+
+    window_start=0
+    selection_index=0
+    window_end=${region_height}
+
+    display-model "${window_start}" "${selection}" "${window_end}" "${region[@]}"
+    while IFS='' read -s -n 1 key ; do
+        if (( ${#key} == 0 )) ; then
+            break
+        fi
+        case $key in
+            j) selection-down ;;
+            k) selection-up ;;
+        esac
+        display-model "${window_start}" "${selection_index}" "${window_end}" "${region[@]}"
+    done
+    clear-region "${region[@]}"
+    restore-curpos
+    show-cursor
+}
+
+selection-down(){
+    selection_index=$((selection_index + 1))
+    if ((selection_index >= ${#model_data[@]} )) ; then
+        selection_index=0
+        window_start=0
+        window_end=$((region_height))
+    elif ((selection_index >= window_end - window_margin && window_end < ${#model_data[@]} )) ; then
+        window_start=$((window_start +1))
+        window_end=$((window_end +1))
+    fi
+    selection=${model_data[selection_index]}
+}
+selection-up(){
+    selection_index=$((selection_index - 1))
+    if (( selection_index < 0 )) ; then
+        window_end=${#model_data[@]}
+        selection_index=$((window_end - 1))
+        window_start=$((window_end - region_height))
+    elif (( selection_index < window_start + window_margin && window_start > 0)) ; then
+        window_start=$((window_start -1))
+        window_end=$((window_end -1))
+    fi
+    selection=${model_data[selection_index]}
+}
 
 process_input(){
     while read datum desc ; do
-        if (( ${#datum} > model_data_width )) ; then
-            model_data_width=${#datum}
-        fi
-        if (( ${#desc} > model_desc_width )) ; then
-            model_desc_width=${#desc}
-        fi
         model_data+=("${datum}")
         model_desc+=("${desc}")
     done
+    # After having processed data, start reading from the keyboard
     exec 0</dev/tty
 }
+
+set-region(){
+    save-curpos
+    # The 12 supposes that we have less than 999 items or less
+    local max_width=$(( 12 + $(max_len_by_ref model_data) + 1 +  $(max_len_by_ref model_desc)))
+    local x0=${left_margin}
+    local x1=$(min $((x0+max_region_width)) $((COLUMNS-right_margin)) $((x0+max_width)) )
+    local y0=${saved_row}
+    local y1=$(min $((y0+max_region_height)) $((LINES-bottom_margin)) $((y0+${#model_data[@]})) )
+    region=($x0 $y0 $x1 $y1)
+    region_width=$((x1 - x0))
+    region_height=$((y1 - y0))
+}
+
 
 display-model(){
     local start=${1}
@@ -55,8 +111,11 @@ display-model(){
     local y0=${5}
     local x1=${6}
     local y1=${7}
-    buf_clear
+    local width=$((x1-x0))
     local j=0
+    local i
+
+    buf_clear
     for((i=${start}; i<end; i++)) do
         buf_cmove $x0 $((y0+j))
         local marker=" "
@@ -66,19 +125,19 @@ display-model(){
             marker=">"
             color="45;36"
         fi
-        printf -v text " %s %3d/${#model_data[@]}: %${model_data_width}s %-${model_desc_width}s" \
+        printf -v text " %s %3d/${#model_data[@]}: %s %s" \
             "${marker}" "${i}" "${model_data[i]}" "${model_desc[i]}"
-        buf_printf "\033[2K\033[%sm%-${region_sizes[0]}s\033[0m" "${color}" "${text:0:${region_sizes[0]}}"
+        buf_printf "\033[2K\033[%sm%-${width}s\033[0m" "${color}" "${text:0:${width}}"
         j=$((j+1))
     done
     buf_send
 }
 
 
-hide-cursor(){ printf "\033[?25l" >&2 ; }
-show-cursor(){ printf "\033[?25h" >&2 ; }
+# It is important to IO in the biggest chunks possible to avoid any flickering
+# so accumulating a bunch of text and ANSI sequences in a buffer and then
+# sending it out all at once makes a HUGE difference
 buf_cmove(){ _buf+=$'\033'"[${2:-};${1}H" ; }
-cmove()    { printf "\033[${2:-0};${1}H" >&2 ; }
 buf_clear(){ _buf="" ; }
 buf_clearline(){ _buf+=$'\033[2K' ; }
 buf_printf(){
@@ -88,6 +147,8 @@ buf_printf(){
 }
 buf_send() { printf "%s" "${_buf}" >&2 ; }
 
+hide-cursor(){ printf "\033[?25l" >&2 ; }
+show-cursor(){ printf "\033[?25h" >&2 ; }
 
 max(){
     local m=$1
@@ -103,75 +164,15 @@ min(){
     done
     echo $m
 }
-
-set-region(){
-    save-curpos
-    local x0=${left_margin}
-    local x1=$(min $((x0+max_region_width)) $((COLUMNS-right_margin))  $((x0 + 10 + model_data_width + 1 + model_desc_width + right_padding)) )
-    local y0=${saved_row}
-    local y1=$(min $((y0+max_region_height)) $((LINES-bottom_margin)) $((y0+${#model_data[@]})) )
-    region=($x0 $y0 $x1 $y1)
-    region_x=($x0 $x1)
-    region_y=($y0 $y1)
-    region_sizes=($((x1 - x0)) $((y1 - y0)))
-}
-
-r(){
-    shopt -s checkwinsize
-    (:)
-
-    process_input
-    space $((${max_region_height}+bottom_margin))
-    set-region
-    hide-cursor
-
-    selection=""
-    trap 'selection="" ; exit' INT
-    trap 'clear-region "${region[@]}" ; restore-curpos; show-cursor; if [[ -n ${selection} ]] ; then echo "${model_data[${window[1]}]}" ; fi' EXIT
-
-    window=(0 0 ${region_sizes[1]})
-
-    display-model "${window[@]}" "${region[@]}"
-    while IFS='' read -s -n 1 key ; do
-        if (( ${#key} == 0 )) ; then
-            break
+max_len_by_ref(){
+    local -n _ref=$1
+    local max_len=${#_ref[1]}
+    for e in "${_ref[@]:1}" ; do
+        if (( ${#e} > max_len )) ; then
+            max_len=${#e}
         fi
-        case $key in
-            j) selection-down ;;
-            k) selection-up ;;
-        esac
-        display-model "${window[@]}" "${region[@]}"
     done
-    clear-region "${region[@]}"
-    restore-curpos
-    show-cursor
-}
-
-selection-down(){
-    window[1]=$((window[1] + 1))
-    margin=1
-    if ((window[1] >= ${#model_data[@]} )) ; then
-        window[1]=0
-        window[0]=0
-        window[2]=$((region_sizes[1]))
-    elif ((window[1] >= window[2] - margin && window[2] < ${#model_data[@]} )) ; then
-        window[0]=$((window[0] +1))
-        window[2]=$((window[2] +1))
-    fi
-    selection=${model_data[window[1]]}
-}
-selection-up(){
-    window[1]=$((window[1] - 1))
-    margin=1
-    if (( window[1] < 0 )) ; then
-        window[2]=${#model_data[@]}
-        window[1]=$((window[2] - 1))
-        window[0]=$((window[2] - region_sizes[1]))
-    elif (( window[1] < window[0] + margin && window[0] > 0)) ; then
-        window[0]=$((window[0] -1))
-        window[2]=$((window[2] -1))
-    fi
-    selection=${model_data[window[1]]}
+    echo ${max_len}
 }
 
 clear-region(){
@@ -187,73 +188,6 @@ clear-region(){
     buf_send
 }
 
-run(){
-
-    trap 'csi "?25h" ; restore-curpos; clear_square $# ; echo $choice' EXIT
-    local choices=("$@")
-    save-curpos
-    local margin=${col}
-    space "$((${#choices[@]}+2))"
-    save-curpos
-    col=${margin}
-    csi 1B
-    csi "?25l"
-    local selected=0
-    _square choices ${selected}
-    while IFS='' read -n 1 key ; do
-        clear_info ${#choices[@]}
-        # I think this can only happen when the pressed key is ENTER
-        if (( ${#key} == 0 )) ; then
-            # log EXITTING zero length key
-            clear_square ${#choices[@]}
-            choice=${choices[${selected}]}
-            return
-        fi
-        # TODO: Could be optimized
-        # TODO: Look at how Dave from YSAP reads single keys.  He handles
-        # up/down arrows I'm kind of doing it but the way I'm doing it doesn't
-        # distinguish between the key 'A' and the sequence for up arrow which
-        # contains an A
-        # TODO: When we get to scrolling
-        #       - _square choices ${selected} ${first} ${last}
-        #          - Display subset from first to last with this one selected
-        #          - When scrolling down, change selected but if selected gets
-        #            too close to last, then change last so we always see one
-        #            choice past selected
-        #          - Same thing for first
-        # TODO: Instead of always displaying the whole square, we can have some
-        #       kind of simple update function for when there is no scrolling
-        #       which just redraws the previously selected item in non-selected
-        #       colors and redraws the newly selected item in selected colors.
-        case $key in
-            's') _square choices ${selected} ;;
-            'c') clear_square ${#choices[@]} ;;
-            'j'|$'\016'|$'\t'|'B') selected=$(( (selected+1)%${#choices[@]}))
-                 _square choices ${selected}
-                 ;;
-            'k'|$'\020'|'A') selected=$(( (selected+${#choices[@]}-1)%${#choices[@]}))
-                 _square choices ${selected}
-                 ;;
-            *) info ${#choices[@]} "Key pressed: $(printf "%q, %d" "$key" "${#key}")" ;;
-        esac
-    done
-}
-info(){
-    csi $(($1))B
-    printf "INFO: %s" "$2" >&2
-    csi $(($1))A
-    csi G
-}
-clear_info(){
-    csi $(($1))B
-    csi 2K
-    csi $(($1))A
-    csi G
-}
-
-saved_row=1
-saved_col=1
-
 
 save-curpos(){
     # TODO: As YSAP showed, we can save-restore the cursor without memorizing
@@ -261,8 +195,7 @@ save-curpos(){
     local s
     printf "\033[6n" >&2
     read -s -d R s
-    s=${s#*'['} # the '[' doesn't need to be quoted but if it
-                # isn't Vim's syntax highlighting gets confused.
+    s=${s#*'['} # quoting '[' not necessary but helps vim syntax highligting not get confused
     saved_row=${s%;*}
     saved_col=${s#*;}
 }
@@ -271,78 +204,19 @@ restore-curpos(){
     printf "\033[%d;%dH" "${saved_row}" "${saved_col}" >&2
 }
 
-csi(){
-    printf "\033[%s" "$1" >&2
-}
-
-nl(){
-    printf "\n" >&2
-}
-
+# Print a N newlines then move the cursor up by N positions.  This ensures that
+# we have enough space to draw our box while also possibly causing the current
+# output to scroll up.
 space(){
+    buf_clear
     local -i n=$1
     for (( i=0; i<$n; i++)) ; do
-        csi "G"
-        nl
+        buf_printf "\033[G\n"
     done
-    csi "${n}A"
+    buf_printf "\033[${n}A"
+    buf_send
 }
 
-_square(){
-    local -i selected=${2:-0}
-    local nb_choices=${#choices[@]}
-    space ${nb_choices}
-    # Get the max width of the candidates
-    # TODO: We could do this only once instead of doing it every time we redraw
-    local -i w=0
-    for x in "${choices[@]}" ; do
-        if (( ${#x} > $w )) ; then
-            w=${#x}
-        fi
-    done
-    local out=""
-    local l=""
-    for((i=0;i<${nb_choices};i++)) ; do
-        # csi 2K
-        # csi G
-        # # csi 0m ; printf "%${margin}s" " " ; 
-        # csi ${margin}C
-        # csi 46m
-        # csi 1
-        # Format string %-3d helps ensure a nice rectangle, but of course if
-        # TODO: We could also condense the output so we don't have to call
-        # printf as many times.  It's a builtin so it shouldn't make too much
-        # of a difference but still
-        if (( i == selected )) ; then
-            printf -v l "\033[2K\033[G\033[${margin}C\033[46m\033[1\033[92m %3d: %-${w}s  \033[0m\033[B" "${i}" "${choices[i]}" >&2
-        else
-            printf -v l "\033[2K\033[G\033[${margin}C\033[46m\033[1\033[93m %3d: %-${w}s  \033[0m\033[B" "${i}" "${choices[i]}" >&2
-        fi
-        out+="${l}"
-        # csi B
-    done
-    printf "%s" "${out}" >&2
-    csi ${nb_choices}A
-    csi G
-}
-
-select-process(){
-    ps -f -u phc001 | ( read _ ; while read u pid _ _ _ _ _ cmd ; do echo $pid $cmd ; done ) | r
-}
-select-job(){
-    jobids=($(qselect -u $USER))
-    if ((${#jobids[@]} == 0)) ; then
-        return
-    fi
-    #text="$(echo ${jobids} | xargs qstat -w)"
-    j=$(echo ${jobids} | xargs qstat -w | tail -n +2 | r)
-    if [[ -n $j ]] ; then
-        qdel $j
-    fi
-}
-
-
-# run "$@"
 if ! (return 0 2>/dev/null) ; then
-    r "$@"
+    main "$@"
 fi

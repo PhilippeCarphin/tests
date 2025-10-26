@@ -86,16 +86,23 @@ tui-selector-main(){
                     '[B') selection-down ;;
                     '') break
                    esac ;;
-            $'\177') if [[ -n ${selection_buffer} ]] ; then selection_buffer=${selection_buffer:0: -1}  ; fi ;;
-            *) selection_buffer+="${key}" ; selection_index=0 ;;
+            $'\177') if [[ -n ${selection_buffer} ]] ; then
+                        selection_buffer=${selection_buffer:0: -1}
+                        clear-region "${region[@]}"
+                        set-choices "${selection_buffer}"
+                        set-region
+                     fi
+                     ;;
+            *) selection_buffer+="${key}" ; selection_index=0
+                # TODO: Prevent flickering by doing clear-region only if the window
+                # reduces in size or something or even just clear the number of lines
+                # that need to be cleared: buf_cmove first line to clear; buf_clearline ; buf_cmove...; buf_send
+                clear-region "${region[@]}"
+                set-choices "${selection_buffer}"
+                set-region
+                ;;
         esac
 
-        # clear-region "${region[@]}"
-        # TODO: Prevent flickering by doing clear-region only if the window
-        # reduces in size or something or even just clear the number of lines
-        # that need to be cleared: buf_cmove first line to clear; buf_clearline ; buf_cmove...; buf_send
-        set-choices "${selection_buffer}"
-        set-region
 
         display-model "${window_start}" "${selection_index}" "${window_end}" "${region[@]}"
     done

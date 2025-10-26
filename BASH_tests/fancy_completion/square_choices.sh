@@ -52,10 +52,13 @@ main(){
         case $key in
             j) selection-down ;;
             k) selection-up ;;
-            $'\E') read -t 0.1 -s -n 2 seq
+            $'\004') selection-down ; selection-down ; selection-down ; selection-down ;;
+            $'\025') selection-up ; selection-up ; selection-up ; selection-up ;;
+            $'\E') read -t 0.1 -s -n 2 seq || true
                    case $seq in
                     '[A') selection-up ;;
                     '[B') selection-down ;;
+                    '') break
                    esac ;;
         esac
         display-model "${window_start}" "${selection_index}" "${window_end}" "${region[@]}"

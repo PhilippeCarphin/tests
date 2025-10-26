@@ -86,7 +86,7 @@ tui-selector-main(){
                     '[B') selection-down ;;
                     '') break
                    esac ;;
-            $'\177') selection_buffer=${selection_buffer:0: -1} ;;
+            $'\177') if [[ -n ${selection_buffer} ]] ; then selection_buffer=${selection_buffer:0: -1}  ; fi ;;
             *) selection_buffer+="${key}" ; selection_index=0 ;;
         esac
 

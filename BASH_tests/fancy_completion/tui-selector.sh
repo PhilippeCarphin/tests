@@ -23,6 +23,8 @@ bottom_margin=1
 window_margin=1
 
 ### Internal state
+selection_buffer=""
+
 region=()
 region_height=0  # Redundant but convenient
 region_width=0   # Redundant but convenient
@@ -62,7 +64,7 @@ tui-selector-main(){
 
     window_start=0
     selection_index=0
-    window_end=${region_height}
+    window_end=${window_height}
 
     display-model "${window_start}" "${selection}" "${window_end}" "${region[@]}"
     while IFS='' read -s -n 1 key ; do
@@ -81,6 +83,7 @@ tui-selector-main(){
                     '[B') selection-down ;;
                     '') break
                    esac ;;
+            *) selection_buffer+="${key}"
         esac
         display-model "${window_start}" "${selection_index}" "${window_end}" "${region[@]}"
     done
@@ -148,6 +151,7 @@ set-region(){
     region=($x0 $y0 $x1 $y1)
     region_width=$((x1 - x0))
     region_height=$((y1 - y0))
+    window_height=$((region_height - 1))
 }
 
 
@@ -164,10 +168,14 @@ display-model(){
     local i
 
     buf_clear
-    local j_start=$(( (start*region_height)/${#choices[@]}))
-    local j_end=$(( j_start + (region_height*region_height)/${#choices[@]} + 1))
+
+    buf_cmove $x0 $y0
+    buf_printf "Selection: \033[1;37m%s\033[0m" "${selection_buffer}"
+
+    local j_start=$(( (start*window_height)/${#choices[@]}))
+    local j_end=$(( j_start + (window_height*window_height)/${#choices[@]} + 1))
     for((i=${start}; i<end; i++)) do
-        buf_cmove $x0 $((y0+j))
+        buf_cmove $x0 $((y0+j+1))
         local marker=" "
         local color="48;5;246;30"
         local scrollbar=$'\033[48;5;234m\u2592'

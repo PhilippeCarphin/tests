@@ -204,6 +204,8 @@ display-model(){
             marker=">"
             color="45;36"
         fi
+        # TODO: Print the first ${#selection_buffer} characters in bold
+        #       and the rest in normal font
         printf -v text "%s %3d/${#choices[@]}: %${choices_maxlen}s %s" \
             "${marker}" "${i}" "${choices[i]}" "${choices_desc[i]}"
         buf_printf "\033[2K${scrollbar}\033[%sm%-${width}s\033[0m" "${color}" "${text:0:${width}}"

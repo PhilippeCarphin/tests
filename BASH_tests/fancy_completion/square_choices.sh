@@ -20,6 +20,11 @@ region_height=0  # Redundant but convenient
 region_width=0   # Redundant but convenient
 model_data=()
 model_desc=()
+model_data_maxlen=0
+model_desc_maxlen=0
+window_start=0
+selection_index=0
+window_end=0
 
 main(){
     shopt -s checkwinsize
@@ -85,6 +90,8 @@ process_input(){
         model_data+=("${datum}")
         model_desc+=("${desc}")
     done
+    model_data_maxlen=$(max_len_by_ref model_data)
+    model_desc_maxlen=$(max_len_by_ref model_desc)
     # After having processed data, start reading from the keyboard
     exec 0</dev/tty
 }
@@ -116,18 +123,24 @@ display-model(){
     local i
 
     buf_clear
+    local j_start=$(( (start*region_height)/${#model_data[@]}))
+    local j_end=$(( j_start + (${#model_data[@]}/region_height - 1)))
     for((i=${start}; i<end; i++)) do
         buf_cmove $x0 $((y0+j))
         local marker=" "
         local color="48;5;246;30"
+        local scrollbar=$'\033[48;5;234m \033[0m'
+        if (( j_start <= j)) && ((j < j_end)) ; then
+            scrollbar=$'\033[48;5;252m \033[0m'
+        fi
         local text
         if ((i == selected )) ; then
             marker=">"
             color="45;36"
         fi
-        printf -v text " %s %3d/${#model_data[@]}: %s %s" \
+        printf -v text "%s %3d/${#model_data[@]}: %${model_data_maxlen}s %s" \
             "${marker}" "${i}" "${model_data[i]}" "${model_desc[i]}"
-        buf_printf "\033[2K\033[%sm%-${width}s\033[0m" "${color}" "${text:0:${width}}"
+        buf_printf "\033[2K${scrollbar}\033[%sm%-${width}s\033[0m" "${color}" "${text:0:${width}}"
         j=$((j+1))
     done
     buf_send

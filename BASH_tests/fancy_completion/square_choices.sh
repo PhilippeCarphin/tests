@@ -129,9 +129,9 @@ display-model(){
         buf_cmove $x0 $((y0+j))
         local marker=" "
         local color="48;5;246;30"
-        local scrollbar=$'\033[48;5;234m \033[0m'
+        local scrollbar=$'\033[48;5;234m\u2592'
         if (( j_start <= j)) && ((j < j_end)) ; then
-            scrollbar=$'\033[48;5;252m \033[0m'
+            scrollbar=$'\033[48;5;234m\u2593\033[0m'
         fi
         local text
         if ((i == selected )) ; then

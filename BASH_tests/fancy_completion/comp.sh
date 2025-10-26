@@ -53,15 +53,26 @@ _c(){
             acquire_candidates_dots_in_loop
             ;;
         -C)
-            result=$(${comp_this_dir}/square_choices.sh RED ORANGE YELLOW GREEN BLUE INDIGO VIOLET)
+            result=$(${comp_this_dir}/square_choices.sh <<- EOF
+				RED red desc
+				ORANGE orange desc
+				YELLOW yellow desc
+				GREEN green desc
+				BLUE blue desc
+				INDIGO indigo desc
+				VIOLET violet desc
+			EOF
+            )
             # I made the square_choices script so that it could be used as a standaloe command
             # so this here is necessary to adapt it to use in completion
             printf "\033[A\r%s%s" "${PS1@P}" "${COMP_LINE}"
             COMPREPLY=($result)
             ;;
-        -Z) result=$(${comp_this_dir}/square_choices.sh A B C D E F G H I J K L M N O P Q R S T U V W X Y Z)
+        -Z) printf "\0336\033[B"
+            result=$(for x in {1..20} ; do echo "choice_$x" "Description of <$x>" ; done | ${comp_this_dir}/square_choices.sh)
+            printf "\033[A\0337\033[$((${#COMP_LINE}+3))C"
             # Same adaptiation as for -C
-            printf "\033[A\r%s%s" "${PS1@P}" "${COMP_LINE}"
+            # printf "\033[A\r%s%s" "${PS1@P}" "${COMP_LINE}"
             COMPREPLY=($result)
             ;;
         -V)

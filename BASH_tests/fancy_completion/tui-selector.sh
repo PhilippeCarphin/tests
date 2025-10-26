@@ -48,15 +48,18 @@ set-bing-bong-matches(){
 }
 
 tui-selector-main(){
+
+    #### INIT
     shopt -s checkwinsize
     (:)
-
     process_input
     set-choices ""
+    hide-cursor
     space $((${max_region_height}+bottom_margin))
+    save-curpos # Needs to be done before set-region ## TODO: Ensure that's done more cleanly
+
     set-region
 
-    hide-cursor
 
     selection=""
     trap 'selection="" ; exit 130' INT
@@ -72,8 +75,8 @@ tui-selector-main(){
             break
         fi
         case $key in
-            j) selection-down ;;
-            k) selection-up ;;
+            $'\016') selection-down ;;
+            $'\020') selection-up ;;
             $'\004') selection-down ; selection-down ; selection-down ; selection-down ;;
             $'\025') selection-up ; selection-up ; selection-up ; selection-up ;;
             $'\022') exit 124 ;; 
@@ -83,8 +86,14 @@ tui-selector-main(){
                     '[B') selection-down ;;
                     '') break
                    esac ;;
-            *) selection_buffer+="${key}"
+            $'\177') selection_buffer=${selection_buffer:0: -1} ;;
+            *) selection_buffer+="${key}" ; selection_index=0 ;;
         esac
+
+        clear-region "${region[@]}"
+        set-choices "${selection_buffer}"
+        set-region
+
         display-model "${window_start}" "${selection_index}" "${window_end}" "${region[@]}"
     done
     clear-region "${region[@]}"
@@ -114,10 +123,10 @@ selection-up(){
 }
 
 set-choices(){
+    local match_str="$1"
     choices=()
     choices_desc=()
     choices_idx=()
-    local match_str="$1"
     for((i=0;i<${#data[@]};i++)) ; do
         if [[ ${data[i]} == ${match_str}* ]] then
             choices+=("${data[i]}")
@@ -129,6 +138,8 @@ set-choices(){
         choices_maxlen=$(max_len_by_ref choices)
         choices_desc_maxlen=$(max_len_by_ref choices_desc)
     fi
+    window_start=0
+    window_end=$(min $((max_region_height)) $((LINES-bottom_margin)) $((${#choices[@]})))
 }
 
 process_input(){
@@ -139,15 +150,15 @@ process_input(){
     # After having processed data, start reading from the keyboard
     exec 0</dev/tty
 }
+max_width=3
 
 set-region(){
-    save-curpos
     # The 12 supposes that we have less than 999 items or less
-    local max_width=$(( 12 + $(max_len_by_ref choices) + 1 +  choices_desc_maxlen))
+    max_width=$(( 12 + choices_maxlen + 1 +  choices_desc_maxlen + 1))
     local x0=${left_margin}
     local x1=$(min $((x0+max_region_width)) $((COLUMNS-right_margin)) $((x0+max_width)) )
     local y0=${saved_row}
-    local y1=$(min $((y0+max_region_height)) $((LINES-bottom_margin)) $((y0+${#choices[@]})) )
+    local y1=$(min $((y0+max_region_height+1)) $((LINES-bottom_margin+1)) $((y0+${#choices[@]}+1)) )
     region=($x0 $y0 $x1 $y1)
     region_width=$((x1 - x0))
     region_height=$((y1 - y0))
@@ -170,7 +181,13 @@ display-model(){
     buf_clear
 
     buf_cmove $x0 $y0
-    buf_printf "Selection: \033[1;37m%s\033[0m" "${selection_buffer}"
+    buf_printf "Selection: \033[1;37m%s \033[0m| max_width=%d" "${selection_buffer}" "${max_width}"
+    if ((${#choices[@]} == 0 )) ; then
+        buf_cmove $x0 $((y0+1))
+        buf_printf "==="
+        buf_send
+        return
+    fi
 
     local j_start=$(( (start*window_height)/${#choices[@]}))
     local j_end=$(( j_start + (window_height*window_height)/${#choices[@]} + 1))
@@ -228,7 +245,7 @@ min(){
 }
 max_len_by_ref(){
     local -n _ref=$1
-    local max_len=${#_ref[1]}
+    local max_len=${#_ref[0]}
     for e in "${_ref[@]:1}" ; do
         if (( ${#e} > max_len )) ; then
             max_len=${#e}

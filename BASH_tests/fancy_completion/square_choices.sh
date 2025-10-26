@@ -68,9 +68,7 @@ main(){
 selection-down(){
     selection_index=$((selection_index + 1))
     if ((selection_index >= ${#choices[@]} )) ; then
-        selection_index=0
-        window_start=0
-        window_end=$((region_height))
+        selection_index=$((selection_index - 1))
     elif ((selection_index >= window_end - window_margin && window_end < ${#choices[@]} )) ; then
         window_start=$((window_start +1))
         window_end=$((window_end +1))
@@ -80,9 +78,7 @@ selection-down(){
 selection-up(){
     selection_index=$((selection_index - 1))
     if (( selection_index < 0 )) ; then
-        window_end=${#choices[@]}
-        selection_index=$((window_end - 1))
-        window_start=$((window_end - region_height))
+        selection_index=0
     elif (( selection_index < window_start + window_margin && window_start > 0)) ; then
         window_start=$((window_start -1))
         window_end=$((window_end -1))

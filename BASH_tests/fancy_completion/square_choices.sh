@@ -52,6 +52,11 @@ main(){
         case $key in
             j) selection-down ;;
             k) selection-up ;;
+            $'\E') read -t 0.1 -s -n 2 seq
+                   case $seq in
+                    '[A') selection-up ;;
+                    '[B') selection-down ;;
+                   esac ;;
         esac
         display-model "${window_start}" "${selection_index}" "${window_end}" "${region[@]}"
     done

@@ -18,10 +18,10 @@ window_margin=1
 region=()
 region_height=0  # Redundant but convenient
 region_width=0   # Redundant but convenient
-model_data=()
-model_desc=()
-model_data_maxlen=0
-model_desc_maxlen=0
+choices=()
+choices_desc=()
+choices_maxlen=0
+choices_desc_maxlen=0
 window_start=0
 selection_index=0
 window_end=0
@@ -62,36 +62,36 @@ main(){
 
 selection-down(){
     selection_index=$((selection_index + 1))
-    if ((selection_index >= ${#model_data[@]} )) ; then
+    if ((selection_index >= ${#choices[@]} )) ; then
         selection_index=0
         window_start=0
         window_end=$((region_height))
-    elif ((selection_index >= window_end - window_margin && window_end < ${#model_data[@]} )) ; then
+    elif ((selection_index >= window_end - window_margin && window_end < ${#choices[@]} )) ; then
         window_start=$((window_start +1))
         window_end=$((window_end +1))
     fi
-    selection=${model_data[selection_index]}
+    selection=${choices[selection_index]}
 }
 selection-up(){
     selection_index=$((selection_index - 1))
     if (( selection_index < 0 )) ; then
-        window_end=${#model_data[@]}
+        window_end=${#choices[@]}
         selection_index=$((window_end - 1))
         window_start=$((window_end - region_height))
     elif (( selection_index < window_start + window_margin && window_start > 0)) ; then
         window_start=$((window_start -1))
         window_end=$((window_end -1))
     fi
-    selection=${model_data[selection_index]}
+    selection=${choices[selection_index]}
 }
 
 process_input(){
     while read datum desc ; do
-        model_data+=("${datum}")
-        model_desc+=("${desc}")
+        choices+=("${datum}")
+        choices_desc+=("${desc}")
     done
-    model_data_maxlen=$(max_len_by_ref model_data)
-    model_desc_maxlen=$(max_len_by_ref model_desc)
+    choices_maxlen=$(max_len_by_ref choices)
+    choices_desc_maxlen=$(max_len_by_ref choices_desc)
     # After having processed data, start reading from the keyboard
     exec 0</dev/tty
 }
@@ -99,11 +99,11 @@ process_input(){
 set-region(){
     save-curpos
     # The 12 supposes that we have less than 999 items or less
-    local max_width=$(( 12 + $(max_len_by_ref model_data) + 1 +  $(max_len_by_ref model_desc)))
+    local max_width=$(( 12 + $(max_len_by_ref choices) + 1 +  choices_desc_maxlen))
     local x0=${left_margin}
     local x1=$(min $((x0+max_region_width)) $((COLUMNS-right_margin)) $((x0+max_width)) )
     local y0=${saved_row}
-    local y1=$(min $((y0+max_region_height)) $((LINES-bottom_margin)) $((y0+${#model_data[@]})) )
+    local y1=$(min $((y0+max_region_height)) $((LINES-bottom_margin)) $((y0+${#choices[@]})) )
     region=($x0 $y0 $x1 $y1)
     region_width=$((x1 - x0))
     region_height=$((y1 - y0))
@@ -123,8 +123,8 @@ display-model(){
     local i
 
     buf_clear
-    local j_start=$(( (start*region_height)/${#model_data[@]}))
-    local j_end=$(( j_start + (${#model_data[@]}/region_height - 1)))
+    local j_start=$(( (start*region_height)/${#choices[@]}))
+    local j_end=$(( j_start + (${#choices[@]}/region_height - 1)))
     for((i=${start}; i<end; i++)) do
         buf_cmove $x0 $((y0+j))
         local marker=" "
@@ -138,8 +138,8 @@ display-model(){
             marker=">"
             color="45;36"
         fi
-        printf -v text "%s %3d/${#model_data[@]}: %${model_data_maxlen}s %s" \
-            "${marker}" "${i}" "${model_data[i]}" "${model_desc[i]}"
+        printf -v text "%s %3d/${#choices[@]}: %${choices_maxlen}s %s" \
+            "${marker}" "${i}" "${choices[i]}" "${choices_desc[i]}"
         buf_printf "\033[2K${scrollbar}\033[%sm%-${width}s\033[0m" "${color}" "${text:0:${width}}"
         j=$((j+1))
     done

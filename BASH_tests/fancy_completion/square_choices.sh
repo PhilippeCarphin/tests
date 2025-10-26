@@ -128,7 +128,7 @@ display-model(){
 
     buf_clear
     local j_start=$(( (start*region_height)/${#choices[@]}))
-    local j_end=$(( j_start + (${#choices[@]}/region_height - 1)))
+    local j_end=$(( j_start + (region_height*region_height)/${#choices[@]} + 1))
     for((i=${start}; i<end; i++)) do
         buf_cmove $x0 $((y0+j))
         local marker=" "

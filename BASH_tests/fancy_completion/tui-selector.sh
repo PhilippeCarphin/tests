@@ -90,7 +90,10 @@ tui-selector-main(){
             *) selection_buffer+="${key}" ; selection_index=0 ;;
         esac
 
-        clear-region "${region[@]}"
+        # clear-region "${region[@]}"
+        # TODO: Prevent flickering by doing clear-region only if the window
+        # reduces in size or something or even just clear the number of lines
+        # that need to be cleared: buf_cmove first line to clear; buf_clearline ; buf_cmove...; buf_send
         set-choices "${selection_buffer}"
         set-region
 

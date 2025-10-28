@@ -104,6 +104,7 @@ tui-selector-main(){
         esac
 
 
+        selection=${choices[selection_index]}
         display-model "${window_start}" "${selection_index}" "${window_end}" "${region[@]}"
     done
     clear-region "${region[@]}"

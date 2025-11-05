@@ -29,6 +29,13 @@ comp_message(){
     printf "\n\033[35mNOTE\033[0m:%s" "$*"
     comp_message_printed=1
 }
+colors="RED red desc
+ORANGE orange desc
+YELLOW yellow desc
+GREEN green desc
+BLUE blue desc
+INDIGO indigo desc
+VIOLET violet desc"
 
 _c(){
     local comp_message_printed=0
@@ -52,24 +59,15 @@ _c(){
         -v)
             acquire_candidates_dots_in_loop
             ;;
-        -C)
-            result=$(${comp_this_dir}/square_choices.sh <<- EOF
-				RED red desc
-				ORANGE orange desc
-				YELLOW yellow desc
-				GREEN green desc
-				BLUE blue desc
-				INDIGO indigo desc
-				VIOLET violet desc
-			EOF
-            )
+        -C) result=$( echo "${colors}" | ${comp_this_dir}/tui-selector.sh | awk '{print $1}')
+
             # I made the square_choices script so that it could be used as a standaloe command
             # so this here is necessary to adapt it to use in completion
             printf "\033[A\r%s%s" "${PS1@P}" "${COMP_LINE}"
             COMPREPLY=($result)
             ;;
         -Z) printf "\0336\033[B"
-            result=$(for x in {1..20} ; do echo "choice_$x" "Description of <$x>" ; done | ${comp_this_dir}/square_choices.sh)
+            result=$(for x in {1..20} ; do echo "choice_$x" "Description of <$x>" ; done | ${comp_this_dir}/tui-selector.sh | awk '{print $1}')
             printf "\033[A\0337\033[$((${#COMP_LINE}+3))C"
             # Same adaptiation as for -C
             # printf "\033[A\r%s%s" "${PS1@P}" "${COMP_LINE}"

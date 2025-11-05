@@ -53,7 +53,7 @@ get_line(){
 }
 
 # provide an error handler whenever a command exits nonzero
-trap 'bash_traceback' ERR
+# trap 'bash_traceback' ERR
 
 # propagate ERR trap handler functions, expansions and subshells
 set -o errtrace

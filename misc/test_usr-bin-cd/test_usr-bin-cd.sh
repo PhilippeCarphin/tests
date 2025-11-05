@@ -9,31 +9,39 @@
 # builtin `echo ${0##*/} | tr \[:upper:] \[:lower:]` ${1+"$@"}
 ###############################################################
 
-# I was looking at man pages and found out some builtins have a non-builtin
-# version, so I looked at /usr/bin/cd and found out that commands like it all
-# are made script.  The ${1+"$@"} intrigued me as I thought that the smartquotes
-# around '$@' did what it looks to me like that ${1+...} was for.
-
-# I thought this ${1+"$@"} makes it so that the command does not have an empty
-# string argument if the script receives no arguments.
+# Curious about /usr/bin/cd, I looked at the filen and was intrigued by the
+# expression `${1+"$@"}` which is like doing
+# if $1 is defined ; then
+#     cmd "$@"
+# else
+#     cmd
+# fi
 #
-# With bash that seems to not be necessary.  print_args.sh prints the number of
-# arguments and it prints the same number for both.
+# which seems unnecessary because of how quoting arrays works: with `cmd "$@"`,
+# cmd gets zero arguments if $@ is "empty" but it looks to me like they are
+# worried about cmd getting a single empty-string argument when $@ is empty.
 #
+# This test shows that this is not the case.  However, maybe it depends on the
+# shell.
 
 # Arguments with spaces stay as single arguments
 # no empty-string argument for print_args if $# == 0.
-echo 'print_args.sh "$@"'
+echo '=== print_args.sh "$@" ==='
 ./print_args.sh "$@"
 
 # Same result as above (I think the smart quotes make the ${1+ thing not useful
-echo 'print_args.sh ${1+"$@"}'
+echo '=== print_args.sh "${1+$@}" ==='
 ./print_args.sh "${1+$@}"
+
+echo '=== print_args.sh ${1+"$@"} ==='
+./print_args.sh ${1+"$@"}
 
 # Args with spaces get separated
 # No empty string arg for print_args if $# == 0
-echo 'print_args.sh ${1+$*}'
+echo '=== print_args.sh ${1+$*} ==='
 ./print_args.sh ${1+$*}
+
+echo '=== print_args.sh $*'
 ./print_args.sh $*
 
 # No in-between for '$*'.  Smart quotes only work for '$@'.
@@ -42,5 +50,5 @@ echo 'print_args.sh ${1+$*}'
 
 # Combines all arguments
 # empty string argument for print_args if $# == 0.
-echo 'print_args.sh ${1+$*}'
+echo '=== print_args.sh "${1+$*}" ==='
 ./print_args.sh "${1+$*}"

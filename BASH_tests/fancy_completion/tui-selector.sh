@@ -68,44 +68,48 @@ tui-selector-main(){
     window_start=0
     selection_index=0
     window_end=${window_height}
+    prev_window_height=${window_height}
 
     display-model "${window_start}" "${selection}" "${window_end}" "${region[@]}"
-    while IFS='' read -s -n 1 key ; do
-        if (( ${#key} == 0 )) ; then
-            break
-        fi
+    while IFS='' read -s -N 1 key ; do
         case $key in
             $'\016') selection-down ;;
             $'\020') selection-up ;;
-            $'\004') selection-down ; selection-down ; selection-down ; selection-down ;;
-            $'\025') selection-up ; selection-up ; selection-up ; selection-up ;;
-            $'\022') exit 124 ;; 
+            $'\004') selection-down 5 ;;
+            $'\025') selection-up 5 ;;
+            $'\t')   selection-down ;;
+            $'\022') exit 124 ;;
+            $'\n') exit 0 ;;
             $'\E') read -t 0.1 -s -n 2 seq || true
                    case $seq in
                     '[A') selection-up ;;
                     '[B') selection-down ;;
+                    '[Z') selection-up ;; # Shift-TAB
                     '') break
                    esac ;;
+            # TODO: Clearing is only necessary if the region shrinks...
             $'\177') if [[ -n ${selection_buffer} ]] ; then
                         selection_buffer=${selection_buffer:0: -1}
-                        clear-region "${region[@]}"
                         set-choices "${selection_buffer}"
+                        if (( window_height < prev_window_height )) ; then
+                            clear-region "${region[@]}"
+                        fi
                         set-region
                      fi
                      ;;
             *) selection_buffer+="${key}" ; selection_index=0
-                # TODO: Prevent flickering by doing clear-region only if the window
-                # reduces in size or something or even just clear the number of lines
-                # that need to be cleared: buf_cmove first line to clear; buf_clearline ; buf_cmove...; buf_send
-                clear-region "${region[@]}"
                 set-choices "${selection_buffer}"
+                if (( window_height < prev_window_height )) ; then
+                    clear-region "${region[@]}"
+                fi
                 set-region
                 ;;
         esac
 
 
-        selection=${choices[selection_index]}
+        selection=${choices[selection_index]:-}
         display-model "${window_start}" "${selection_index}" "${window_end}" "${region[@]}"
+        prev_window_height=${window_height}
     done
     clear-region "${region[@]}"
     restore-curpos
@@ -113,9 +117,9 @@ tui-selector-main(){
 }
 
 selection-down(){
-    selection_index=$((selection_index + 1))
+    selection_index=$((selection_index + ${1:-1}))
     if ((selection_index >= ${#choices[@]} )) ; then
-        selection_index=$((selection_index - 1))
+        selection_index=$(( ${#choices[@]} - 1))
     elif ((selection_index >= window_end - window_margin && window_end < ${#choices[@]} )) ; then
         window_start=$((window_start +1))
         window_end=$((window_end +1))
@@ -123,7 +127,7 @@ selection-down(){
     selection=${choices[selection_index]}
 }
 selection-up(){
-    selection_index=$((selection_index - 1))
+    selection_index=$((selection_index - ${1:-1}))
     if (( selection_index < 0 )) ; then
         selection_index=0
     elif (( selection_index < window_start + window_margin && window_start > 0)) ; then
@@ -139,7 +143,7 @@ set-choices(){
     choices_desc=()
     choices_idx=()
     for((i=0;i<${#data[@]};i++)) ; do
-        if [[ ${data[i]} == ${match_str}* ]] then
+        if [[ ${data[i]} == *${match_str}* ]] then
             choices+=("${data[i]}")
             choices_idx+=($i)
             choices_desc+=("${data_desc[i]}")
@@ -176,7 +180,8 @@ set-region(){
     window_height=$((region_height - 1))
 }
 
-
+# Display a window of items from choices/choices_desc in the screen region
+# given by corners (x0,y0), (x1,y1)
 display-model(){
     local start=${1}
     local selected=${2}
@@ -190,7 +195,6 @@ display-model(){
     local i
 
     buf_clear
-
     buf_cmove $x0 $y0
     buf_printf "Selection: \033[1;37m%s \033[0m| max_width=%d" "${selection_buffer}" "${max_width}"
     if ((${#choices[@]} == 0 )) ; then
@@ -199,9 +203,11 @@ display-model(){
         buf_send
         return
     fi
+    # The window is a sub-interval of [0-#choices).  The dark portion of the
+    # scrollbar
 
     local j_start=$(( (start*window_height)/${#choices[@]}))
-    local j_end=$(( j_start + (window_height*window_height)/${#choices[@]} + 1))
+    local j_end=$(( (start + window_height)*window_height/${#choices[@]} + 1))
     for((i=${start}; i<end; i++)) do
         buf_cmove $x0 $((y0+j+1))
         local marker=" "

@@ -1,8 +1,8 @@
 #!/usr/bin/env -S bash -o errexit -o nounset -o errtrace -o pipefail -O inherit_errexit -O nullglob -O extglob
 
 
-while read -s -n 1 b ; do
-    printf "(((%q)))\n" "${b}"
+while read -s -N 1 b ; do
+    printf "(((%q))) %d\n" "${b}" "${#b}"
     case "$b" in
         $'\020') printf "[C-p]-bing-bong\n" ;;
         $'\e')

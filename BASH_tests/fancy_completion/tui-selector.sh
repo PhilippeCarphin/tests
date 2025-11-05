@@ -15,7 +15,7 @@
 #
 ### Configuration
 max_region_height=10
-max_region_width=80
+max_region_width=300
 left_margin=9
 right_margin=4
 right_padding=3
@@ -31,15 +31,12 @@ region_width=0   # Redundant but convenient
 
 choices=()
 choices_idx=()
-choices_desc=()
 choices_maxlen=0
-choices_desc_maxlen=0
 
 window_start=0
 selection_index=0
 window_end=0
 data=()
-data_desc=()
 
 
 set-bing-bong-matches(){
@@ -90,24 +87,27 @@ tui-selector-main(){
             # TODO: Clearing is only necessary if the region shrinks...
             $'\177') if [[ -n ${selection_buffer} ]] ; then
                         selection_buffer=${selection_buffer:0: -1}
+                        # clear-region "${region[@]}"
                         set-choices "${selection_buffer}"
-                        if (( window_height < prev_window_height )) ; then
-                            clear-region "${region[@]}"
-                        fi
-                        set-region
+                        # set-region
                      fi
                      ;;
             *) selection_buffer+="${key}" ; selection_index=0
+                # TODO: Prevent flickering by doing clear-region only if the window
+                # reduces in size or something or even just clear the number of lines
+                # that need to be cleared: buf_cmove first line to clear; buf_clearline ; buf_cmove...; buf_send
+                # or have display-model clear the part of the region that is unused.
+                # clear-region "${region[@]}"
                 set-choices "${selection_buffer}"
-                if (( window_height < prev_window_height )) ; then
-                    clear-region "${region[@]}"
-                fi
-                set-region
+                # set-region
                 ;;
         esac
 
-
-        selection=${choices[selection_index]:-}
+        if (( ${#choices[@]} > 0 )) ; then
+            selection=${choices[selection_index]}
+        else
+            selection=""
+        fi
         display-model "${window_start}" "${selection_index}" "${window_end}" "${region[@]}"
         prev_window_height=${window_height}
     done
@@ -140,28 +140,22 @@ selection-up(){
 set-choices(){
     local match_str="$1"
     choices=()
-    choices_desc=()
     choices_idx=()
     for((i=0;i<${#data[@]};i++)) ; do
-        if [[ ${data[i]} == *${match_str}* ]] then
+        if [[ ${data[i]} == *${match_str}* ]] ; then
             choices+=("${data[i]}")
             choices_idx+=($i)
-            choices_desc+=("${data_desc[i]}")
         fi
     done
     if (( ${#choices[@]} > 0 )) ; then
         choices_maxlen=$(max_len_by_ref choices)
-        choices_desc_maxlen=$(max_len_by_ref choices_desc)
     fi
     window_start=0
     window_end=$(min $((max_region_height)) $((LINES-bottom_margin)) $((${#choices[@]})))
 }
 
 process_input(){
-    while read datum desc ; do
-        data+=("${datum}")
-        data_desc+=("${desc}")
-    done
+    readarray -t data
     # After having processed data, start reading from the keyboard
     exec 0</dev/tty
 }
@@ -169,7 +163,7 @@ max_width=3
 
 set-region(){
     # The 12 supposes that we have less than 999 items or less
-    max_width=$(( 12 + choices_maxlen + 1 +  choices_desc_maxlen + 1))
+    max_width=$(( 12 + choices_maxlen + 1))
     local x0=${left_margin}
     local x1=$(min $((x0+max_region_width)) $((COLUMNS-right_margin)) $((x0+max_width)) )
     local y0=${saved_row}
@@ -194,39 +188,45 @@ display-model(){
     local j=0
     local i
 
+    width=$(min $((x1-x0)) $((choices_maxlen + 11)))
     buf_clear
     buf_cmove $x0 $y0
-    buf_printf "Selection: \033[1;37m%s \033[0m| max_width=%d" "${selection_buffer}" "${max_width}"
+    buf_clearline
+    buf_printf "Selection: \033[1;37m%s \033[0m| max_width=%d, x1-x0=%d, choices_maxlen+11=%d, width=%d" "${selection_buffer}" "${max_width}" "$((x1-x0))" "$((choices_maxlen + 11))" "${width}"
     if ((${#choices[@]} == 0 )) ; then
         buf_cmove $x0 $((y0+1))
-        buf_printf "==="
-        buf_send
-        return
-    fi
-    # The window is a sub-interval of [0-#choices).  The dark portion of the
-    # scrollbar
-
-    local j_start=$(( (start*window_height)/${#choices[@]}))
-    local j_end=$(( (start + window_height)*window_height/${#choices[@]} + 1))
-    for((i=${start}; i<end; i++)) do
-        buf_cmove $x0 $((y0+j+1))
-        local marker=" "
-        local color="48;5;246;30"
-        local scrollbar=$'\033[48;5;234m\u2592'
-        if (( j_start <= j)) && ((j < j_end)) ; then
-            scrollbar=$'\033[48;5;234m\u2593\033[0m'
-        fi
-        local text
-        if ((i == selected )) ; then
-            marker=">"
-            color="45;36"
-        fi
-        # TODO: Print the first ${#selection_buffer} characters in bold
-        #       and the rest in normal font
-        printf -v text "%s %3d/${#choices[@]}: %${choices_maxlen}s %s" \
-            "${marker}" "${i}" "${choices[i]}" "${choices_desc[i]}"
-        buf_printf "\033[2K${scrollbar}\033[%sm%-${width}s\033[0m" "${color}" "${text:0:${width}}"
+        buf_clearline
+        buf_printf "[No matches]"
         j=$((j+1))
+    else
+
+        local j_start=$(( (start*window_height)/${#choices[@]}))
+        local j_end=$(( j_start + (window_height*window_height)/${#choices[@]} + 1))
+        for((i=${start}; i<end; i++)) do
+            buf_cmove $x0 $((y0+j+1))
+            local marker=" "
+            local color="48;5;246;30"
+            local scrollbar=$'\033[48;5;234m\u2592'
+            if (( j_start <= j)) && ((j < j_end)) ; then
+                scrollbar=$'\033[48;5;234m\u2593\033[0m'
+            fi
+            local text
+            if ((i == selected )) ; then
+                marker=">"
+                color="45;36"
+            fi
+            # TODO: Print the first ${#selection_buffer} characters in bold
+            #       and the rest in normal font
+            printf -v text "%s %3d/${#choices[@]}: %-${choices_maxlen}s" \
+                "${marker}" "${i}" "${choices[i]}"
+            buf_clearline
+            buf_printf "${scrollbar}\033[%sm%-${width}s\033[0m" "${color}" "${text:0:${width}}"
+            j=$((j+1))
+        done
+    fi
+    for((; j<region_height ; j++)); do
+        buf_cmove $x0 $((y0+j+1))
+        buf_clearline
     done
     buf_send
 }

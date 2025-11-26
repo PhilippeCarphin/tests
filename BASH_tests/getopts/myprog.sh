@@ -19,3 +19,6 @@ while getopts "yf:v:" the_opt "$@" ; do
             ;;
     esac
 done
+shift $((OPTIND-1))
+
+

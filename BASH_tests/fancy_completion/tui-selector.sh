@@ -37,37 +37,51 @@ window_start=0
 selection_index=0
 window_end=0
 data=()
+dir=""
+prefix=""
+file_explorer_mode=false
 
-
-set-bing-bong-matches(){
-    local word=$1
-
+dbg-log(){
+    printf "${FUNCNAME[1]}: %s\n" "$*" >> log.txt
 }
 
+
 tui-selector-main(){
+
+    if [[ -n ${1:-} ]] ; then
+        file_explorer_mode=true
+    fi
+    dir=${1:-}/
+    prefix=${1:-}
 
     #### INIT
     shopt -s checkwinsize
     (:)
-    process_input
+    if ${file_explorer_mode} ; then
+        get_listing "${dir}/"
+    else
+        process_input
+    fi
     set-choices ""
+    selection=""
+    selection_index=0
+    selection="${choices[0]}"
     hide-cursor
     space $((${max_region_height}+bottom_margin))
     save-curpos # Needs to be done before set-region ## TODO: Ensure that's done more cleanly
 
     set-region
+    exec 2>>log.txt
 
-
-    selection=""
     trap 'selection="" ; exit 130' INT
-    trap 'clear-region "${region[@]}" ; restore-curpos; show-cursor; if [[ -n ${selection} ]] ; then echo "$selection" ; fi' EXIT
+    trap 'exit-handler' EXIT
 
     window_start=0
     selection_index=0
     window_end=${window_height}
     prev_window_height=${window_height}
 
-    display-model "${window_start}" "${selection}" "${window_end}" "${region[@]}"
+    display-model "${window_start}" "${selection_index}" "${window_end}" "${region[@]}"
     while IFS='' read -s -N 1 key ; do
         case $key in
             $'\016') selection-down ;;
@@ -82,6 +96,8 @@ tui-selector-main(){
                     '[A') selection-up ;;
                     '[B') selection-down ;;
                     '[Z') selection-up ;; # Shift-TAB
+                    '[C') into-dir ;;
+                    '[D') out-of-dir ;;
                     '') break
                    esac ;;
             # TODO: Clearing is only necessary if the region shrinks...
@@ -159,6 +175,39 @@ process_input(){
     # After having processed data, start reading from the keyboard
     exec 0</dev/tty
 }
+
+get_listing(){
+    readarray -t data < <(ls -lrth ${dir})
+}
+
+into-dir(){
+    dbg-log "selection = ${selection}"
+    read _ _ _ _ _ _ _ _ filename _ <<<${selection}
+    dbg-log "filename = ${filename}"
+    dbg-log "dir = ${dir}"
+    dbg-log "${prefix}/${filename}"
+    if [[ -d ${prefix}/${filename} ]] ; then
+        dir=${prefix}/${filename}/
+        prefix=${dir}/
+        selection_buffer=""
+        get_listing
+        set-choices ""
+        selection=${choices[0]}
+        selection_index=0
+    fi
+}
+out-of-dir(){
+    dbg-log "selection = ${selection}"
+    dbg-log "dir = ${dir}"
+    dir=$(dirname ${dir})/
+    prefix=${dir}/
+    selection_buffer=""
+    get_listing
+    set-choices ""
+    selection=${choices[0]:-""}
+    selection_index=0
+}
+
 max_width=3
 
 set-region(){
@@ -243,10 +292,10 @@ buf_printf(){
     printf -v s "$@"
     _buf+="$s"
 }
-buf_send() { printf "%s" "${_buf}" >&2 ; }
+buf_send() { printf "%s" "${_buf}" >/dev/tty ; }
 
-hide-cursor(){ printf "\033[?25l" >&2 ; }
-show-cursor(){ printf "\033[?25h" >&2 ; }
+hide-cursor(){ printf "\033[?25l" >/dev/tty ; }
+show-cursor(){ printf "\033[?25h" >/dev/tty ; }
 
 max(){
     local m=$1
@@ -286,7 +335,6 @@ clear-region(){
     buf_send
 }
 
-
 save-curpos(){
     # TODO: As YSAP showed, we can save-restore the cursor without memorizing
     # its position so maybe we don't need this.
@@ -299,8 +347,9 @@ save-curpos(){
 }
 
 restore-curpos(){
-    printf "\033[%d;%dH" "${saved_row}" "${saved_col}" >&2
+    printf "\033[%d;%dH" "${saved_row}" "${saved_col}" >/dev/tty
 }
+
 
 # Print a N newlines then move the cursor up by N positions.  This ensures that
 # we have enough space to draw our box while also possibly causing the current
@@ -313,6 +362,57 @@ space(){
     done
     buf_printf "\033[${n}A"
     buf_send
+}
+output-selected-filename(){
+    dbg-log "BINGBONG"
+    dbg-log "selection = '${selection}'"
+    read _ _ _ _ _ _ _ _ filename _ <<<${selection}
+    dbg-log "bash_normpath: $(bash_normpath ${prefix}/${filename})"
+    python3 -c "import os; print(os.path.normpath('${prefix}/${filename}'))"
+}
+exit-handler(){
+    clear-region "${region[@]}"
+    restore-curpos
+    show-cursor
+    dbg-log "dir = '${dir}'"
+    if [[ -n ${dir} ]] ; then
+        output-selected-filename
+    elif [[ -n ${selection} ]] ; then
+        echo "$selection"
+    fi
+}
+
+# Adapted from the python code os.path.normpath
+bash_normpath(){
+    local start_sep
+    case "${1}" in
+        ///*) start_sep='/' ;;
+        //*)  start_sep='//' ;;
+        /*)   start_sep='/' ;;
+    esac
+
+    local IFS='/'
+    local new_tokens=()
+    local i=0
+
+    for tok in ${1} ; do
+        if [[ "${tok}" == '.' ]] || [[ "${tok}" == "" ]] ; then
+            continue
+        fi
+        if [[ "${tok}" != '..' ]] \
+            || ( [[ -z "${start_sep}" ]] && (( i == 0 )) ) \
+            || ( (( ${#new_tokens[@]} >= 1)) \
+                 && [[ ${new_tokens[i-1]} == '..' ]] ) ; then
+            new_tokens[i++]=${tok}
+        elif (( i >= 1 )) ; then
+            ((i--))
+            unset new_tokens[i]
+        fi
+    done
+    # Note this works because IFS='/'.  the ${arr[*]} joins
+    # the elements of the array 'arr' using the first char of IFS.
+    final="${start_sep:-}${new_tokens[*]}"
+    printf "${final:-.}\n"
 }
 
 if ! (return 0 2>/dev/null) ; then

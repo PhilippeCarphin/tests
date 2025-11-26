@@ -10,7 +10,9 @@
 # - Split '--fruit=apple' into '--fruit apple'
 # - Split '-yf apple' into '-y -f apple'
 # - Puts all non-option arguments after a '--'
-# - Adds quoting so that the 'eval' can be reliable.
+# - Output always contains a '--' so we can use that to break
+# - Adds quoting so that the 'eval' can be reliable and preserve arguments
+#   containing spaces.
 # - Adds empty argument after options that take optional argument
 #   if no argument was provided: -v -yf apple -> -v '' -y -f 'apple'.
 #
@@ -19,7 +21,7 @@
 # is also '-fapple' which is possible for options that have a required
 # argument.
 #
-if ! normalized_arguments=$(getopt -n $0 -o yf:v:: --longoptions yes,fruit:,vegetable:: -- "$@") ; then
+if ! normalized_arguments=$(getopt -n $0 -o yf:v:: --longoptions yes,fruit:,vegetable:: "$@") ; then
     echo "Argument parsing error"
     exit 1
 fi
@@ -27,7 +29,7 @@ fi
 echo "Arguments before: $@" # -yf apple posarg1 --vegetable='baby carrot' posarg2
 echo "Normalized arguments: ${normalized_arguments}"
 eval set -- "${normalized_arguments}"
-echo "Arguments after : $@" # -y -f apple --vegetable 'baby carrot' -- posarg1 posarg2
+echo "\$@ after 'eval set -- \"\${normalized_arguments}\": $@" # -y -f apple --vegetable 'baby carrot' -- posarg1 posarg2
 eval normalized_arguments_array=(${normalized_arguments})
 for a in "${normalized_arguments_array[@]}" ; do
     echo "a='${a}'"

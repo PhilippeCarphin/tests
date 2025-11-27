@@ -16,19 +16,33 @@
 #     done
 # }
 #
+
 tw(){
-    print-args "$@" >> ~/.log.txt
+    # print-args "$@" >> ~/.log.txt
     printf "READLINE_LINE='%s'\n" "${READLINE_LINE}" >> ~/.log.txt
     local rl_args=(${READLINE_LINE})
     if [[ "${READLINE_LINE}" == *' ' ]] ; then
         rl_args+=('')
     fi
-    local dir=${rl_args[-1]:-$PWD}
-    print-array rl_args >> ~/.log.txt
+    if (( ${#rl_args[@]} == 0 )) ; then
+        rl_args=('')
+    fi
+    # printf "${READLINE_LINE}\n"
+    local dir=${rl_args[-1]:-}
+    printf "tw(): dir='%s'\n" "$dir" >> ~/.log.txt
+    if [[ ${dir} != */* ]] ; then
+        dir=${PWD}
+    elif [[ ${dir} != */ ]] ; then
+        dir=${dir%/*}
+    elif [[ ${dir} == "" ]] ; then
+        dir=$PWD
+    fi
+    printf "tw(): dir='%s'\n" "$dir" >> ~/.log.txt
     local result=$(tui-selector ${dir})
     rl_args[-1]=${result}
     READLINE_LINE="${rl_args[*]}"
     READLINE_POINT=0xffffffff
 }
 
+bind -x '"\C-t": tw'
 

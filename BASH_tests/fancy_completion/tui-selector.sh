@@ -21,9 +21,11 @@ right_margin=4
 right_padding=3
 bottom_margin=1
 window_margin=1
+color_choices_bg=237
 
 ### Internal state
 selection_buffer=""
+message=""
 
 region=()
 region_height=0  # Redundant but convenient
@@ -32,22 +34,30 @@ region_width=0   # Redundant but convenient
 choices=()
 choices_idx=()
 choices_maxlen=0
+choices_print_len=()
+choices_noansi=()
 
 window_start=0
 selection_index=0
 window_end=0
 data=()
+data_print_len=()
+data_noansi=()
 dir=""
 prefix=""
 file_explorer_mode=false
+unansi=(-1 -1)
 
 dbg-log(){
-    printf "${FUNCNAME[1]}: %s\n" "$*" >> log.txt
+    printf "${FUNCNAME[1]}: %s\n" "$*" >> ~/.log.txt
 }
 
 
+coproc unansi { sed --unbuffered 's/\x1b\[[0-9;]*m//g' ; }
+
 tui-selector-main(){
 
+    exec 2>>~/.log.txt
     if [[ -n ${1:-} ]] ; then
         file_explorer_mode=true
     fi
@@ -71,7 +81,6 @@ tui-selector-main(){
     save-curpos # Needs to be done before set-region ## TODO: Ensure that's done more cleanly
 
     set-region
-    exec 2>>log.txt
 
     trap 'selection="" ; exit 130' INT
     trap 'exit-handler' EXIT
@@ -105,7 +114,6 @@ tui-selector-main(){
                         selection_buffer=${selection_buffer:0: -1}
                         # clear-region "${region[@]}"
                         set-choices "${selection_buffer}"
-                        # set-region
                      fi
                      ;;
             *) selection_buffer+="${key}" ; selection_index=0
@@ -115,7 +123,6 @@ tui-selector-main(){
                 # or have display-model clear the part of the region that is unused.
                 # clear-region "${region[@]}"
                 set-choices "${selection_buffer}"
-                # set-region
                 ;;
         esac
 
@@ -157,14 +164,18 @@ set-choices(){
     local match_str="$1"
     choices=()
     choices_idx=()
+    choices_print_len=()
+    choices_noansi=()
     for((i=0;i<${#data[@]};i++)) ; do
         if [[ ${data[i]} == *${match_str}* ]] ; then
             choices+=("${data[i]}")
+            choices_noansi+=("${data_noansi[i]}")
             choices_idx+=($i)
+            choices_print_len+=(${data_print_len[i]})
         fi
     done
     if (( ${#choices[@]} > 0 )) ; then
-        choices_maxlen=$(max_len_by_ref choices)
+        choices_maxlen=$(max_len_by_ref choices_noansi)
     fi
     window_start=0
     window_end=$(min $((max_region_height)) $((LINES-bottom_margin)) $((${#choices[@]})))
@@ -174,19 +185,45 @@ process_input(){
     readarray -t data
     # After having processed data, start reading from the keyboard
     exec 0</dev/tty
+    local i=0
+    for d in "${data[@]}" ; do
+        echo "$d" >&${unansi[1]}
+        read -u ${unansi[0]} d
+        data_noansi[i]="${d}"
+        data_print_len[i++]=${#d}
+    done
 }
 
 get_listing(){
-    readarray -t data < <(ls -lrth ${dir})
+    readarray -t data < <(ls --color=always -lth ${dir} | tail -n +2 | sed 's/\x1b\[0m\(\x1b\[K\)\?/\x1b[39;22m/g')
+    local i=0
+    data_print_len=()
+    data_noansi=()
+    for d in "${data[@]}" ; do
+        echo "$d" >&${unansi[1]}
+        read -u ${unansi[0]} d
+        data_noansi[i]="${d}"
+        data_print_len[i++]=${#d}
+    done
+}
+
+dir-is-empty(){
+    s=$(find "${1}" -mindepth 1 -maxdepth 1 -print -quit)
+    (( ${#s} == 0 ))
 }
 
 into-dir(){
     dbg-log "selection = ${selection}"
-    read _ _ _ _ _ _ _ _ filename _ <<<${selection}
+    read _ _ _ _ _ _ _ _ filename _ <<<${choices_noansi[selection_index]}
     dbg-log "filename = ${filename}"
     dbg-log "dir = ${dir}"
     dbg-log "${prefix}/${filename}"
     if [[ -d ${prefix}/${filename} ]] ; then
+        if dir-is-empty ${prefix}/${filename} ; then
+            dbg-log "Not entering empty directory"
+            message="Dir ${prefix}/${filename} is empty"
+            return 0;
+        fi
         dir=${prefix}/${filename}/
         prefix=${dir}/
         selection_buffer=""
@@ -195,6 +232,7 @@ into-dir(){
         selection=${choices[0]}
         selection_index=0
     fi
+    clear-region "${region[@]}"
 }
 out-of-dir(){
     dbg-log "selection = ${selection}"
@@ -206,6 +244,7 @@ out-of-dir(){
     set-choices ""
     selection=${choices[0]:-""}
     selection_index=0
+    clear-region "${region[@]}"
 }
 
 max_width=3
@@ -219,8 +258,8 @@ set-region(){
     local y1=$(min $((y0+max_region_height+1)) $((LINES-bottom_margin+1)) $((y0+${#choices[@]}+1)) )
     region=($x0 $y0 $x1 $y1)
     region_width=$((x1 - x0))
-    region_height=$((y1 - y0))
-    window_height=$((region_height - 1))
+    region_height=max_region_height
+    window_height=$((y1-y0-1))
 }
 
 # Display a window of items from choices/choices_desc in the screen region
@@ -237,24 +276,25 @@ display-model(){
     local j=0
     local i
 
-    width=$(min $((x1-x0)) $((choices_maxlen + 11)))
+    width=$(min $((COLUMNS-x0-right_margin)) $((choices_maxlen + 11)))
+    dbg-log "choices_maxlen=${choices_maxlen}"
     buf_clear
     buf_cmove $x0 $y0
     buf_clearline
-    buf_printf "Selection: \033[1;37m%s \033[0m| max_width=%d, x1-x0=%d, choices_maxlen+11=%d, width=%d" "${selection_buffer}" "${max_width}" "$((x1-x0))" "$((choices_maxlen + 11))" "${width}"
+    buf_printf "Selection: \033[1;37m%s \033[0m| max_width=%d, x1-x0=%d, choices_maxlen+11=%d, width=%d, message: %s" "${selection_buffer}" "${max_width}" "$((x1-x0))" "$((choices_maxlen + 11))" "${width}" "${message}"
+    message=""
     if ((${#choices[@]} == 0 )) ; then
         buf_cmove $x0 $((y0+1))
         buf_clearline
         buf_printf "[No matches]"
         j=$((j+1))
     else
-
         local j_start=$(( (start*window_height)/${#choices[@]}))
         local j_end=$(( j_start + (window_height*window_height)/${#choices[@]} + 1))
         for((i=${start}; i<end; i++)) do
             buf_cmove $x0 $((y0+j+1))
             local marker=" "
-            local color="48;5;246;30"
+            local color="48;5;${color_choices_bg}"
             local scrollbar=$'\033[48;5;234m\u2592'
             if (( j_start <= j)) && ((j < j_end)) ; then
                 scrollbar=$'\033[48;5;234m\u2593\033[0m'
@@ -263,16 +303,34 @@ display-model(){
             if ((i == selected )) ; then
                 marker=">"
                 color="45;36"
+                printf "choices[$i]: %q\n" "${choices[i]}" >&2
             fi
+            # printf "%q\n" "${c}" >> ~/.log.txt
             # TODO: Print the first ${#selection_buffer} characters in bold
             #       and the rest in normal font
-            printf -v text "%s %3d/${#choices[@]}: %-${choices_maxlen}s" \
-                "${marker}" "${i}" "${choices[i]}"
+            local ansi=0
+            printf -v text "%s %3d/${#choices[@]}: %s" "${marker}" "$((i+1))" "${choices[i]}"
+            if ((i==selected)) ; then
+                printf "text: %q\n" "${text}" >&2
+            fi
+            local text_width=${#text}
+            local ansi_compensation=$((${#choices[i]}-choices_print_len[i] + 1 ))
+            local padding=$((width - (text_width - ansi_compensation) ))
+            local clip_width=$((width+ansi_compensation))
             buf_clearline
-            buf_printf "${scrollbar}\033[%sm%-${width}s\033[0m" "${color}" "${text:0:${width}}"
+            buf_printf "${scrollbar}\033[%sm%s\033[%sm%-${padding}s\033[0m" "${color}" "${text:0:${clip_width}}" "${color}" " "
             j=$((j+1))
         done
     fi
+    dbg-log "region_height=${region_height}, j=${j}, i=${i}"
+
+    # TODO: THe +3 here is because something doesn't get updated when we start
+    # with a directory that has less items than the region height to one that
+    # has more than the region height (or something).
+    # OK: I get it.  I do 'space max_region_height' but set-region sets the
+    # size of the region to a value that depends on the number of choices.
+    #
+    # It should have height = max_region_height
     for((; j<region_height ; j++)); do
         buf_cmove $x0 $((y0+j+1))
         buf_clearline
@@ -339,11 +397,20 @@ save-curpos(){
     # TODO: As YSAP showed, we can save-restore the cursor without memorizing
     # its position so maybe we don't need this.
     local s
-    printf "\033[6n" >&2
+    printf "\033[6n" >/dev/tty
     read -s -d R s
     s=${s#*'['} # quoting '[' not necessary but helps vim syntax highligting not get confused
     saved_row=${s%;*}
     saved_col=${s#*;}
+}
+
+message(){
+    local text
+    buf_clear
+    buf_cmove ${message_area[1]} ${message_area[0]}
+    printf -v text "%s" "${text}"
+    text_
+    buf_printf "%s"
 }
 
 restore-curpos(){
@@ -365,8 +432,9 @@ space(){
 }
 output-selected-filename(){
     dbg-log "BINGBONG"
-    dbg-log "selection = '${selection}'"
-    read _ _ _ _ _ _ _ _ filename _ <<<${selection}
+    dbg-log "selection = '${selection}', selection_index=${selection_index}"
+    dbg-log "$(declare -p choices)"
+    read _ _ _ _ _ _ _ _ filename _ <<<${choices_noansi[selection_index]}
     dbg-log "bash_normpath: $(bash_normpath ${prefix}/${filename})"
     python3 -c "import os; print(os.path.normpath('${prefix}/${filename}'))"
 }

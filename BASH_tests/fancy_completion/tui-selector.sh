@@ -231,6 +231,8 @@ into-dir(){
         set-choices ""
         selection=${choices[0]}
         selection_index=0
+    else
+        message="${prefix}/${filename} is not a directory"
     fi
     clear-region "${region[@]}"
 }
@@ -250,7 +252,8 @@ out-of-dir(){
 max_width=3
 
 set-region(){
-    # The 12 supposes that we have less than 999 items or less
+    # The 12 supposes that we have less than 999 items or less because it
+    # includes the width of a 3 digit number
     max_width=$(( 12 + choices_maxlen + 1))
     local x0=${left_margin}
     local x1=$(min $((x0+max_region_width)) $((COLUMNS-right_margin)) $((x0+max_width)) )

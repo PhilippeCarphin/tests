@@ -29,7 +29,8 @@ bash_normpath(){
             new_tokens[i++]=${tok}
         elif (( i >= 1 )) ; then
             ((i--))
-            unset new_tokens[i]
+            # See nullglob.bash for why there are quotes here
+            unset 'new_tokens[i]'
         fi
     done
     # Note this works because IFS='/'.  the ${arr[*]} joins

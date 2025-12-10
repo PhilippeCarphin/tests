@@ -14,7 +14,9 @@ or no for both shells to indicate whether the print at the end was seen.
 As we can see, Bash and Sh behave differently in every situation except one.
 
 I made this test because I have a python tool that finds the modifications made
-to the environment by a command which is usually a source command.
+to the environment by a command which is usually a source command.  *CORRECTION*
+I had a python tool that did this which was cringe and now I have a pure BASH 
+tool [env-diff](https://github.com/philippecarphin/env-diff) which is based.
 
 It works by first saving a copy of the environment then with a script like
 

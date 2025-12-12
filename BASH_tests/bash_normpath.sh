@@ -6,7 +6,7 @@
 # for a variety of edge cases.  The main difficulty is deciding what to do
 # with '..' when there is nothing for it to cancel out.
 # ../A -> ../A but A/../B -> B
-bash_normpath(){
+bash-normpath(){
     local start_sep
     case "${1}" in
         ///*) start_sep='/' ;;
@@ -39,24 +39,54 @@ bash_normpath(){
     printf "${final:-.}\n"
 }
 
-#    for comp in comps:
-#        if comp in (empty, dot):
-#            continue
-#        if (comp != dotdot or (not initial_slashes and not new_comps) or
-#             (new_comps and new_comps[-1] == dotdot)):
-#            new_comps.append(comp)
-#        elif new_comps:
-#            new_comps.pop()
+# Easier to understand implementation
+bash-normpath(){
+    local start_sep
+    case "${1}" in
+        ///*) start_sep='/' ;;
+        //*)  start_sep='//' ;;
+        /*)   start_sep='/' ;;
+    esac
+
+    local IFS='/'
+    local new_tokens=()
+    local i=0
+
+    for tok in ${1} ; do
+        # Skip 'dot's and empty path components from consecutive slashes
+        if [[ "${tok}" == '.' ]] || [[ "${tok}" == "" ]] ; then
+            continue
+        fi
+
+        # The usual: '..' cancels out a previous token unless
+        # that previous token is also '..'
+        if [[ "${tok}" == '..' ]] && (( i > 0 )) && [[ ${new_tokens[i-1]} != .. ]] ; then
+            unset 'new_tokens[--i]'
+            continue
+        fi
+
+        # For absolute paths, we don't allow '..'s after the first slash
+        if [[ "${tok}" == '..' ]] && (( i == 0 )) && [[ -n ${start_sep} ]] ; then
+            continue
+        fi
+
+        # In every other case, we add the token which could still be '..'
+        # which can't cancel out a previous non-'..' token.
+        new_tokens[i++]=${tok}
+    done
+    final="${start_sep:-}${new_tokens[*]}"
+    printf "${final:-.}\n"
+}
 
 test_expect(){
-    value=$(bash_normpath "${1}")
+    value=$(bash-normpath "${1}")
     if assert_value_eq_expected "${value}" "${2}" ; then
         echo "SUCCESS: ${1} -> ${value}"
     fi
 }
 
 expect_fail(){
-    if bash_normpath "${1}" 2>/dev/null ; then
+    if bash-normpath "${1}" 2>/dev/null ; then
         echo "bash_normpath '${1}' was supposed to fail but did not"
         return 1
     fi
@@ -68,7 +98,7 @@ assert_value_eq_expected(){
     fi
 }
 test_pynormpath(){
-    local value=$(bash_normpath "${1}")
+    local value=$(bash-normpath "${1}")
     local expected=$(python3 -c "import os; print(os.path.normpath('${1}'))")
     if [[ "${value}" != "${expected}" ]] ; then
         echo "value was different from expected:"
@@ -89,6 +119,7 @@ main(){
     test_pynormpath ./ ""
     test_pynormpath src/.. ""
     test_pynormpath src/../../A
+    test_pynormpath /src/../../../
     # expect_fail src/../../A
     # expect_fail ../A
 }

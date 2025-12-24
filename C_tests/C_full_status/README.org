@@ -1,0 +1,60 @@
+#+TITLE: Full exit status
+
+Besides the regular exit code reported by =$?= in bash and or
+=result.returncode= where result is the Python object returned by
+=subprocess.run=, there is more information available.
+
+In C, when doing =system("shell cmd")= or doing a /fork-exec/ followed by a
+=waitpid=, the value returned by the =wait/system= functions is an =int= where
+one byte encodes the 0-255 regular return code but other bytes encode
+information like whether the process stopped due to a signal.
+
+This enformation can be decoded using the =WIFEXITED(status)=,
+=WIFSIGNALED(status)=, and =WIFSTOPPED(status)= macros on =status= the int
+returned by =wait=.
+
+If one of the above macros returns "true", then the =WEXITSTATUS(status)=,
+=WTERMSIG(status)=, and =WSTOPSIG(status)= will extract the exit code, number of
+the signal that caused termination, or number of the signal that caused the
+process to stop.
+
+This makes a difference if we want to trap signals.  For example, if the program
+
+#+begin_src shell
+#!/usr/bin/env bash
+dir=$(mktemp -d workdir.XXXXXX)
+trap "echo cleaning up ; rm -rf ${dir} ; exit 130" SIGINT
+echo "running"
+sleep 100
+#+end_src
+
+receives a SIGINT signal, it's exit code will be 130 which for a regular person,
+will indicate that the program ended because of SIGINT however, we will have
+
+| WIFEXITED(status)   | true  |
+| WEXITSTATUS(status) | 130   |
+| WIFSIGNALED(status) | false |
+| WIFSTOPPED(status)  | false |
+
+but if we want the caller to truly be able to determine that the process ended
+due to a signal, we would have to do
+
+#+begin_src bash
+#!/usr/bin/env bash
+dir=$(mktemp -d workdir.XXXXXX)
+trap "echo cleaning up ; rm -rf ${dir} ; trap - SIGINT ; kill -int $$" SIGINT
+echo "running"
+sleep 100
+#+end_src
+
+where we do our "cleanup" (representing any operation that we want to get done
+on receiving SIGINT), then we remove the trap to restore the default signal
+handler, and we send ourselves the SIGINT signal.
+
+With this method, we get
+
+| WIFEXITED(status)   | false |
+| WEXITSTATUS(status) | 130   |
+| WIFSIGNALED(status) | true  |
+| WTERMSIG(status)    | 2     |
+| WIFSTOPPED(status)  | false |

@@ -1,4 +1,7 @@
-
+if ! (return 0 2>/dev/null) ; then
+    printf "This file must be sourced to run in an interactive environment\n" >&2
+    exit 1
+fi
 cmd=$1
 
 COMP_LINE="$*"
@@ -9,7 +12,7 @@ COMPREPLY=()
 echo "${COMP_CWORD}"
 
 compspec=($(complete -p ${cmd}))
-i=0
+i=1
 while (( i < ${#compspec[@]} )) ; do
     case ${compspec[i]} in
         -o) i=$((i+1)) ;;
@@ -17,6 +20,7 @@ while (( i < ${#compspec[@]} )) ; do
         -C) completion_cmd=${compspec[i+1]} ; break ;;
         *) echo "WARNING: Unhandled option '${compspec[i]}'"
     esac
+    i=$((i+1))
 done
 
 if [[ -n ${completion_func} ]] ; then

@@ -2,9 +2,9 @@ cmake_minimum_required(VERSION 3.20)
 
 project(X C Fortran)
 
-add_executable(main main.f90 func.f90 func.c)
-add_executable(mainc main.c func.f90 func.c)
-target_compile_options(main PRIVATE -fno-range-check)
+add_library(func func.f90)
+add_executable(main main.c)
+target_link_libraries(main PUBLIC func)
 
 include(CTest)
 add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})

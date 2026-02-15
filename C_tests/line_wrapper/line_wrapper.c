@@ -29,13 +29,13 @@ int main ( int argc , char ** argv ) {
    char * lastDelim = argv[1];
    char * current = argv[1];
    int wrapLength = atoi(argv[2]);
-   char c = *current
+   char c = *current;
 
    int chars = 1;
 
    /* Go to 80 chars */
    while(c != 0){
-      lastDelim = sart;
+      lastDelim = start;
       while((c = *current++) != 0 && chars++ <= wrapLength ){
          if( isDelim(c) )
             lastDelim = current - 1;

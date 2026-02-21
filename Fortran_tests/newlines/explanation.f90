@@ -11,7 +11,7 @@ program good
           end subroutine
       end interface
 
-      character(len=1024), dimension(3) :: msg_buf_1d
+      character(len=80), dimension(3) :: msg_buf_1d
 
       ! A '/' can be used in format strings as a way to insert newlines
       ! and it works when we are writing to a file or stdout/stderr
@@ -25,6 +25,8 @@ program good
       write(error_unit, '("msg_buf_1d(1): "a)') trim(msg_buf_1d(1))
       write(error_unit, '("msg_buf_1d(2): "a)') trim(msg_buf_1d(2))
       write(error_unit, '("msg_buf_1d(3): "a)') trim(msg_buf_1d(3))
-      ! write(error_unit,*) msg_buf_1d
+
+      write(error_unit,*) "==== write(error_unit,*) msg_buf_1d ====="
+      write(error_unit,'(a/a/a)') msg_buf_1d
 
 end program

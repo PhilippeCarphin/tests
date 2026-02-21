@@ -3,10 +3,11 @@ PROGRAM send_string
       implicit none
 
       interface
-          subroutine c_print_string(str) bind(C, name="print_string")
+          subroutine c_print_string(info,str) bind(C, name="print_string")
               use, intrinsic :: iso_c_binding
               implicit none
               character(kind=C_CHAR), dimension(*), intent(in) :: str
+              character(kind=C_CHAR), dimension(*), intent(in) :: info
           end subroutine
       end interface
 
@@ -24,7 +25,7 @@ PROGRAM send_string
           string_ptr="It's the eye of the tiger"
           len = len_trim(string_ptr)
           string_ptr(len+1:len+1) = c_null_char
-          call print_string(string_ptr)
+          call print_string("manual c_null_char", string_ptr)
 
           !
           ! Without putting c_null_char we have spaces at the end
@@ -32,7 +33,7 @@ PROGRAM send_string
           ! does still put a c_null_char at the end automatically
           !
           string_ptr="It's the thrill of the fight"
-          call print_string(string_ptr)
+          call print_string("literal without null char", string_ptr)
 
           !
           ! This also works though I would have liked it if I didn't
@@ -41,29 +42,29 @@ PROGRAM send_string
           ! the C function printing random characters.
           !
           string(1:50)="Risin' up to the challenge of our rivals"
-          call print_string(string)
+          call print_string("repeating dimensions", string)
 
           !
           ! The main reason for this experimentation is to pass a
           ! a string litteral
-          call print_string("And the last known survivor")
-          call print_string("Stalks his prey in the night")
-          call print_string("And he's watching us all with the EEEYYYYEEEAhh...")
-          call print_string("...of the tiger")
-          call print_string("chika chika chika PIIINRRRR, PIN PIN PIIIIRRRRR")
+          call print_string("literal", "And the last known survivor")
+          call print_string("literal", "Stalks his prey in the night")
+          call print_string("literal", "And he's watching us all with the EEEYYYYEEEAhh...")
+          call print_string("literal", "...of the tiger")
+          call print_string("literal", "chika chika chika PIIINRRRR, PIN PIN PIIIIRRRRR")
 
           write(*,*) "======================= straight call to C function ==============="
-          call c_print_string("It's the eye of the tiger")
-          call c_print_string("It's the thrill of the fight")
-          call c_print_string("Risin' up to the challenge of our rivals")
-          call c_print_string("And the last known survivor"//achar(0))
-          call c_print_string("Stalks his prey in the night")
-          call c_print_string("And he's watching us all with the EEEYYYYEEEAhh...")
-          call c_print_string("...of the tiger")
-          call c_print_string("chika chika chika PIIINRRRR, PIN PIN PIIIIRRRRR")
+          call c_print_string("straight literal", "It's the eye of the tiger")
+          call c_print_string("straight literal", "It's the thrill of the fight")
+          call c_print_string("straight literal", "Risin' up to the challenge of our rivals")
+          call c_print_string("straight literal", "And the last known survivor"//achar(0))
+          call c_print_string("straight literal", "Stalks his prey in the night")
+          call c_print_string("straight literal", "And he's watching us all with the EEEYYYYEEEAhh...")
+          call c_print_string("straight literal", "...of the tiger")
+          call c_print_string("straight literal", "chika chika chika PIIINRRRR, PIN PIN PIIIIRRRRR")
 
 contains
-    subroutine print_string(f_string)
+    subroutine print_string(f_info, f_string)
         !
         ! From the prints done by the straight C calls to C function,
         ! it is possible that the data for the string literals is
@@ -72,6 +73,7 @@ contains
         !
         use, intrinsic :: iso_c_binding
         character(len=*) :: f_string
+        character(len=*) :: f_info
         character(len=4097) :: c_string
         character(kind=C_CHAR), dimension(:), ALLOCATABLE :: ac_string
         character(kind=C_CHAR,len=:), ALLOCATABLE :: ac_string_2
@@ -87,6 +89,7 @@ contains
         ! char of f_string, so if f_string = "It's the eye",
         ! then ac_string would be "IIIIIIIIIIII"
         ac_string = f_string
+        call c_print_string(f_info//"f:ac_strin", ac_string)
         ! Ugh... fine... I'll do a loop myself
         ! do i = 1, len
         !     ac_string(i:i) = f_string(i:i)
@@ -102,7 +105,7 @@ contains
         allocate(character(len+1)::ac_string_2)
         ac_string_2 = f_string
         ac_string_2(len+1:len+1) = c_null_char
-        call c_print_string(ac_string_2)
+        call c_print_string(f_info//"f:ac_string_2", ac_string_2)
         deallocate(ac_string)
     end subroutine
 

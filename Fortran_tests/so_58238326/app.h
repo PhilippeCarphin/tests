@@ -2,7 +2,7 @@
 extern "C" {
 #endif
 
-int fortfunc();
+int work();
 
 #ifdef __cplusplus
 }

@@ -2,8 +2,8 @@
 #include <stdio.h>
 #include <string.h>
 
-int print_string(char *s)
+int print_string(char *info, char *s)
 {
-    printf("C: %s(): string : '%s'\n", __func__, s);
+    printf("C: %s(): string(%s) : '%s'\n", __func__, info, s);
     return 0;
 }

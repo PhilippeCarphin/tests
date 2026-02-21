@@ -3,7 +3,7 @@ EXEC = $(SOURCE:.c=.out)
 TEST_ARGS = \"Tasdf asdfasdf asdf asdf asdf asd fsad fas df asdf as df asdf asd fa sdf asd fas df asdf as df asd fas df as df asdf sad fsad\" 15
 PROJ_COMPILER = $(CC)
 
-all:
+all: $(EXEC)
 
 $(EXEC):$(SOURCE)
 	$(PROJ_COMPILER) $^ -o $@

@@ -1,0 +1,1 @@
+nullglob.bash

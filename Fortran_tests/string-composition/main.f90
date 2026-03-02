@@ -42,20 +42,20 @@ contains
 
         integer :: ivar
 
-        allocate(character(len=(size(field_names,1) * (1+len(field_names(:))))) :: composed_string)
+        composed_string = ""
         do ivar = 1, size(cplatm_cvou_S,1)
-        if(ivar .ne. 1) then
-            if(cplatm_cvot_S(ivar-1) == 'S' .or. cplatm_cvot_S(ivar-1) == 'V') then
-                composed_string = composed_string // ','
-            elseif (cplatm_cvot_S(ivar-1) == 'U') then
-                if (cplatm_cvot_S(ivar) .ne. 'V') then
-                    write(error_unit,*) "Incoherent variable types"
-                    stop 1
+            if(ivar .ne. 1) then
+                if(cplatm_cvot_S(ivar-1) == 'S' .or. cplatm_cvot_S(ivar-1) == 'V') then
+                    composed_string = composed_string // ','
+                elseif (cplatm_cvot_S(ivar-1) == 'U') then
+                    if (cplatm_cvot_S(ivar) .ne. 'V') then
+                        write(error_unit,*) "Incoherent variable types"
+                        stop 1
+                    endif
+                    composed_string = composed_string // '/'
                 endif
-                composed_string = composed_string // '/'
             endif
-        endif
-        composed_string = composed_string // cplatm_cvou_S(ivar)
+            composed_string = trim(composed_string) // cplatm_cvou_S(ivar)
         enddo
         composed_string = composed_string // c_null_char
     end subroutine

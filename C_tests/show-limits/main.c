@@ -1,6 +1,6 @@
 #include <stdint.h>
 #include <limits.h>
-#include <linux/limits.h>
+// #include <linux/limits.h>
 #include <sys/param.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -69,9 +69,9 @@ int get_value(char *name, long long unsigned int *value){
         name_value(NAME_MAX, 0), /* # chars in a file name */
         name_value(PATH_MAX, 0), /* # chars in a path name including nul */
         name_value(PIPE_BUF, 0), /* # bytes in atomic write to a pipe */
-        name_value(XATTR_NAME_MAX, 0), /* # chars in an extended attribute name */
-        name_value(XATTR_SIZE_MAX, 0), /* size of an extended attribute value (64k) */
-        name_value(XATTR_LIST_MAX, 0), /* size of extended attribute namelist (64k) */
+        // name_value(XATTR_NAME_MAX, 0), /* # chars in an extended attribute name */
+        // name_value(XATTR_SIZE_MAX, 0), /* size of an extended attribute value (64k) */
+        // name_value(XATTR_LIST_MAX, 0), /* size of extended attribute namelist (64k) */
 
 #ifdef EXTRA
         name_value(PHYS_ADDR_MAX, 0),

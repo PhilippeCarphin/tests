@@ -27,6 +27,11 @@ __phil_complete()
 	COMPREPLY=()
 
 	# The word we are trying to complete
+    printf "\n"
+    declare -p COMP_WORDS
+    declare -p COMP_CWORD
+    printf "\${#COMP_WORDS[@]}=%d\n" "${#COMP_WORDS[@]}"
+    printf "%s%s" "${PS1@P}" "${COMP_LINE}"
 	local cur="${COMP_WORDS[COMP_CWORD]}"
 
 	# The word before that
@@ -56,5 +61,5 @@ __complete_one_candidate(){
 # Arrange for the __phil_complete() function to be called when completing the
 # command "to_complete".
 ################################################################################
-complete -F __phil_complete to_complete
+complete -F __phil_complete to_complete c
 complete -F __complete_one_candidate one

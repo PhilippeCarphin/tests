@@ -9,6 +9,11 @@ the_coproc(){
     echo "(INFO) ${FUNCNAME[0]}(${BASHPID}): My stdin was closed" >&2
 }
 
+# NOTE: coproc creates a child process which may create it's own children
+# so for `coproc mytail { tail -f FILE ; }`, mytail_PID will have some value
+# that will not be the same as the PID of the tail process running inside the
+# coproc.  With `coproc mytail { exec tail -f FILE ; }`, now the PID of the
+# coproc will be the PID of the tail process.
 coproc macaroons { the_coproc ; }
 
 echo "(INFO) The coprocess array: ${macaroons[@]}"

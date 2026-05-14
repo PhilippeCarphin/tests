@@ -7,6 +7,8 @@ program main
 
     integer :: cmp, err
     character :: chr
+    character(len=8) :: string_a
+    character(len=8) :: string_b
 
     TYPE(tgrid) :: the_grid
 
@@ -15,7 +17,13 @@ program main
         write(error_unit, *) "Failed to copy 'OCEAN' into the_grid%Id"
     endif
 
-    ! the_grid%Id = transfer("OCEAN" // c_null_char, the_grid%Id)
+    ! the_grid%Id = transfer("OCEAN123456789", the_grid%Id)
+    string_a = "bing"
+    string_b = string_a
+    write(error_unit,'("string_b=`",a,"`")') string_b
+    if(string_b == "bing") then
+        write(error_unit, *) "string_b is equal to 'bing'"
+    endif
 
     the_grid%NI = 1337
 

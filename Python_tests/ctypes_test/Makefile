@@ -11,6 +11,9 @@ $(lib):$(obj)
 	gcc -shared $(CFLAGS) $^ -o $@
 
 .PHONY: struct print bool byref
+bytes-to-c-void-p:$(lib)
+	@printf "\033[35mLD_LIBRARY_PATH=\${PWD}:\${LD_LIBRARY_PATH} python3 -u demo_mystruct.py\033[0m\n"
+	@LD_LIBRARY_PATH=${PWD}:${LD_LIBRARY_PATH} python3 -u bytes-to-c-void-p.py
 struct:$(lib)
 	@printf "\033[35mLD_LIBRARY_PATH=\${PWD}:\${LD_LIBRARY_PATH} python3 -u demo_mystruct.py\033[0m\n"
 	@LD_LIBRARY_PATH=${PWD}:${LD_LIBRARY_PATH} python3 -u demo_mystruct.py

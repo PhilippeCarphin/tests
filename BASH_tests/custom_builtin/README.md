@@ -1,3 +1,19 @@
+New:
+
+- I tried 'make' and it didn't work.  Undefined references.
+
+- Noticed Bash provides stuff to include in the makefile
+
+- It's better but still doesn't work because we include "loadables.h"
+  which maybe we shouldn't need to include
+
+  > The examples do include "loadables.h" but I think maybe we're
+  supposed to have our C file in the same directory as "loadables.h"
+
+- Anyway, I added the -I line with the variable `INC_PLUS`.
+
+=====
+
 We need the -I's in the Makefile because the BASH includes either weirdly placed
 in system paths, or in some install dir somewhere.
 

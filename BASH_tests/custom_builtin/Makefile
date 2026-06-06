@@ -1,28 +1,50 @@
-BASH_DEV_DIR=$(shell repos -get-dir bash)/localinstall
-INC := -I$(BASH_DEV_DIR)/include/bash/builtins \
-       -I$(BASH_DEV_DIR)/include/bash/include \
-       -I$(BASH_DEV_DIR)/include/bash \
-       -I$(BASH_DEV_DIR)/lib/bash
+#
+# Sample makefile for bash loadable builtin development
+#
+# Copyright (C) 2022 Free Software Foundation, Inc.
 
-shell-split.so: shell_split.c
-	gcc $(INC) -shared -fPIC -o $@ $<
+#   This program is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
 
-tilde-expand.so: tilde-expand.c
-	gcc $(INC) -shared -fPIC -o $@ $<
+# these should match the ones in Makefile.in (for the make install target)
 
-t: shell-split.so
-	@bash -c "enable -f ./shell-split.so shell_split ; shell-split 'a_command arg \"arg containing ;\" ; a_command \";\" ; echo \"a semicolon is ;.\" ; echo \;'"
+prefix = /Users/pcarphin/Repositories/github.com/bminor/bash/localinstall
+exec_prefix = ${prefix}
+libdir = ${exec_prefix}/lib
 
-test:tilde-expand.so
-	@bash -c "enable -f ./tilde-expand.so tilde_expand ;pushd /fs/ssm ; pushd /fs/site5 ; pushd /fs/site6 ;  tilde-expand '~-1'" 
-	@echo "=================================================="
-	@bash -c "enable -f ./tilde-expand.so tilde_expand ; tilde-expand --help || true;   tilde-expand x y z ASDF \"uvw xyz\" ; enable -d tilde-expand"
-	@echo "=================================================="
-	@bash -c "enable -f ./tilde-expand.so tilde_expand ; tilde-expand -h "
+# ${loadablesdir} is where the example loadable builtins and data files
+# are installed (make install target in Makefile.in)
 
-inc: compile_commands.json
-compile_commands.json: Makefile
-	@echo '[' > $@
-	@echo '    { "directory": "$(PWD)", "command": "gcc $(INC) tilde-expand.c", "file": "$(PWD)/tilde-expand.c", "output": "$(PWD)/tilde-expand.so"},' >> $@
-	@echo '    { "directory": "$(PWD)", "command": "gcc $(INC) shell_split.c", "file": "$(PWD)/shell_split.c", "output": "$(PWD)/shell-split.so"}' >> $@
-	@echo ']' >> $@
+loadablesdir = ${libdir}/bash
+DESTDIR =
+
+# include Makefile.inc for all boilerplate definitions
+
+include $(DESTDIR)$(loadablesdir)/Makefile.inc
+INC_PLUS = -I$(prefix)/lib/bash
+
+# here, `example' is the name of the shared object
+# replace `example' with the appropriate filename
+
+all:	shell_split
+
+shell_split:	shell_split.o
+	$(SHOBJ_LD) $(SHOBJ_LDFLAGS) $(INC_PLUS) $(SHOBJ_XLDFLAGS) -o $@ $< $(SHOBJ_LIBS)
+
+tilde_expand:	tilde_expand.o
+	$(SHOBJ_LD) $(SHOBJ_LDFLAGS) $(INC_PLUS) $(SHOBJ_XLDFLAGS) -o $@ $< $(SHOBJ_LIBS)
+
+shell_split.o: shell_split.c
+
+tilde_expand.o: tilde_expand.c

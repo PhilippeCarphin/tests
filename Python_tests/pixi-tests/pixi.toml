@@ -1,0 +1,10 @@
+[workspace]
+authors = ["Philippe Carphin <phil103@hotmail.com>"]
+channels = ["conda-forge"]
+name = "pixi-tests"
+platforms = ["linux-64"]
+version = "0.1.0"
+
+[tasks]
+
+[dependencies]

@@ -22,7 +22,7 @@
 #
 
 #
-# Returns an array of formatted candidate-description elements
+# Returns an array of formatted `<candidate> (<description)` elements
 #
 # Params:
 # - 1: Name of associative array mapping candidates to descriptions
@@ -35,7 +35,7 @@
 #   only candidates matching the value of ${cur}
 # - If there is only one candidate, no description is added.
 #
-_cmd_add_descriptions_by_ref(){
+_cmd_add_descriptions_by_ref_assoc(){
     local -n _desc_array=$1
     local -n _comp_array=${2:-COMPREPLY}
     local -n _comp_desc=${3:-COMPREPLY}
@@ -82,6 +82,65 @@ _cmd_add_descriptions_by_ref(){
             desc+='…'
         fi
         printf -v _comp_desc[i] "%-${max_comp}s (%s)" "${comp}" "${desc}"
+    done
+}
+
+#
+# Given two parallel arrays of matching completion candidates and their
+# descriptions, produce an array of formatted `<candidate> (<description)`
+# items.
+#
+# 1: Array of descriptions where element at index $i is the description of
+#    elemnt $i in _comp_array
+# 2: Array of matching completion candidates
+# 3: Output array (default to COMPREPLY)
+#
+# Descriptions are not added if there is only one candidate.
+#
+_cmd_format_descriptions_by_ref_parallel(){
+    local -n _desc_array=$1
+    local -n _comp_array=$2
+    local -n _out_array=${3:-COMPREPLY}
+
+    if ((${#_comp_array[@]} <= 1)) ; then
+        _out_array=("${_comp_array[@]}")
+        return
+    fi
+
+    #
+    # Get max lengths of candidates for alignment
+    #
+    local max_comp=0 comp
+    for comp in "${_comp_array[@]}" ; do
+        if (( ${#comp} > max_comp )) ; then
+            max_comp=${#comp}
+        fi
+    done
+
+    #
+    # Compute the space available for descriptions
+    # The '-4' is the space, the two parens, and the potential '…'
+    #
+    local i max_desc_len=$((COLUMNS - max_comp - 4))
+
+    #
+    # If this length is too short, then there is no point in even
+    # putting descriptions.  Just return an array of candidates
+    # without descriptions
+    #
+    if (( max_desc_len < 10 )) ; then
+        _out_array=("${comp_array[@]}")
+        return
+    fi
+
+    for((i=0;i<${#_comp_array[@]};i++)); do
+        comp=${_comp_array[i]}
+        local desc=${_desc_array[i]}
+        if ((${#desc} > max_desc_len)) ; then
+            desc=${desc:0:$((max_desc_len-1))}
+            desc+='…'
+        fi
+        printf -v _out_array[i] "%-${max_comp}s (%s)" "${comp}" "${desc}"
     done
 }
 

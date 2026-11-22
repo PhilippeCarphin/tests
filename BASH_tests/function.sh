@@ -1,21 +1,23 @@
+shopt -s expand_aliases
+alias hello=+
+alias bonjour=+
+alias function=bingbong
 
 hello() {
    echo "body of function hello()"
 }
 
-function bonjour {
-   true
+function bonjour() {
+   echo "body of function bonjour()"
 }
 
 :(){
    echo "Yes, you can indeed name your function ':' in bash"
 }
-__(){
+--(){
    echo "Yes, you can indeed name your function '__' in bash"
 }
-hello
 
-bonjour
-:
-__
-
+declare -fp bonjour
+declare -fp hello
+declare -fp +
